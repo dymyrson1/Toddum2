@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Orders Table</title>
+
+  <link rel="stylesheet" href="css/main.css?v=1.0.0" />
+  <link rel="stylesheet" href="css/table.css?v=1.0.0" />
+  <link rel="stylesheet" href="css/modal.css?v=1.0.0" />
+  <link rel="stylesheet" href="css/animations.css?v=1.0.0" />
+</head>
+
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>Orders Table</h1>
+    </header>
+
+    <nav class="tabs">
+      <button data-tab="orders" class="tab active">Orders</button>
+      <button data-tab="analytics" class="tab">Analytics</button>
+      <button data-tab="settings" class="tab">Settings</button>
+    </nav>
+
+    <main id="tabContent"></main>
+  </div>
+
+  <div id="modal" class="modal hidden"></div>
+
+  <div id="contextMenu" class="context-menu hidden">
+    <button data-action="edit">Редагувати</button>
+    <button data-action="clear">Очистити</button>
+    <button data-action="copy">Копіювати</button>
+    <button data-action="paste">Вставити</button>
+  </div>
+
+  <script type="module" src="js/app.js?v=1.0.0"></script>
+</body>
+</html>

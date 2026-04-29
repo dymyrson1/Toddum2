@@ -1,0 +1,267 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #1f2933;
+  --muted: #6b7280;
+  --border: #d7dee6;
+  --header: #eef2f6;
+  --accent: #2563eb;
+  --accent-soft: #eef4ff;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --shadow: 0 10px 30px rgba(31, 41, 51, 0.12);
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  padding: 24px;
+}
+
+.app-header {
+  margin-bottom: 18px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tab {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  padding: 9px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tab:hover {
+  background: var(--header);
+}
+
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.tab-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.week-btn {
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 10px;
+  padding: 8px 13px;
+  cursor: pointer;
+}
+
+.week-btn:hover {
+  background: var(--header);
+}
+
+.week-label {
+  min-width: 110px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.muted-text {
+  color: var(--muted);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.settings-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fbfcfd;
+}
+
+.settings-card h3 {
+  margin: 0 0 12px;
+}
+
+.settings-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.settings-form input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 10px;
+  font-size: 14px;
+}
+
+.settings-form button,
+.settings-item button {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 9px;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+
+.settings-form button:hover,
+.settings-item button:hover {
+  background: var(--header);
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: white;
+}
+
+.settings-item span {
+  overflow-wrap: anywhere;
+}
+
+.settings-item button {
+  color: var(--danger);
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding: 14px;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-form {
+    flex-direction: column;
+  }
+}
+
+.analytics-week {
+  margin-bottom: 16px;
+  color: var(--muted);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.analytics-card {
+  border: 1px solid var(--border);
+  background: #fbfcfd;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.analytics-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 24px;
+}
+
+.analytics-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.analytics-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.analytics-section {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  background: #fbfcfd;
+}
+
+.analytics-section h3 {
+  margin: 0 0 12px;
+}
+
+.analytics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.analytics-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  padding: 9px 10px;
+}
+
+.analytics-row span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .analytics-grid {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .analytics-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
+.week-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

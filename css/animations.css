@@ -1,0 +1,63 @@
+.week-slide-out-left {
+  animation: weekSlideOutLeft 0.18s ease forwards;
+}
+
+.week-slide-out-right {
+  animation: weekSlideOutRight 0.18s ease forwards;
+}
+
+.week-slide-in-right {
+  animation: weekSlideInRight 0.22s ease forwards;
+}
+
+.week-slide-in-left {
+  animation: weekSlideInLeft 0.22s ease forwards;
+}
+
+@keyframes weekSlideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@keyframes weekSlideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes weekSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes weekSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
