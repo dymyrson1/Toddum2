@@ -4,6 +4,7 @@ import { setSyncStatus } from './sync/sync-status.js'
 import { DELIVERY_DAYS, MAX_LOGS } from './app/constants.js'
 
 import { normalizeName, normalizeLooseText } from './utils/text.js'
+import { createRowId } from './utils/id.js'
 
 import {
   getISOWeek,
@@ -29,6 +30,8 @@ import {
   normalizePackagingOptions,
   parsePackagingOption
 } from './products/packaging-utils.js'
+
+import { createLogEntry } from './logs/log-utils.js'
 
 export const state = {
   currentTab: 'orders',
@@ -738,20 +741,12 @@ function ensureCustomersFromOrderRows() {
 }
 
 function addLog(action, details = {}) {
-  const log = {
-    id: createLogId(),
-    createdAt: new Date().toISOString(),
-    weekId: getCurrentWeekId(),
-    weekLabel: getCurrentWeekLabel(),
+  const log = createLogEntry({
     action,
-    actionLabel: details.actionLabel || action,
-    customerName: details.customerName || '',
-    deliveryDay: details.deliveryDay || '',
-    productName: details.productName || '',
-    oldValue: details.oldValue || '',
-    newValue: details.newValue || '',
-    note: details.note || ''
-  }
+    details,
+    weekId: getCurrentWeekId(),
+    weekLabel: getCurrentWeekLabel()
+  })
 
   state.logs = [log, ...(state.logs || [])].slice(0, MAX_LOGS)
 }
@@ -970,14 +965,6 @@ function createMigratedRow(customerName) {
       B: false
     }
   }
-}
-
-function createRowId() {
-  return `row_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-}
-
-function createLogId() {
-  return `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
 function updateCurrentYearWeek() {
