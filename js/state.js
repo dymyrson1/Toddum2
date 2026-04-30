@@ -4,7 +4,6 @@ import { setSyncStatus } from './sync/sync-status.js'
 import { DELIVERY_DAYS, MAX_LOGS } from './app/constants.js'
 
 import { normalizeName, normalizeLooseText } from './utils/text.js'
-import { createRowId } from './utils/id.js'
 
 import {
   getISOWeek,
@@ -32,6 +31,12 @@ import {
 } from './products/packaging-utils.js'
 
 import { createLogEntry } from './logs/log-utils.js'
+
+import {
+  createEmptyOrderRow,
+  createMigratedOrderRow,
+  normalizeOrderRows
+} from './orders/order-utils.js'
 
 export const state = {
   currentTab: 'orders',
@@ -145,18 +150,7 @@ export function goToNextWeek() {
 
 export function addOrderRow() {
   const rows = getCurrentRows()
-
-  const row = {
-    id: createRowId(),
-    customerName: '',
-    deliveryDay: '',
-    merknad: '',
-    cells: {},
-    checks: {
-      A: false,
-      B: false
-    }
-  }
+  const row = createEmptyOrderRow()
 
   rows.push(row)
 
@@ -815,17 +809,7 @@ function normalizeAllWeekData() {
 }
 
 function normalizeRows(rows) {
-  return rows.map(row => ({
-    id: row.id || createRowId(),
-    customerName: row.customerName || '',
-    deliveryDay: row.deliveryDay || '',
-    merknad: row.merknad || '',
-    cells: normalizeRowCells(row.cells || {}),
-    checks: {
-      A: Boolean(row.checks?.A),
-      B: Boolean(row.checks?.B)
-    }
-  }))
+  return normalizeOrderRows(rows, normalizeRowCells)
 }
 
 function normalizeRowCells(cells) {
@@ -928,8 +912,7 @@ function migrateCellsToRows(cells) {
       const customerName = key.replace('__checks', '')
 
       if (!rowsMap.has(customerName)) {
-        rowsMap.set(customerName, createMigratedRow(customerName))
-      }
+rowsMap.set(customerName, createMigratedOrderRow(customerName))      }
 
       rowsMap.get(customerName).checks = {
         A: Boolean(value.A),
@@ -944,27 +927,12 @@ function migrateCellsToRows(cells) {
     if (!customerName || !productName) return
 
     if (!rowsMap.has(customerName)) {
-      rowsMap.set(customerName, createMigratedRow(customerName))
-    }
+rowsMap.set(customerName, createMigratedOrderRow(customerName))    }
 
     rowsMap.get(customerName).cells[productName] = value
   })
 
   return Array.from(rowsMap.values())
-}
-
-function createMigratedRow(customerName) {
-  return {
-    id: createRowId(),
-    customerName,
-    deliveryDay: '',
-    merknad: '',
-    cells: {},
-    checks: {
-      A: false,
-      B: false
-    }
-  }
 }
 
 function updateCurrentYearWeek() {
