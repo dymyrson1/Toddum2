@@ -359,7 +359,16 @@ function formatDeliveryItem(item) {
   if (packageName === 'kg' || labelLower === 'kg') {
     return `${formatNumber(qty)}kg`
   }
-
+if (
+  packageName === 'l' ||
+  packageName === 'liter' ||
+  packageName === 'literer' ||
+  labelLower === 'l' ||
+  labelLower === 'liter' ||
+  labelLower === 'literer'
+) {
+  return `${formatNumber(qty)}l`
+}
   if (packageName.includes('spann') || labelLower.includes('spann')) {
     return `${formatNumber(qty)} spann`
   }

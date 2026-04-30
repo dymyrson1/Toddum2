@@ -2644,3 +2644,112 @@ html[data-theme="dark"] #leveringTab .delivery-row-done:hover td {
     align-self: flex-end;
   }
 }
+/* ===== PRODUCT ADMIN TABLE ===== */
+
+.products-admin-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.products-admin-head,
+.products-admin-row {
+  display: grid;
+  grid-template-columns: 56px minmax(160px, 1fr) 110px 70px;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.products-admin-head {
+  background: var(--header);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.products-admin-row:last-child {
+  border-bottom: none;
+}
+
+.products-admin-row strong {
+  overflow-wrap: anywhere;
+}
+
+.products-admin-number {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.products-admin-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.move-product-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.move-product-btn:hover:not(:disabled) {
+  background: var(--header);
+}
+
+.move-product-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.products-admin-row button[data-remove-product] {
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 5px 6px;
+  border-radius: 7px;
+}
+
+.products-admin-row button[data-remove-product]:hover {
+  background: var(--danger-soft);
+}
+
+@media (max-width: 760px) {
+  .products-admin-head,
+  .products-admin-row {
+    grid-template-columns: 42px minmax(130px, 1fr) 88px 56px;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .move-product-btn {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.settings-products-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.3fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.settings-products-layout .settings-section {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .settings-products-layout {
+    grid-template-columns: 1fr;
+  }
+}

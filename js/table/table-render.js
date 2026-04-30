@@ -159,6 +159,17 @@ function renderCellItem(item) {
     return `${escapeHtml(formatNumber(qty))}kg`
   }
 
+  if (
+    packageName === 'l' ||
+    packageName === 'liter' ||
+    packageName === 'literer' ||
+    labelLower === 'l' ||
+    labelLower === 'liter' ||
+    labelLower === 'literer'
+  ) {
+    return `${escapeHtml(formatNumber(qty))}l`
+  }
+
   if (packageName.includes('spann') || labelLower.includes('spann')) {
     return `${escapeHtml(formatNumber(qty))} spann`
   }

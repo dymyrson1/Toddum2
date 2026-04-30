@@ -560,9 +560,77 @@ export function removeProduct(name) {
 }
 
 export function getPackagingOptionsForProduct(productName) {
-  const options = state.productPackagingTypes[productName]
+  const customOptions = state.productPackagingTypes?.[productName] || []
+  const defaultOption = getDefaultPackagingOptionForProduct(productName)
 
-  return normalizePackagingOptions(options || [createDefaultPackagingOption()])
+  return [
+    defaultOption,
+    ...customOptions
+      .map(option => normalizePackagingOption(option))
+      .filter(Boolean)
+  ].sort((a, b) => {
+    return Number(a.weightKg || 0) - Number(b.weightKg || 0)
+  })
+}
+
+function normalizePackagingOption(option) {
+  if (!option) return null
+
+  const packageName = String(
+    option.packageName ||
+    option.name ||
+    option.label ||
+    ''
+  ).trim()
+
+  if (!packageName) return null
+
+  const weightKg = Number(option.weightKg)
+
+  return {
+    id: option.id || createPackagingOptionId(packageName),
+    packageName,
+    label: option.label || packageName,
+    weightKg: Number.isFinite(weightKg) && weightKg > 0 ? weightKg : 1,
+    isDefault: Boolean(option.isDefault)
+  }
+}
+
+function getDefaultPackagingOptionForProduct(productName) {
+  if (isLiterProduct(productName)) {
+    return {
+      id: 'default_l',
+      packageName: 'l',
+      label: 'l',
+      weightKg: 1,
+      isDefault: true
+    }
+  }
+
+  return {
+    id: 'default_kg',
+    packageName: 'kg',
+    label: 'kg',
+    weightKg: 1,
+    isDefault: true
+  }
+}
+
+function isLiterProduct(productName) {
+  return normalizeProductNameForUnit(productName) === 'melk'
+}
+
+function normalizeProductNameForUnit(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+}
+
+
+function normalizeProductName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
 }
 
 export function getPackagingTypesForProduct(productName) {
@@ -1235,4 +1303,40 @@ function getISOWeek(dateInput) {
     year: date.getUTCFullYear(),
     week
   }
+}
+
+export function moveProduct(productName, direction) {
+  const currentIndex = state.products.indexOf(productName)
+
+  if (currentIndex === -1) return false
+
+  const targetIndex = direction === 'up'
+    ? currentIndex - 1
+    : currentIndex + 1
+
+  if (targetIndex < 0 || targetIndex >= state.products.length) {
+    return false
+  }
+
+  const oldValue = state.products.join(', ')
+
+  const products = [...state.products]
+  const currentProduct = products[currentIndex]
+
+  products[currentIndex] = products[targetIndex]
+  products[targetIndex] = currentProduct
+
+  state.products = products
+
+  const newValue = state.products.join(', ')
+
+  addLog('move_product', {
+    actionLabel: 'Endret produktrekkefølge',
+    productName,
+    oldValue,
+    newValue
+  })
+
+  persistState()
+  return true
 }

@@ -6,6 +6,7 @@ import {
   removeCustomer,
   addProduct,
   removeProduct,
+  moveProduct,
   addProductPackagingOption,
   removeProductPackagingOption,
   getPackagingOptionsForProduct
@@ -90,33 +91,35 @@ export function renderSettingsView(container) {
           <div id="customersList" class="customer-admin-table-wrap"></div>
         </section>
 
-        <section class="settings-section">
-          <div class="settings-section-header">
-            <h3>Produkter</h3>
-            <span>${state.products.length} registrert</span>
-          </div>
+        <div class="settings-products-layout settings-section-wide">
+          <section class="settings-section">
+            <div class="settings-section-header">
+              <h3>Produkter</h3>
+              <span>${state.products.length} registrert</span>
+            </div>
 
-          <form id="productForm" class="settings-inline-form">
-            <input
-              id="productInput"
-              type="text"
-              placeholder="Nytt produkt"
-              autocomplete="off"
-            >
-            <button type="submit">Legg til</button>
-          </form>
+            <form id="productForm" class="settings-inline-form">
+              <input
+                id="productInput"
+                type="text"
+                placeholder="Nytt produkt"
+                autocomplete="off"
+              >
+              <button type="submit">Legg til</button>
+            </form>
 
-          <div id="productsList" class="settings-compact-list"></div>
-        </section>
+            <div id="productsList" class="settings-compact-list"></div>
+          </section>
 
-        <section class="settings-section settings-section-wide">
-          <div class="settings-section-header">
-            <h3>Emballasje per produkt</h3>
-            <span>Standard: kg</span>
-          </div>
+          <section class="settings-section">
+            <div class="settings-section-header">
+              <h3>Emballasje per produkt</h3>
+              <span>Standard: kg</span>
+            </div>
 
-          ${renderPackagingManager(selectedProduct)}
-        </section>
+            ${renderPackagingManager(selectedProduct)}
+          </section>
+        </div>
 
         <section class="settings-section">
           <div class="settings-section-header">
@@ -320,12 +323,53 @@ function renderProductsList() {
     return
   }
 
-  list.innerHTML = state.products.map(product => `
-    <div class="settings-list-row">
-      <span>${escapeHtml(product)}</span>
-      <button data-remove-product="${escapeHtml(product)}">Slett</button>
+  list.innerHTML = `
+    <div class="products-admin-table">
+      <div class="products-admin-head">
+        <span>Nr.</span>
+        <span>Produkt</span>
+        <span>Rekkefølge</span>
+        <span></span>
+      </div>
+
+      ${state.products.map((product, index) => `
+        <div class="products-admin-row">
+          <span class="products-admin-number">${index + 1}</span>
+
+          <strong>${escapeHtml(product)}</strong>
+
+          <span class="products-admin-actions">
+            <button
+              class="move-product-btn"
+              data-move-product="${escapeHtml(product)}"
+              data-move-direction="up"
+              ${index === 0 ? 'disabled' : ''}
+              title="Flytt opp"
+            >
+              ↑
+            </button>
+
+            <button
+              class="move-product-btn"
+              data-move-product="${escapeHtml(product)}"
+              data-move-direction="down"
+              ${index === state.products.length - 1 ? 'disabled' : ''}
+              title="Flytt ned"
+            >
+              ↓
+            </button>
+          </span>
+
+          <button data-remove-product="${escapeHtml(product)}">
+            Slett
+          </button>
+        </div>
+      `).join('')}
     </div>
-  `).join('')
+  `
+
+  attachProductEvents()
+  attachProductMoveEvents()
 }
 
 function renderPackagingList(productName) {
@@ -489,6 +533,21 @@ function attachProductEvents() {
 
       removeProduct(name)
       renderTab()
+    }
+  })
+}
+
+function attachProductMoveEvents() {
+  document.querySelectorAll('[data-move-product]').forEach(button => {
+    button.onclick = () => {
+      const moved = moveProduct(
+        button.dataset.moveProduct,
+        button.dataset.moveDirection
+      )
+
+      if (moved) {
+        renderTab()
+      }
     }
   })
 }
