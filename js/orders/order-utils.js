@@ -25,7 +25,7 @@ export function createMigratedOrderRow(customerName) {
 export function normalizeOrderRows(rows, normalizeCells) {
   const list = Array.isArray(rows) ? rows : []
 
-  return list.map(row => normalizeOrderRow(row, normalizeCells))
+  return list.map((row) => normalizeOrderRow(row, normalizeCells))
 }
 
 export function normalizeOrderRow(row, normalizeCells) {

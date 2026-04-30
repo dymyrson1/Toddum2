@@ -13,7 +13,7 @@ export function findCustomerByName(customers, name) {
   if (!cleanName) return null
 
   return (
-    customers.find(customer => {
+    customers.find((customer) => {
       return normalizeName(getCustomerNameValue(customer)).toLowerCase() === cleanName
     }) || null
   )
@@ -24,7 +24,7 @@ export function customerNameExists(customers, name, excludeCustomerId = null) {
 
   if (!cleanName) return false
 
-  return customers.some(customer => {
+  return customers.some((customer) => {
     if (excludeCustomerId && customer.id === excludeCustomerId) {
       return false
     }
@@ -59,10 +59,10 @@ export function createCustomerFromName(name, deliveryOrder) {
 export function collectCustomerNamesFromWeeks(weeks) {
   const names = new Set()
 
-  Object.values(weeks || {}).forEach(week => {
+  Object.values(weeks || {}).forEach((week) => {
     if (!Array.isArray(week.rows)) return
 
-    week.rows.forEach(row => {
+    week.rows.forEach((row) => {
       const name = normalizeName(row.customerName)
 
       if (name) {

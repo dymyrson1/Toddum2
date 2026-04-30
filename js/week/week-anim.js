@@ -13,13 +13,9 @@ export function animateWeekChange(direction, onMiddle) {
     'week-slide-in-right'
   ]
 
-  const outClass = direction === 'next'
-    ? 'week-slide-out-left'
-    : 'week-slide-out-right'
+  const outClass = direction === 'next' ? 'week-slide-out-left' : 'week-slide-out-right'
 
-  const inClass = direction === 'next'
-    ? 'week-slide-in-right'
-    : 'week-slide-in-left'
+  const inClass = direction === 'next' ? 'week-slide-in-right' : 'week-slide-in-left'
 
   container.classList.remove(...animationClasses)
   container.classList.add(outClass)

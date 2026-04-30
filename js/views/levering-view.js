@@ -38,8 +38,8 @@ function getLeveringData() {
   const rows = getCurrentRows()
 
   const deliveries = rows
-    .filter(row => hasOrderContent(row))
-    .map(row => {
+    .filter((row) => hasOrderContent(row))
+    .map((row) => {
       const customer = findCustomerForRow(row.customerName)
       const deliveryDay = row.deliveryDay || 'Uten leveringsdag'
 
@@ -67,7 +67,7 @@ function getLeveringData() {
 function groupDeliveriesByDay(deliveries) {
   const groups = new Map()
 
-  deliveries.forEach(delivery => {
+  deliveries.forEach((delivery) => {
     if (!groups.has(delivery.deliveryDay)) {
       groups.set(delivery.deliveryDay, [])
     }
@@ -76,18 +76,15 @@ function groupDeliveriesByDay(deliveries) {
   })
 
   return getDeliveryDayOrder()
-    .filter(day => groups.has(day))
-    .map(day => ({
+    .filter((day) => groups.has(day))
+    .map((day) => ({
       day,
       deliveries: groups.get(day).sort(sortDeliveriesByCustomerNumber)
     }))
 }
 
 function getDeliveryDayOrder() {
-  return [
-    ...state.deliveryDays,
-    'Uten leveringsdag'
-  ]
+  return [...state.deliveryDays, 'Uten leveringsdag']
 }
 
 function getVisibleGroups(groups) {
@@ -95,11 +92,11 @@ function getVisibleGroups(groups) {
     return groups
   }
 
-  return groups.filter(group => group.day === selectedDeliveryDay)
+  return groups.filter((group) => group.day === selectedDeliveryDay)
 }
 
 function renderDayFilter(data) {
-  const availableDays = new Set(data.groups.map(group => group.day))
+  const availableDays = new Set(data.groups.map((group) => group.day))
 
   const filterItems = [
     {
@@ -108,21 +105,23 @@ function renderDayFilter(data) {
       count: data.deliveries.length
     },
     ...getDeliveryDayOrder()
-      .filter(day => availableDays.has(day))
-      .map(day => ({
+      .filter((day) => availableDays.has(day))
+      .map((day) => ({
         label: day,
         value: day,
-        count: data.groups.find(group => group.day === day)?.deliveries.length || 0
+        count: data.groups.find((group) => group.day === day)?.deliveries.length || 0
       }))
   ]
 
-  if (!filterItems.some(item => item.value === selectedDeliveryDay)) {
+  if (!filterItems.some((item) => item.value === selectedDeliveryDay)) {
     selectedDeliveryDay = 'Alle'
   }
 
   return `
     <div class="delivery-day-filter">
-      ${filterItems.map(item => `
+      ${filterItems
+        .map(
+          (item) => `
         <button
           class="${item.value === selectedDeliveryDay ? 'active' : ''}"
           data-delivery-day-filter="${escapeHtml(item.value)}"
@@ -130,7 +129,9 @@ function renderDayFilter(data) {
           <span>${escapeHtml(item.label)}</span>
           <strong>${item.count}</strong>
         </button>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   `
 }
@@ -147,7 +148,9 @@ function renderDeliveryGroups(groups) {
   if (selectedDeliveryDay === 'Alle') {
     return `
       <div class="delivery-groups">
-        ${groups.map(group => `
+        ${groups
+          .map(
+            (group) => `
           <section class="delivery-group">
             <div class="delivery-group-header">
               <h3>${escapeHtml(group.day)}</h3>
@@ -156,7 +159,9 @@ function renderDeliveryGroups(groups) {
 
             ${renderDeliveryTable(group.deliveries)}
           </section>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>
     `
   }
@@ -181,7 +186,9 @@ function renderDeliveryTable(deliveries) {
         </thead>
 
         <tbody>
-          ${deliveries.map(delivery => `
+          ${deliveries
+            .map(
+              (delivery) => `
             <tr class="${getDeliveryRowClass(delivery)}">
               <td class="delivery-number">
                 ${delivery.deliveryOrder === null ? '—' : escapeHtml(delivery.deliveryOrder)}
@@ -220,7 +227,9 @@ function renderDeliveryTable(deliveries) {
 
               <td>${escapeHtml(delivery.phone || '—')}</td>
             </tr>
-          `).join('')}
+          `
+            )
+            .join('')}
         </tbody>
       </table>
     </div>
@@ -246,24 +255,26 @@ function getDeliveryRowClass(delivery) {
 function attachLeveringEvents() {
   const container = document.getElementById('tabContent')
 
-  document.querySelectorAll('[data-delivery-day-filter]').forEach(button => {
+  document.querySelectorAll('[data-delivery-day-filter]').forEach((button) => {
     button.onclick = () => {
       selectedDeliveryDay = button.dataset.deliveryDayFilter
       renderLeveringView(container)
     }
   })
 
-  document.querySelectorAll('[data-delivery-row-id][data-delivery-check]').forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      updateRowCheck(
-        checkbox.dataset.deliveryRowId,
-        checkbox.dataset.deliveryCheck,
-        checkbox.checked
-      )
+  document
+    .querySelectorAll('[data-delivery-row-id][data-delivery-check]')
+    .forEach((checkbox) => {
+      checkbox.addEventListener('change', () => {
+        updateRowCheck(
+          checkbox.dataset.deliveryRowId,
+          checkbox.dataset.deliveryCheck,
+          checkbox.checked
+        )
 
-      renderLeveringView(container)
+        renderLeveringView(container)
+      })
     })
-  })
 }
 
 function findCustomerForRow(customerName) {
@@ -271,9 +282,11 @@ function findCustomerForRow(customerName) {
 
   if (!cleanRowName) return null
 
-  return state.customers.find(customer => {
-    return normalizeText(getCustomerName(customer)) === cleanRowName
-  }) || null
+  return (
+    state.customers.find((customer) => {
+      return normalizeText(getCustomerName(customer)) === cleanRowName
+    }) || null
+  )
 }
 
 function getDeliveryOrder(customer) {
@@ -306,7 +319,7 @@ function sortDeliveriesByCustomerNumber(a, b) {
 }
 
 function hasOrderContent(row) {
-  return Object.values(row.cells || {}).some(cell => {
+  return Object.values(row.cells || {}).some((cell) => {
     return Array.isArray(cell.items) && cell.items.length > 0
   })
 }
@@ -316,10 +329,7 @@ function getDeliveryItems(row) {
     .map(([productName, cell]) => {
       const items = Array.isArray(cell.items) ? cell.items : []
 
-      const itemText = items
-        .map(formatDeliveryItem)
-        .filter(Boolean)
-        .join(', ')
+      const itemText = items.map(formatDeliveryItem).filter(Boolean).join(', ')
 
       if (!itemText) return null
 
@@ -338,12 +348,16 @@ function renderDeliveryItems(items) {
 
   return `
     <div class="delivery-items-list">
-      ${items.map(item => `
+      ${items
+        .map(
+          (item) => `
         <div class="delivery-item-line">
           <strong>${escapeHtml(item.productName)}:</strong>
           <span>${escapeHtml(item.itemText)}</span>
         </div>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   `
 }
@@ -359,16 +373,16 @@ function formatDeliveryItem(item) {
   if (packageName === 'kg' || labelLower === 'kg') {
     return `${formatNumber(qty)}kg`
   }
-if (
-  packageName === 'l' ||
-  packageName === 'liter' ||
-  packageName === 'literer' ||
-  labelLower === 'l' ||
-  labelLower === 'liter' ||
-  labelLower === 'literer'
-) {
-  return `${formatNumber(qty)}l`
-}
+  if (
+    packageName === 'l' ||
+    packageName === 'liter' ||
+    packageName === 'literer' ||
+    labelLower === 'l' ||
+    labelLower === 'liter' ||
+    labelLower === 'literer'
+  ) {
+    return `${formatNumber(qty)}l`
+  }
   if (packageName.includes('spann') || labelLower.includes('spann')) {
     return `${formatNumber(qty)} spann`
   }

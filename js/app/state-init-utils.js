@@ -11,7 +11,7 @@ export function normalizeRuntimeStateAfterLoad(state) {
 }
 
 export function normalizeAllWeeksInState(state, normalizeRows) {
-  Object.values(state.weeks).forEach(week => {
+  Object.values(state.weeks).forEach((week) => {
     if (!Array.isArray(week.rows)) {
       week.rows = []
     }
@@ -23,7 +23,7 @@ export function normalizeAllWeeksInState(state, normalizeRows) {
 export function ensureCustomersFromOrderRowsInState(state, ensureCustomerExists) {
   const customerNames = collectCustomerNamesFromWeeks(state.weeks)
 
-  customerNames.forEach(customerName => {
+  customerNames.forEach((customerName) => {
     ensureCustomerExists(customerName)
   })
 }

@@ -207,11 +207,7 @@ export function addProductPackagingOption(productName, packageName, weightKgInpu
 }
 
 export function removeProductPackagingOption(productName, optionId) {
-  return removeProductPackagingOptionAction(
-    createActionContext(),
-    productName,
-    optionId
-  )
+  return removeProductPackagingOptionAction(createActionContext(), productName, optionId)
 }
 
 export function clearLogs() {

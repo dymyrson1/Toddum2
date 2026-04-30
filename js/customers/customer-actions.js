@@ -75,7 +75,7 @@ export function addCustomerAction(context, customerData) {
 
 export function updateCustomerAction(context, customerId, patch) {
   const { state, addLog, persistState } = context
-  const customer = state.customers.find(item => item.id === customerId)
+  const customer = state.customers.find((item) => item.id === customerId)
 
   if (!customer) return false
 
@@ -103,7 +103,7 @@ export function updateCustomerAction(context, customerId, patch) {
 
   state.customers = normalizeCustomers(state.customers)
 
-  const updatedCustomer = state.customers.find(item => item.id === customerId)
+  const updatedCustomer = state.customers.find((item) => item.id === customerId)
   const newValue = formatCustomerForLog(updatedCustomer || customer)
 
   if (oldValue === newValue) return true
@@ -123,7 +123,7 @@ export function updateCustomerAction(context, customerId, patch) {
 export function moveCustomerAction(context, customerId, direction) {
   const { state, addLog, persistState } = context
   const customers = normalizeCustomers(state.customers)
-  const currentIndex = customers.findIndex(customer => customer.id === customerId)
+  const currentIndex = customers.findIndex((customer) => customer.id === customerId)
 
   if (currentIndex === -1) return false
 
@@ -158,11 +158,11 @@ export function moveCustomerAction(context, customerId, direction) {
 
 export function removeCustomerAction(context, customerId) {
   const { state, addLog, persistState } = context
-  const customer = state.customers.find(item => item.id === customerId)
+  const customer = state.customers.find((item) => item.id === customerId)
 
   if (!customer) return false
 
-  state.customers = state.customers.filter(item => item.id !== customerId)
+  state.customers = state.customers.filter((item) => item.id !== customerId)
 
   addLog('remove_customer', {
     actionLabel: 'Fjernet kunde fra listen',

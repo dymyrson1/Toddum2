@@ -1,8 +1,4 @@
-import {
-  state,
-  getCurrentRows,
-  getCurrentWeekLabel
-} from '../state.js'
+import { state, getCurrentRows, getCurrentWeekLabel } from '../state.js'
 
 export function renderAnalyticsView(container) {
   const analytics = buildAnalyticsData()
@@ -58,7 +54,7 @@ function buildAnalyticsData() {
   let packedCount = 0
   let deliveredCount = 0
 
-  orderRows.forEach(row => {
+  orderRows.forEach((row) => {
     const customerName = row.customerName || 'Uten kunde'
     const deliveryDay = row.deliveryDay || 'Uten leveringsdag'
     const rowWeightKg = getRowWeight(row)
@@ -96,11 +92,13 @@ function buildAnalyticsData() {
     }
   })
 
-  const customerList = [...customerStats.values()]
-    .sort((a, b) => b.totalWeightKg - a.totalWeightKg)
+  const customerList = [...customerStats.values()].sort(
+    (a, b) => b.totalWeightKg - a.totalWeightKg
+  )
 
-  const productList = [...productStats.values()]
-    .sort((a, b) => b.totalWeightKg - a.totalWeightKg)
+  const productList = [...productStats.values()].sort(
+    (a, b) => b.totalWeightKg - a.totalWeightKg
+  )
 
   const deliveryDayList = sortDeliveryDays([...deliveryDayStats.values()])
 
@@ -200,14 +198,18 @@ function renderDeliveryDaySection(data) {
                   </tr>
                 </thead>
                 <tbody>
-                  ${data.deliveryDayList.map(day => `
+                  ${data.deliveryDayList
+                    .map(
+                      (day) => `
                     <tr>
                       <td><strong>${escapeHtml(day.deliveryDay)}</strong></td>
                       <td>${day.customerCount}</td>
                       <td>${day.orderLineCount}</td>
                       <td>${formatKg(day.totalWeightKg)}</td>
                     </tr>
-                  `).join('')}
+                  `
+                    )
+                    .join('')}
                 </tbody>
               </table>
             </div>
@@ -232,12 +234,16 @@ function renderTopCustomersSection(data) {
           ? renderEmpty('Ingen kunder med ordre.')
           : `
             <div class="analytics-rank-list">
-              ${topCustomers.map((customer, index) => renderRankRow({
-                rank: index + 1,
-                title: customer.customerName,
-                meta: `${customer.orderLineCount} ordrelinjer`,
-                value: formatKg(customer.totalWeightKg)
-              })).join('')}
+              ${topCustomers
+                .map((customer, index) =>
+                  renderRankRow({
+                    rank: index + 1,
+                    title: customer.customerName,
+                    meta: `${customer.orderLineCount} ordrelinjer`,
+                    value: formatKg(customer.totalWeightKg)
+                  })
+                )
+                .join('')}
             </div>
           `
       }
@@ -260,12 +266,16 @@ function renderTopProductsSection(data) {
           ? renderEmpty('Ingen produkter med ordre.')
           : `
             <div class="analytics-rank-list">
-              ${topProducts.map((product, index) => renderRankRow({
-                rank: index + 1,
-                title: product.productName,
-                meta: `${product.orderLineCount} ordrelinjer`,
-                value: formatKg(product.totalWeightKg)
-              })).join('')}
+              ${topProducts
+                .map((product, index) =>
+                  renderRankRow({
+                    rank: index + 1,
+                    title: product.productName,
+                    meta: `${product.orderLineCount} ordrelinjer`,
+                    value: formatKg(product.totalWeightKg)
+                  })
+                )
+                .join('')}
             </div>
           `
       }
@@ -310,12 +320,16 @@ function renderProblemsSection(data) {
       </div>
 
       <div class="analytics-problem-list">
-        ${problemRows.map(problem => `
+        ${problemRows
+          .map(
+            (problem) => `
           <div class="analytics-problem-row is-${problem.severity}">
             <span>${escapeHtml(problem.label)}</span>
             <strong>${problem.count}</strong>
           </div>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>
     </section>
   `
@@ -379,11 +393,11 @@ function addDeliveryDayStat(map, deliveryDay, weightKg, lineCount) {
 }
 
 function addProductStats(map, row) {
-  state.products.forEach(productName => {
+  state.products.forEach((productName) => {
     const cell = row.cells?.[productName]
     const items = Array.isArray(cell?.items) ? cell.items : []
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const qty = Number(item.qty) || 0
       const weightKg = Number(item.weightKg) || getFallbackWeight(item)
 
@@ -408,11 +422,11 @@ function addProductStats(map, row) {
 function getRowWeight(row) {
   let total = 0
 
-  state.products.forEach(productName => {
+  state.products.forEach((productName) => {
     const cell = row.cells?.[productName]
     const items = Array.isArray(cell?.items) ? cell.items : []
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const qty = Number(item.qty) || 0
       const weightKg = Number(item.weightKg) || getFallbackWeight(item)
 
@@ -426,28 +440,25 @@ function getRowWeight(row) {
 function getRowLineCount(row) {
   let count = 0
 
-  state.products.forEach(productName => {
+  state.products.forEach((productName) => {
     const cell = row.cells?.[productName]
     const items = Array.isArray(cell?.items) ? cell.items : []
 
-    count += items.filter(item => Number(item.qty) > 0).length
+    count += items.filter((item) => Number(item.qty) > 0).length
   })
 
   return count
 }
 
 function hasOrderContent(row) {
-  return state.products.some(productName => {
+  return state.products.some((productName) => {
     const cell = row.cells?.[productName]
     return Array.isArray(cell?.items) && cell.items.length > 0
   })
 }
 
 function sortDeliveryDays(days) {
-  const order = [
-    ...state.deliveryDays,
-    'Uten leveringsdag'
-  ]
+  const order = [...state.deliveryDays, 'Uten leveringsdag']
 
   return days.sort((a, b) => {
     const indexA = order.indexOf(a.deliveryDay)

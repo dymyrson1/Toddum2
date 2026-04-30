@@ -1,9 +1,4 @@
-import {
-  getISOWeek,
-  getWeekId,
-  getWeekLabel,
-  shiftDateByWeeks
-} from './week-utils.js'
+import { getISOWeek, getWeekId, getWeekLabel, shiftDateByWeeks } from './week-utils.js'
 
 export function updateCurrentYearWeekInState(state) {
   const result = getISOWeek(state.currentDate)
@@ -39,9 +34,7 @@ export function ensureWeekExistsInState({
   }
 
   if (!Array.isArray(state.weeks[weekId].rows)) {
-    state.weeks[weekId].rows = migrateCellsToOrderRows(
-      state.weeks[weekId].cells || {}
-    )
+    state.weeks[weekId].rows = migrateCellsToOrderRows(state.weeks[weekId].cells || {})
 
     delete state.weeks[weekId].cells
   }

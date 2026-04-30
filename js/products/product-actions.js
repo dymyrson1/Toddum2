@@ -49,7 +49,7 @@ export function addProductAction(context, name) {
 export function removeProductAction(context, name) {
   const { state, addLog, persistState } = context
 
-  state.products = normalizeProducts(state.products).filter(product => product !== name)
+  state.products = normalizeProducts(state.products).filter((product) => product !== name)
 
   delete state.productPackagingTypes[name]
 
@@ -95,9 +95,9 @@ export function getPackagingOptionsForProductFromState(state, productName) {
   return [
     defaultOption,
     ...customOptions
-      .map(option => normalizePackagingOption(option))
+      .map((option) => normalizePackagingOption(option))
       .filter(Boolean)
-      .filter(option => !option.isDefault)
+      .filter((option) => !option.isDefault)
   ].sort((a, b) => {
     return Number(a.weightKg || 0) - Number(b.weightKg || 0)
   })
@@ -105,7 +105,7 @@ export function getPackagingOptionsForProductFromState(state, productName) {
 
 export function getPackagingTypesForProductFromState(state, productName) {
   return getPackagingOptionsForProductFromState(state, productName).map(
-    option => option.label
+    (option) => option.label
   )
 }
 
@@ -138,7 +138,7 @@ export function addProductPackagingOptionAction(
     state.productPackagingTypes[cleanProduct] = [createDefaultPackagingOption()]
   }
 
-  const exists = state.productPackagingTypes[cleanProduct].some(item => {
+  const exists = state.productPackagingTypes[cleanProduct].some((item) => {
     return parsePackagingOption(item)?.id === option.id
   })
 
@@ -171,12 +171,11 @@ export function removeProductPackagingOptionAction(context, productName, optionI
 
   if (!cleanProduct || !cleanOptionId) return false
 
-  const optionToRemove = getPackagingOptionsForProductFromState(
-    state,
-    cleanProduct
-  ).find(option => {
-    return option.id === cleanOptionId
-  })
+  const optionToRemove = getPackagingOptionsForProductFromState(state, cleanProduct).find(
+    (option) => {
+      return option.id === cleanOptionId
+    }
+  )
 
   if (optionToRemove?.isDefault) {
     alert('kg/l er standardmål og kan ikke slettes')
@@ -187,12 +186,10 @@ export function removeProductPackagingOptionAction(context, productName, optionI
     return false
   }
 
-  state.productPackagingTypes[cleanProduct] = state.productPackagingTypes[
-    cleanProduct
-  ]
-    .map(option => parsePackagingOption(option))
+  state.productPackagingTypes[cleanProduct] = state.productPackagingTypes[cleanProduct]
+    .map((option) => parsePackagingOption(option))
     .filter(Boolean)
-    .filter(option => option.id !== cleanOptionId)
+    .filter((option) => option.id !== cleanOptionId)
 
   removePackagingOptionFromWeeks(state.weeks, cleanProduct, cleanOptionId)
 

@@ -6,13 +6,13 @@ export function normalizePackagingOptions(options) {
   const list = Array.isArray(options) ? options : []
   const result = [createDefaultPackagingOption()]
 
-  list.forEach(entry => {
+  list.forEach((entry) => {
     const option = parsePackagingOption(entry)
 
     if (!option) return
     if (option.isDefault) return
 
-    const exists = result.some(item => item.id === option.id)
+    const exists = result.some((item) => item.id === option.id)
 
     if (!exists) {
       result.push(option)
@@ -27,7 +27,9 @@ export function normalizePackagingOptions(options) {
 export function normalizePackagingOption(option) {
   if (!option) return null
 
-  const packageName = String(option.packageName || option.name || option.label || '').trim()
+  const packageName = String(
+    option.packageName || option.name || option.label || ''
+  ).trim()
 
   if (!packageName) return null
 
@@ -129,7 +131,7 @@ export function getDefaultPackagingOptionForProduct(productName) {
 
 export function formatCellForLog(items) {
   return (items || [])
-    .map(item => formatItemForLog(item))
+    .map((item) => formatItemForLog(item))
     .filter(Boolean)
     .join(', ')
 }
@@ -182,7 +184,9 @@ function isLiterProduct(productName) {
 }
 
 function normalizeProductNameForUnit(value) {
-  return String(value || '').trim().toLowerCase()
+  return String(value || '')
+    .trim()
+    .toLowerCase()
 }
 
 function buildPackagingLabel(packageName, weightKg) {

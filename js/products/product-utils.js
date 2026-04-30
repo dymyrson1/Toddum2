@@ -3,7 +3,7 @@ import { normalizeName } from '../utils/text.js'
 export function normalizeProducts(products) {
   if (!Array.isArray(products)) return []
 
-  return products.map(product => normalizeName(product)).filter(Boolean)
+  return products.map((product) => normalizeName(product)).filter(Boolean)
 }
 
 export function productExists(products, productName) {
@@ -51,10 +51,10 @@ export function moveProductInList(products, productName, direction) {
 }
 
 export function removeProductFromWeeks(weeks, productName) {
-  Object.values(weeks || {}).forEach(week => {
+  Object.values(weeks || {}).forEach((week) => {
     if (!Array.isArray(week.rows)) return
 
-    week.rows.forEach(row => {
+    week.rows.forEach((row) => {
       if (row.cells) {
         delete row.cells[productName]
       }

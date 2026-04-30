@@ -43,7 +43,7 @@ describe('order-utils', () => {
         customerName: 'Kunde A',
         checks: { A: true }
       },
-      cells => cells
+      (cells) => cells
     )
 
     expect(row.id).toMatch(/^row_/)
@@ -55,7 +55,10 @@ describe('order-utils', () => {
   })
 
   it('normalizes order rows list', () => {
-    const rows = normalizeOrderRows([{ customerName: 'A' }, { customerName: 'B' }], cells => cells)
+    const rows = normalizeOrderRows(
+      [{ customerName: 'A' }, { customerName: 'B' }],
+      (cells) => cells
+    )
 
     expect(rows.length).toBe(2)
     expect(rows[0].customerName).toBe('A')

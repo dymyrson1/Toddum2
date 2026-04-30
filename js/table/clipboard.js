@@ -15,7 +15,7 @@ export function copyCell(rowId, productName) {
 
   copiedCellData = cloneData(data)
 
-  const text = data.items.map(item => formatClipboardItem(item)).join('\n')
+  const text = data.items.map((item) => formatClipboardItem(item)).join('\n')
 
   safeWriteClipboard(text)
 }

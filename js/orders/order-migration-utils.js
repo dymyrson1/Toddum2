@@ -1,7 +1,7 @@
 import { createMigratedOrderRow } from './order-utils.js'
 
 export function migrateWeeksToRows(weeks) {
-  Object.values(weeks || {}).forEach(week => {
+  Object.values(weeks || {}).forEach((week) => {
     if (Array.isArray(week.rows)) return
 
     week.rows = migrateCellsToOrderRows(week.cells || {})

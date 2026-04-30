@@ -5,7 +5,7 @@ export function renderCustomerDatalist() {
   return `
     <datalist id="customerList">
       ${state.customers
-        .map(customer => {
+        .map((customer) => {
           const name = getCustomerName(customer)
 
           if (!name) return ''
@@ -27,7 +27,7 @@ export function renderOrdersTable(rows) {
       <table class="main-table">
         ${renderTableHead()}
         <tbody>
-          ${rows.map(row => renderTableRow(row)).join('')}
+          ${rows.map((row) => renderTableRow(row)).join('')}
         </tbody>
       </table>
     </div>
@@ -43,7 +43,7 @@ function renderTableHead() {
     <thead>
       <tr>
         <th class="corner-cell">Customer</th>
-        ${state.products.map(product => renderProductHeader(product)).join('')}
+        ${state.products.map((product) => renderProductHeader(product)).join('')}
         <th class="check-column">A</th>
         <th class="check-column">B</th>
         <th class="delivery-day-column">Delivery day</th>
@@ -64,7 +64,7 @@ function renderTableRow(row) {
   return `
     <tr class="${rowClass}">
       ${renderCustomerCell(row)}
-      ${state.products.map(product => renderProductCell(row, product)).join('')}
+      ${state.products.map((product) => renderProductCell(row, product)).join('')}
       ${renderCheckCell(row, 'A')}
       ${renderCheckCell(row, 'B')}
       ${renderDeliveryDayCell(row)}
@@ -134,7 +134,7 @@ function renderDeliveryDayCell(row) {
 
 function renderDeliveryDayOptions(selectedDay) {
   return state.deliveryDays
-    .map(day => {
+    .map((day) => {
       return `
         <option value="${escapeHtml(day)}" ${day === selectedDay ? 'selected' : ''}>
           ${escapeHtml(day)}

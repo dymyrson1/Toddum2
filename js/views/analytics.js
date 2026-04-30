@@ -12,11 +12,11 @@ export function getAnalyticsData() {
   let checkedA = 0
   let checkedB = 0
 
-  state.products.forEach(product => {
+  state.products.forEach((product) => {
     productTotals[product] = 0
   })
 
-  rows.forEach(row => {
+  rows.forEach((row) => {
     const customerName = row.customerName || 'Без замовника'
 
     if (!customerTotals[customerName]) {
@@ -31,7 +31,7 @@ export function getAnalyticsData() {
 
       filledCells++
 
-      cell.items.forEach(item => {
+      cell.items.forEach((item) => {
         const qty = Number(item.qty) || 0
 
         totalItems++

@@ -22,9 +22,9 @@ export function normalizeOrderCellItems(items, options = []) {
   const used = new Set()
 
   return (items || [])
-    .map(item => normalizeOrderCellItem(item, options))
+    .map((item) => normalizeOrderCellItem(item, options))
     .filter(Boolean)
-    .filter(item => {
+    .filter((item) => {
       if (used.has(item.packageId)) return false
 
       used.add(item.packageId)
@@ -49,14 +49,14 @@ export function normalizeOrderCellItem(item, options = []) {
   let option = null
 
   if (rawId) {
-    option = options.find(entry => entry.id === rawId) || null
+    option = options.find((entry) => entry.id === rawId) || null
   }
 
   if (!option && rawType) {
     const normalizedRawType = normalizeLooseText(rawType)
 
     option =
-      options.find(entry => {
+      options.find((entry) => {
         return (
           normalizeLooseText(entry.id) === normalizedRawType ||
           normalizeLooseText(entry.packageName) === normalizedRawType ||

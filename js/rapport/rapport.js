@@ -8,7 +8,7 @@ export function getRapportData() {
   let totalWeight = 0
   let totalOrderLines = 0
 
-  rows.forEach(row => {
+  rows.forEach((row) => {
     Object.entries(row.cells || {}).forEach(([productName, cell]) => {
       if (!cell.items || cell.items.length === 0) return
 
@@ -22,7 +22,7 @@ export function getRapportData() {
 
       const productEntry = productsMap.get(productName)
 
-      cell.items.forEach(item => {
+      cell.items.forEach((item) => {
         const qty = Number(item.qty) || 0
         const weightKg = Number(item.weightKg) || 0
         const lineWeight = qty * weightKg
@@ -57,10 +57,11 @@ export function getRapportData() {
   })
 
   const products = Array.from(productsMap.values())
-    .map(product => ({
+    .map((product) => ({
       ...product,
-      packages: Array.from(product.packages.values())
-        .sort((a, b) => a.weightKg - b.weightKg || a.label.localeCompare(b.label))
+      packages: Array.from(product.packages.values()).sort(
+        (a, b) => a.weightKg - b.weightKg || a.label.localeCompare(b.label)
+      )
     }))
     .sort((a, b) => a.productName.localeCompare(b.productName))
 

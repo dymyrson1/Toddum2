@@ -39,8 +39,8 @@ describe('customer-utils', () => {
       { name: 'A', deliveryOrder: 1 }
     ])
 
-    expect(customers.map(customer => customer.name)).toEqual(['A', 'B'])
-    expect(customers.map(customer => customer.deliveryOrder)).toEqual([1, 2])
+    expect(customers.map((customer) => customer.name)).toEqual(['A', 'B'])
+    expect(customers.map((customer) => customer.deliveryOrder)).toEqual([1, 2])
   })
 
   it('normalizes customer patch', () => {

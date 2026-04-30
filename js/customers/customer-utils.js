@@ -4,8 +4,8 @@ export function normalizeCustomers(customers) {
   if (!Array.isArray(customers)) return []
 
   const normalized = customers
-    .map(customer => normalizeCustomer(customer))
-    .filter(customer => customer.name)
+    .map((customer) => normalizeCustomer(customer))
+    .filter((customer) => customer.name)
 
   normalized.sort((a, b) => {
     const orderA = Number(a.deliveryOrder) || 0

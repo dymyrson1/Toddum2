@@ -1,8 +1,4 @@
-import {
-  getCurrentWeekLabel,
-  goToPreviousWeek,
-  goToNextWeek
-} from '../state.js'
+import { getCurrentWeekLabel, goToPreviousWeek, goToNextWeek } from '../state.js'
 
 import { renderTab } from '../tabs/tabs-render.js'
 
@@ -40,13 +36,9 @@ async function changeWeekWithAnimation(direction) {
   isAnimating = true
   disableWeekButtons(true)
 
-  const outClass = direction === 'next'
-    ? 'week-slide-out-left'
-    : 'week-slide-out-right'
+  const outClass = direction === 'next' ? 'week-slide-out-left' : 'week-slide-out-right'
 
-  const inClass = direction === 'next'
-    ? 'week-slide-in-right'
-    : 'week-slide-in-left'
+  const inClass = direction === 'next' ? 'week-slide-in-right' : 'week-slide-in-left'
 
   resetAnimationClasses(content)
   content.classList.add(outClass)
@@ -105,5 +97,5 @@ function resetAnimationClasses(element) {
 }
 
 function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

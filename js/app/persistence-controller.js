@@ -18,7 +18,7 @@ export function createPersistenceController(state, options = {}) {
           console.log('Saved to Firebase')
           setSyncStatus('saved', 'Firebase: saved')
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Firebase save failed:', error)
           setSyncStatus('error', 'Firebase: save error')
         })

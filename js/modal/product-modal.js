@@ -1,8 +1,4 @@
-import {
-  getOrderCell,
-  getPackagingOptionsForProduct,
-  updateOrderCell
-} from '../state.js'
+import { getOrderCell, getPackagingOptionsForProduct, updateOrderCell } from '../state.js'
 
 import { renderTable } from '../table/table-render.js'
 import { closeModal, escapeHtml, openModalContainer } from './modal-utils.js'
@@ -70,10 +66,10 @@ function renderProductModal(modal, rowId, productName, items, options) {
 
 function renderMiniRow(item, index, items, options) {
   const usedPackageIds = new Set(
-    items.filter((_, itemIndex) => itemIndex !== index).map(entry => entry.packageId)
+    items.filter((_, itemIndex) => itemIndex !== index).map((entry) => entry.packageId)
   )
 
-  const availableOptions = options.filter(option => {
+  const availableOptions = options.filter((option) => {
     return !usedPackageIds.has(option.id) || option.id === item.packageId
   })
 
@@ -83,7 +79,7 @@ function renderMiniRow(item, index, items, options) {
         <select data-mini-package-index="${index}">
           ${availableOptions
             .map(
-              option => `
+              (option) => `
                 <option
                   value="${escapeHtml(option.id)}"
                   ${option.id === item.packageId ? 'selected' : ''}
@@ -162,10 +158,10 @@ function attachProductModalEvents(modal, rowId, productName, items, options) {
     }
   }
 
-  modal.querySelectorAll('[data-mini-package-index]').forEach(select => {
+  modal.querySelectorAll('[data-mini-package-index]').forEach((select) => {
     select.onchange = () => {
       const index = Number(select.dataset.miniPackageIndex)
-      const option = options.find(item => item.id === select.value)
+      const option = options.find((item) => item.id === select.value)
 
       if (!option || !items[index]) return
 
@@ -181,7 +177,7 @@ function attachProductModalEvents(modal, rowId, productName, items, options) {
     }
   })
 
-  modal.querySelectorAll('[data-mini-qty-index]').forEach(input => {
+  modal.querySelectorAll('[data-mini-qty-index]').forEach((input) => {
     input.oninput = () => {
       const index = Number(input.dataset.miniQtyIndex)
 
@@ -191,7 +187,7 @@ function attachProductModalEvents(modal, rowId, productName, items, options) {
     }
   })
 
-  modal.querySelectorAll('[data-remove-mini-row]').forEach(button => {
+  modal.querySelectorAll('[data-remove-mini-row]').forEach((button) => {
     button.onclick = () => {
       const index = Number(button.dataset.removeMiniRow)
 
@@ -204,8 +200,8 @@ function attachProductModalEvents(modal, rowId, productName, items, options) {
 
 function normalizeModalItems(items, options) {
   return items
-    .map(item => {
-      const option = options.find(entry => entry.id === item.packageId)
+    .map((item) => {
+      const option = options.find((entry) => entry.id === item.packageId)
 
       if (!option) return null
 
@@ -224,8 +220,8 @@ function readModalItems(items, options) {
   const used = new Set()
 
   return items
-    .map(item => {
-      const option = options.find(entry => entry.id === item.packageId)
+    .map((item) => {
+      const option = options.find((entry) => entry.id === item.packageId)
       const qty = Number(item.qty)
 
       if (!option) return null
@@ -246,7 +242,7 @@ function readModalItems(items, options) {
 }
 
 function getFirstAvailableOption(items, options) {
-  const usedPackageIds = new Set(items.map(item => item.packageId))
+  const usedPackageIds = new Set(items.map((item) => item.packageId))
 
-  return options.find(option => !usedPackageIds.has(option.id)) || null
+  return options.find((option) => !usedPackageIds.has(option.id)) || null
 }

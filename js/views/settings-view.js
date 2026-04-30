@@ -132,9 +132,13 @@ export function renderSettingsView(container) {
           </div>
 
           <div class="settings-day-list">
-            ${state.deliveryDays.map(day => `
+            ${state.deliveryDays
+              .map(
+                (day) => `
               <span>${escapeHtml(day)}</span>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </section>
       </div>
@@ -160,14 +164,18 @@ function renderPackagingManager(selectedProduct) {
       <label>
         Produkt
         <select id="packagingProductSelect">
-          ${state.products.map(product => `
+          ${state.products
+            .map(
+              (product) => `
             <option
               value="${escapeHtml(product)}"
               ${product === selectedProduct ? 'selected' : ''}
             >
               ${escapeHtml(product)}
             </option>
-          `).join('')}
+          `
+            )
+            .join('')}
         </select>
       </label>
     </div>
@@ -229,7 +237,9 @@ function renderCustomersList() {
       </thead>
 
       <tbody>
-        ${customers.map((customer, index) => `
+        ${customers
+          .map(
+            (customer, index) => `
           <tr>
             <td>
               <input
@@ -304,7 +314,9 @@ function renderCustomersList() {
               <button data-remove-customer="${escapeHtml(customer.id)}">Slett</button>
             </td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
   `
@@ -332,7 +344,9 @@ function renderProductsList() {
         <span></span>
       </div>
 
-      ${state.products.map((product, index) => `
+      ${state.products
+        .map(
+          (product, index) => `
         <div class="products-admin-row">
           <span class="products-admin-number">${index + 1}</span>
 
@@ -364,7 +378,9 @@ function renderProductsList() {
             Slett
           </button>
         </div>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   `
 
@@ -386,7 +402,9 @@ function renderPackagingList(productName) {
         <span></span>
       </div>
 
-      ${options.map(option => `
+      ${options
+        .map(
+          (option) => `
         <div class="packaging-options-row">
           <span>
             <strong>${escapeHtml(option.label)}</strong>
@@ -403,7 +421,9 @@ function renderPackagingList(productName) {
             }
           </span>
         </div>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   `
 }
@@ -414,7 +434,7 @@ function attachSettingsEvents() {
   const packagingForm = document.getElementById('packagingForm')
   const packagingProductSelect = document.getElementById('packagingProductSelect')
 
-  customerForm.onsubmit = event => {
+  customerForm.onsubmit = (event) => {
     event.preventDefault()
 
     const added = addCustomer({
@@ -430,7 +450,7 @@ function attachSettingsEvents() {
     }
   }
 
-  productForm.onsubmit = event => {
+  productForm.onsubmit = (event) => {
     event.preventDefault()
 
     const input = document.getElementById('productInput')
@@ -452,7 +472,7 @@ function attachSettingsEvents() {
   }
 
   if (packagingForm && packagingProductSelect) {
-    packagingForm.onsubmit = event => {
+    packagingForm.onsubmit = (event) => {
       event.preventDefault()
 
       const productName = packagingProductSelect.value
@@ -482,7 +502,7 @@ function attachSettingsEvents() {
 }
 
 function attachCustomerFieldEvents() {
-  document.querySelectorAll('[data-customer-field]').forEach(input => {
+  document.querySelectorAll('[data-customer-field]').forEach((input) => {
     input.addEventListener('change', () => {
       updateCustomer(input.dataset.customerId, {
         [input.dataset.customerField]: input.value
@@ -494,7 +514,7 @@ function attachCustomerFieldEvents() {
 }
 
 function attachCustomerMoveEvents() {
-  document.querySelectorAll('[data-move-customer]').forEach(button => {
+  document.querySelectorAll('[data-move-customer]').forEach((button) => {
     button.onclick = () => {
       const moved = moveCustomer(
         button.dataset.moveCustomer,
@@ -509,11 +529,13 @@ function attachCustomerMoveEvents() {
 }
 
 function attachCustomerRemoveEvents() {
-  document.querySelectorAll('[data-remove-customer]').forEach(button => {
+  document.querySelectorAll('[data-remove-customer]').forEach((button) => {
     button.onclick = () => {
       const customerId = button.dataset.removeCustomer
-      const customer = state.customers.find(item => item.id === customerId)
-      const confirmed = confirm(`Vil du slette kunden "${customer?.name || ''}" fra listen?`)
+      const customer = state.customers.find((item) => item.id === customerId)
+      const confirmed = confirm(
+        `Vil du slette kunden "${customer?.name || ''}" fra listen?`
+      )
 
       if (!confirmed) return
 
@@ -524,10 +546,12 @@ function attachCustomerRemoveEvents() {
 }
 
 function attachProductEvents() {
-  document.querySelectorAll('[data-remove-product]').forEach(button => {
+  document.querySelectorAll('[data-remove-product]').forEach((button) => {
     button.onclick = () => {
       const name = button.dataset.removeProduct
-      const confirmed = confirm(`Vil du slette produktet "${name}" og alle tilhørende data?`)
+      const confirmed = confirm(
+        `Vil du slette produktet "${name}" og alle tilhørende data?`
+      )
 
       if (!confirmed) return
 
@@ -538,12 +562,9 @@ function attachProductEvents() {
 }
 
 function attachProductMoveEvents() {
-  document.querySelectorAll('[data-move-product]').forEach(button => {
+  document.querySelectorAll('[data-move-product]').forEach((button) => {
     button.onclick = () => {
-      const moved = moveProduct(
-        button.dataset.moveProduct,
-        button.dataset.moveDirection
-      )
+      const moved = moveProduct(button.dataset.moveProduct, button.dataset.moveDirection)
 
       if (moved) {
         renderTab()
@@ -553,10 +574,12 @@ function attachProductMoveEvents() {
 }
 
 function attachPackagingRemoveEvents(productName) {
-  document.querySelectorAll('[data-remove-product-packaging]').forEach(button => {
+  document.querySelectorAll('[data-remove-product-packaging]').forEach((button) => {
     button.onclick = () => {
       const optionId = button.dataset.removeProductPackaging
-      const confirmed = confirm(`Vil du slette denne emballasjen for produktet "${productName}"?`)
+      const confirmed = confirm(
+        `Vil du slette denne emballasjen for produktet "${productName}"?`
+      )
 
       if (!confirmed) return
 

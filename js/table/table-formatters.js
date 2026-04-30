@@ -19,7 +19,7 @@ export function renderCellItems(cellData) {
     return '<span class="cell-empty">—</span>'
   }
 
-  return cellData.items.map(item => renderCellItem(item)).join('<br>')
+  return cellData.items.map((item) => renderCellItem(item)).join('<br>')
 }
 
 export function renderCellItem(item) {

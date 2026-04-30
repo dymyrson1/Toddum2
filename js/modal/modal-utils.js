@@ -30,7 +30,7 @@ export function openModalContainer() {
 }
 
 function attachModalBaseEvents(modal) {
-  modal.onclick = event => {
+  modal.onclick = (event) => {
     if (event.target === modal) {
       closeModal()
     }

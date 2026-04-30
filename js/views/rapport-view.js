@@ -1,8 +1,4 @@
-import {
-  state,
-  getCurrentRows,
-  getCurrentWeekLabel
-} from '../state.js'
+import { state, getCurrentRows, getCurrentWeekLabel } from '../state.js'
 
 export function renderRapportView(container) {
   const report = buildRapportData()
@@ -21,7 +17,7 @@ function buildRapportData() {
   const rows = getCurrentRows()
   const productMap = new Map()
 
-  state.products.forEach(productName => {
+  state.products.forEach((productName) => {
     productMap.set(productName, {
       productName,
       totalWeightKg: 0,
@@ -29,12 +25,12 @@ function buildRapportData() {
     })
   })
 
-  rows.forEach(row => {
-    state.products.forEach(productName => {
+  rows.forEach((row) => {
+    state.products.forEach((productName) => {
       const cell = row.cells?.[productName]
       const items = Array.isArray(cell?.items) ? cell.items : []
 
-      items.forEach(item => {
+      items.forEach((item) => {
         const qty = Number(item.qty) || 0
         const weightKg = Number(item.weightKg) || getFallbackWeight(item)
         const packageName = item.packageName || item.label || 'kg'
@@ -68,12 +64,13 @@ function buildRapportData() {
   })
 
   const products = [...productMap.values()]
-    .map(product => ({
+    .map((product) => ({
       ...product,
-      packageRows: [...product.packageRows.values()]
-        .sort((a, b) => a.weightKg - b.weightKg)
+      packageRows: [...product.packageRows.values()].sort(
+        (a, b) => a.weightKg - b.weightKg
+      )
     }))
-    .filter(product => product.packageRows.length > 0)
+    .filter((product) => product.packageRows.length > 0)
 
   const totalWeightKg = products.reduce((sum, product) => {
     return sum + product.totalWeightKg
@@ -175,13 +172,17 @@ function renderRapportMain(report) {
             </thead>
 
             <tbody>
-              ${report.sortedByWeight.map(product => `
+              ${report.sortedByWeight
+                .map(
+                  (product) => `
                 <tr>
                   <td><strong>${escapeHtml(product.productName)}</strong></td>
                   <td>${product.packageRows.length}</td>
                   <td>${formatKg(product.totalWeightKg)}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
         </div>
@@ -240,7 +241,8 @@ function renderDetailTable(report) {
 
 function renderProductDetailRows(product) {
   const packageRows = product.packageRows
-    .map((packageRow, index) => `
+    .map(
+      (packageRow, index) => `
       <tr>
         <td class="rr-product-name-cell">
           ${index === 0 ? `<strong>${escapeHtml(product.productName)}</strong>` : ''}
@@ -250,7 +252,8 @@ function renderProductDetailRows(product) {
         <td>${escapeHtml(formatUnitWeight(packageRow))}</td>
         <td>${formatKg(packageRow.totalWeightKg)}</td>
       </tr>
-    `)
+    `
+    )
     .join('')
 
   return `

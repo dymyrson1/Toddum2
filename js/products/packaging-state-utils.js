@@ -9,7 +9,7 @@ export function normalizeProductPackagingTypesForProducts(products, packagingTyp
   const result = {}
   const normalizedProducts = normalizeProducts(products)
 
-  normalizedProducts.forEach(product => {
+  normalizedProducts.forEach((product) => {
     result[product] = normalizePackagingOptions(
       packagingTypes?.[product] || [createDefaultPackagingOption()]
     )
@@ -19,15 +19,15 @@ export function normalizeProductPackagingTypesForProducts(products, packagingTyp
 }
 
 export function removePackagingOptionFromWeeks(weeks, productName, optionId) {
-  Object.values(weeks || {}).forEach(week => {
+  Object.values(weeks || {}).forEach((week) => {
     if (!Array.isArray(week.rows)) return
 
-    week.rows.forEach(row => {
+    week.rows.forEach((row) => {
       const cell = row.cells?.[productName]
 
       if (!cell || !Array.isArray(cell.items)) return
 
-      cell.items = cell.items.filter(item => item.packageId !== optionId)
+      cell.items = cell.items.filter((item) => item.packageId !== optionId)
 
       if (cell.items.length === 0) {
         delete row.cells[productName]

@@ -1,7 +1,7 @@
 export function findOrderRowById(rows, rowId) {
   if (!Array.isArray(rows)) return null
 
-  return rows.find(row => row.id === rowId) || null
+  return rows.find((row) => row.id === rowId) || null
 }
 
 export function removeOrderRowById(rows, rowId) {
@@ -13,7 +13,7 @@ export function removeOrderRowById(rows, rowId) {
     }
   }
 
-  const index = rows.findIndex(row => row.id === rowId)
+  const index = rows.findIndex((row) => row.id === rowId)
 
   if (index === -1) {
     return {

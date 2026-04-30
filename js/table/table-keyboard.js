@@ -12,7 +12,7 @@ export function initTableKeyboardController({
 }) {
   if (keyboardEventsInitialized) return
 
-  document.addEventListener('keydown', event => {
+  document.addEventListener('keydown', (event) => {
     handleTableKeydown(event, {
       state,
       deleteOrderCell,
@@ -24,7 +24,10 @@ export function initTableKeyboardController({
   keyboardEventsInitialized = true
 }
 
-function handleTableKeydown(event, { state, deleteOrderCell, closeContextMenu, renderTable }) {
+function handleTableKeydown(
+  event,
+  { state, deleteOrderCell, closeContextMenu, renderTable }
+) {
   if (isFormControlTarget(event.target)) return
   if (isModalOpen()) return
 

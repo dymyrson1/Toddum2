@@ -64,13 +64,9 @@ export async function checkFirebaseStructure() {
 }
 
 function migrateData(data) {
-  const customers = Array.isArray(data.customers)
-    ? data.customers
-    : []
+  const customers = Array.isArray(data.customers) ? data.customers : []
 
-  const products = Array.isArray(data.products)
-    ? data.products
-    : []
+  const products = Array.isArray(data.products) ? data.products : []
 
   const productPackagingTypes = buildProductPackagingTypes(data, products)
 
@@ -89,12 +85,11 @@ function buildProductPackagingTypes(data, products) {
   const result = {}
 
   const existingProductPackagingTypes =
-    data.productPackagingTypes &&
-    typeof data.productPackagingTypes === 'object'
+    data.productPackagingTypes && typeof data.productPackagingTypes === 'object'
       ? data.productPackagingTypes
       : {}
 
-  products.forEach(product => {
+  products.forEach((product) => {
     const existingTypes = Array.isArray(existingProductPackagingTypes[product])
       ? existingProductPackagingTypes[product]
       : []
@@ -106,9 +101,7 @@ function buildProductPackagingTypes(data, products) {
 }
 
 function normalizePackagingTypes(types) {
-  const cleanTypes = types
-    .map(type => String(type || '').trim())
-    .filter(Boolean)
+  const cleanTypes = types.map((type) => String(type || '').trim()).filter(Boolean)
 
   const uniqueTypes = [...new Set(cleanTypes)]
 
@@ -148,7 +141,7 @@ function migrateWeeks(weeks) {
 }
 
 function normalizeRows(rows) {
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id || createRowId(),
     customerName: row.customerName || '',
     deliveryDay: row.deliveryDay || '',

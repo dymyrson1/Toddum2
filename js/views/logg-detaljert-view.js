@@ -80,7 +80,9 @@ function renderLogTable(logs) {
         </thead>
 
         <tbody>
-          ${logs.map(log => `
+          ${logs
+            .map(
+              (log) => `
             <tr>
               <td class="pro-log-muted">${escapeHtml(formatDateTime(log.createdAt))}</td>
               <td class="pro-log-muted">${escapeHtml(log.weekLabel || '—')}</td>
@@ -92,7 +94,9 @@ function renderLogTable(logs) {
               <td class="pro-log-before">${escapeHtml(log.oldValue || '—')}</td>
               <td class="pro-log-after">${escapeHtml(log.newValue || '—')}</td>
             </tr>
-          `).join('')}
+          `
+            )
+            .join('')}
         </tbody>
       </table>
     </div>
@@ -213,7 +217,7 @@ function attachEvents() {
     }
   }
 
-  document.querySelectorAll('[data-detailed-log-page]').forEach(button => {
+  document.querySelectorAll('[data-detailed-log-page]').forEach((button) => {
     button.onclick = () => {
       const action = button.dataset.detailedLogPage
 

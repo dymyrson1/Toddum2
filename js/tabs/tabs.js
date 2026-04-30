@@ -2,7 +2,7 @@ import { state } from '../state.js'
 import { renderTab } from './tabs-render.js'
 
 export function initTabs() {
-  document.querySelectorAll('[data-tab]').forEach(button => {
+  document.querySelectorAll('[data-tab]').forEach((button) => {
     button.addEventListener('click', () => {
       const tabName = button.dataset.tab
 
@@ -20,7 +20,7 @@ export function initTabs() {
 }
 
 function updateActiveTabButton(activeTab) {
-  document.querySelectorAll('[data-tab]').forEach(button => {
+  document.querySelectorAll('[data-tab]').forEach((button) => {
     button.classList.toggle('active', button.dataset.tab === activeTab)
   })
 }

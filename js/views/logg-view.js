@@ -39,7 +39,9 @@ function renderLogs(logs) {
 
   return `
     <div class="logg-list">
-      ${logs.map(log => `
+      ${logs
+        .map(
+          (log) => `
         <article class="logg-item">
           <div class="logg-item-main">
             <div class="logg-action">${escapeHtml(log.actionLabel || log.action || 'Endring')}</div>
@@ -51,7 +53,9 @@ function renderLogs(logs) {
 
           ${renderLogDetails(log)}
         </article>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   `
 }
@@ -86,12 +90,16 @@ function renderLogDetails(log) {
 
   return `
     <dl class="logg-details">
-      ${details.map(([label, value]) => `
+      ${details
+        .map(
+          ([label, value]) => `
         <div>
           <dt>${escapeHtml(label)}</dt>
           <dd>${escapeHtml(value)}</dd>
         </div>
-      `).join('')}
+      `
+        )
+        .join('')}
     </dl>
   `
 }

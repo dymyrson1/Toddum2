@@ -14,7 +14,7 @@ export function selectProductCell(state, rowId, productName) {
 }
 
 export function clearSelectedProductCells() {
-  document.querySelectorAll('.editable-cell.selected').forEach(cell => {
+  document.querySelectorAll('.editable-cell.selected').forEach((cell) => {
     cell.classList.remove('selected')
   })
 }
