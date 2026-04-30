@@ -23,6 +23,7 @@
             <button data-tab="rapport" class="tab">Rapport</button>
             <button data-tab="levering" class="tab">Levering</button>
             <button data-tab="analytics" class="tab">Analytics</button>
+            <button data-tab="logg" class="tab">Logg</button>
             <button data-tab="loggDetaljert" class="tab">Detaljert logg</button>
             <button data-tab="settings" class="tab">Settings</button>
           </nav>

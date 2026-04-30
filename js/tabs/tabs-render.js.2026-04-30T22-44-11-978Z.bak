@@ -4,6 +4,7 @@ import { renderOrdersView } from '../views/orders-view.js'
 import { renderRapportView } from '../views/rapport-view.js'
 import { renderLeveringView } from '../views/levering-view.js'
 import { renderAnalyticsView } from '../views/analytics-view.js'
+import { renderLoggView } from '../views/logg-view.js'
 import { renderLoggDetaljertView } from '../views/logg-detaljert-view.js'
 import { renderSettingsView } from '../views/settings-view.js'
 
@@ -27,6 +28,11 @@ export function renderTab() {
     case 'analytics':
       renderAnalyticsView(container)
       break
+
+    case 'logg':
+      renderLoggView(container)
+      break
+
     case 'loggDetaljert':
       renderLoggDetaljertView(container)
       break
