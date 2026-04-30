@@ -3,7 +3,7 @@ import { setSyncStatus } from './sync/sync-status.js'
 
 import { DELIVERY_DAYS, MAX_LOGS } from './app/constants.js'
 
-import { normalizeName, normalizeLooseText } from './utils/text.js'
+import { normalizeName } from './utils/text.js'
 
 import {
   getISOWeek,
@@ -30,15 +30,6 @@ import {
   parsePackagingOption
 } from './products/packaging-utils.js'
 
-import { createLogEntry } from './logs/log-utils.js'
-
-import {
-  createEmptyOrderRow,
-  createMigratedOrderRow,
-  normalizeOrderRows
-} from './orders/order-utils.js'
-
-
 import {
   moveProductInList,
   normalizeProducts,
@@ -46,13 +37,22 @@ import {
   removeProductFromWeeks
 } from './products/product-utils.js'
 
+import { createLogEntry } from './logs/log-utils.js'
+
+import {
+  createEmptyOrderRow,
+  normalizeOrderRows
+} from './orders/order-utils.js'
+
 import {
   normalizeOrderCells,
   normalizeOrderCellItems
 } from './orders/order-cell-utils.js'
 
-
-
+import {
+  migrateCellsToOrderRows,
+  migrateWeeksToRows
+} from './orders/order-migration-utils.js'
 
 export const state = {
   currentTab: 'orders',
@@ -87,10 +87,10 @@ export async function initState() {
     setSyncStatus('error', 'Firebase: load error')
   }
 
-state.currentDate = new Date()
-state.deliveryDays = DELIVERY_DAYS
-state.customers = normalizeCustomers(state.customers)
-state.products = normalizeProducts(state.products)
+  state.currentDate = new Date()
+  state.deliveryDays = DELIVERY_DAYS
+  state.customers = normalizeCustomers(state.customers)
+  state.products = normalizeProducts(state.products)
 
   ensureProductPackagingTypes()
   normalizeAllWeekData()
@@ -136,7 +136,9 @@ export function ensureCurrentWeek() {
   }
 
   if (!Array.isArray(state.weeks[weekId].rows)) {
-    state.weeks[weekId].rows = migrateCellsToRows(state.weeks[weekId].cells || {})
+    state.weeks[weekId].rows = migrateCellsToOrderRows(
+      state.weeks[weekId].cells || {}
+    )
     delete state.weeks[weekId].cells
   }
 
@@ -242,10 +244,10 @@ export function updateOrderCell(rowId, productName, value) {
   const oldItems = row.cells[productName]?.items || []
   const oldValue = formatCellForLog(oldItems)
 
-const cleanItems = normalizeOrderCellItems(
-  value?.items || [],
-  getPackagingOptionsForProduct(productName)
-)
+  const cleanItems = normalizeOrderCellItems(
+    value?.items || [],
+    getPackagingOptionsForProduct(productName)
+  )
   const newValue = formatCellForLog(cleanItems)
 
   if (oldValue === newValue) return
@@ -343,12 +345,12 @@ export function getOrderCell(rowId, productName) {
     items: []
   }
 
-return {
-  items: normalizeOrderCellItems(
-    cell.items || [],
-    getPackagingOptionsForProduct(productName)
-  )
-}
+  return {
+    items: normalizeOrderCellItems(
+      cell.items || [],
+      getPackagingOptionsForProduct(productName)
+    )
+  }
 }
 
 export function getCustomerName(customer) {
@@ -612,7 +614,10 @@ export function getPackagingOptionsForProduct(productName) {
 
   return [
     defaultOption,
-    ...customOptions.map(option => normalizePackagingOption(option)).filter(Boolean)
+    ...customOptions
+      .map(option => normalizePackagingOption(option))
+      .filter(Boolean)
+      .filter(option => !option.isDefault)
   ].sort((a, b) => {
     return Number(a.weightKg || 0) - Number(b.weightKg || 0)
   })
@@ -680,7 +685,7 @@ export function removeProductPackagingOption(productName, optionId) {
   })
 
   if (optionToRemove?.isDefault) {
-    alert('kg er standardmålet og kan ikke slettes')
+    alert('kg/l er standardmål og kan ikke slettes')
     return false
   }
 
@@ -763,9 +768,9 @@ function applySavedState(savedState) {
     state.customers = normalizeCustomers(savedState.customers)
   }
 
-if (Array.isArray(savedState.products)) {
-  state.products = normalizeProducts(savedState.products)
-}
+  if (Array.isArray(savedState.products)) {
+    state.products = normalizeProducts(savedState.products)
+  }
 
   if (
     savedState.productPackagingTypes &&
@@ -784,7 +789,7 @@ if (Array.isArray(savedState.products)) {
     state.logs = savedState.logs
   }
 
-  migrateAllWeeksToRows()
+  migrateWeeksToRows(state.weeks)
 }
 
 function ensureProductPackagingTypes() {
@@ -817,48 +822,6 @@ function normalizeRows(rows) {
 
 function normalizeRowCells(cells) {
   return normalizeOrderCells(cells, getPackagingOptionsForProduct)
-}
-
-
-function migrateAllWeeksToRows() {
-  Object.values(state.weeks).forEach(week => {
-    if (Array.isArray(week.rows)) return
-
-    week.rows = migrateCellsToRows(week.cells || {})
-
-    delete week.cells
-  })
-}
-
-function migrateCellsToRows(cells) {
-  const rowsMap = new Map()
-
-  Object.entries(cells).forEach(([key, value]) => {
-    if (key.endsWith('__checks')) {
-      const customerName = key.replace('__checks', '')
-
-      if (!rowsMap.has(customerName)) {
-rowsMap.set(customerName, createMigratedOrderRow(customerName))      }
-
-      rowsMap.get(customerName).checks = {
-        A: Boolean(value.A),
-        B: Boolean(value.B)
-      }
-
-      return
-    }
-
-    const [customerName, productName] = key.split('__')
-
-    if (!customerName || !productName) return
-
-    if (!rowsMap.has(customerName)) {
-rowsMap.set(customerName, createMigratedOrderRow(customerName))    }
-
-    rowsMap.get(customerName).cells[productName] = value
-  })
-
-  return Array.from(rowsMap.values())
 }
 
 function updateCurrentYearWeek() {
