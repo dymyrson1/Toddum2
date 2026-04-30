@@ -18,12 +18,20 @@ import {
 } from './week/week-utils.js'
 
 import {
-  createCustomerId,
   formatCustomerForLog,
   normalizeCustomer,
   normalizeCustomerPatch,
   normalizeCustomers
 } from './customers/customer-utils.js'
+
+import {
+  collectCustomerNamesFromWeeks,
+  createCustomerFromName,
+  customerNameExists,
+  findCustomerByName,
+  getCustomerNameValue,
+  getNextCustomerDeliveryOrder
+} from './customers/customer-state-utils.js'
 
 import {
   createDefaultPackagingOption,
@@ -358,19 +366,11 @@ export function getOrderCell(rowId, productName) {
 }
 
 export function getCustomerName(customer) {
-  if (typeof customer === 'string') return customer
-
-  return customer?.name || ''
+  return getCustomerNameValue(customer)
 }
 
 export function getCustomerByName(name) {
-  const cleanName = normalizeName(name).toLowerCase()
-
-  return (
-    state.customers.find(customer => {
-      return normalizeName(getCustomerName(customer)).toLowerCase() === cleanName
-    }) || null
-  )
+  return findCustomerByName(state.customers, name)
 }
 
 export function ensureCustomerExists(name) {
@@ -384,18 +384,12 @@ export function ensureCustomerExists(name) {
     return existingCustomer
   }
 
-  const maxOrder = state.customers.reduce((max, customer) => {
-    return Math.max(max, Number(customer.deliveryOrder) || 0)
-  }, 0)
+  const customer = createCustomerFromName(
+    cleanName,
+    getNextCustomerDeliveryOrder(state.customers)
+  )
 
-  const customer = {
-    id: createCustomerId(cleanName),
-    name: cleanName,
-    contactPerson: '',
-    phone: '',
-    address: '',
-    deliveryOrder: maxOrder + 1
-  }
+  if (!customer) return null
 
   state.customers.push(customer)
   state.customers = normalizeCustomers(state.customers)
@@ -414,20 +408,13 @@ export function addCustomer(customerData) {
 
   if (!customer.name) return false
 
-  const exists = state.customers.some(item => {
-    return normalizeName(item.name).toLowerCase() === customer.name.toLowerCase()
-  })
-
-  if (exists) {
+  if (customerNameExists(state.customers, customer.name)) {
     alert('Denne kunden finnes allerede')
     return false
   }
 
-  const maxOrder = state.customers.reduce((max, item) => {
-    return Math.max(max, Number(item.deliveryOrder) || 0)
-  }, 0)
-
-  customer.deliveryOrder = customer.deliveryOrder || maxOrder + 1
+  customer.deliveryOrder =
+    customer.deliveryOrder || getNextCustomerDeliveryOrder(state.customers)
 
   state.customers.push(customer)
   state.customers = normalizeCustomers(state.customers)
@@ -458,14 +445,7 @@ export function updateCustomer(customerId, patch) {
       return false
     }
 
-    const duplicate = state.customers.some(item => {
-      return (
-        item.id !== customerId &&
-        normalizeName(item.name).toLowerCase() === newName.toLowerCase()
-      )
-    })
-
-    if (duplicate) {
+    if (customerNameExists(state.customers, newName, customerId)) {
       alert('Denne kunden finnes allerede')
       return false
     }
@@ -721,14 +701,10 @@ export function clearLogs() {
 }
 
 function ensureCustomersFromOrderRows() {
-  Object.values(state.weeks).forEach(week => {
-    if (!Array.isArray(week.rows)) return
+  const customerNames = collectCustomerNamesFromWeeks(state.weeks)
 
-    week.rows.forEach(row => {
-      if (row.customerName) {
-        ensureCustomerExists(row.customerName)
-      }
-    })
+  customerNames.forEach(customerName => {
+    ensureCustomerExists(customerName)
   })
 }
 
