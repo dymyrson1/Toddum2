@@ -365,3 +365,32 @@ html[data-theme="dark"] .main-table tbody tr.row-status-both:hover th.customer-c
     font-size: 12px;
   }
 }
+
+/* ===== STICKY TABLE HEADER INSIDE TABLE SCROLL ===== */
+
+.table-scroll {
+  max-height: calc(100vh - 190px);
+  overflow: auto;
+}
+
+.main-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--header);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.main-table thead .corner-cell {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 60 !important;
+  background: var(--header);
+}
+
+.customer-cell {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+}
