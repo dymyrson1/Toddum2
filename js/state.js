@@ -1,5 +1,6 @@
-import { DELIVERY_DAYS } from './app/constants.js'
+import { state } from './app/runtime-state.js'
 
+import { createActionContext as createActionContextObject } from './app/action-context.js'
 import { createPersistenceController } from './app/persistence-controller.js'
 import { loadRuntimeStateFromFirebase } from './app/state-loader.js'
 
@@ -59,19 +60,7 @@ import {
   updateCurrentYearWeekInState
 } from './week/week-state-utils.js'
 
-export const state = {
-  currentTab: 'orders',
-  currentDate: new Date(),
-  currentYear: null,
-  currentWeek: null,
-  selectedCell: null,
-  customers: [],
-  products: [],
-  productPackagingTypes: {},
-  deliveryDays: DELIVERY_DAYS,
-  weeks: {},
-  logs: []
-}
+export { state }
 
 const persistenceController = createPersistenceController(state)
 
@@ -230,7 +219,7 @@ export function clearLogs() {
 }
 
 function createActionContext() {
-  return {
+  return createActionContextObject({
     state,
     addLog,
     persistState,
@@ -239,7 +228,7 @@ function createActionContext() {
     getCurrentWeekLabel,
     getPackagingOptionsForProduct,
     ensureCustomerExists
-  }
+  })
 }
 
 function addLog(action, details = {}) {
