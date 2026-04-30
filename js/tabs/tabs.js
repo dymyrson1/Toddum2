@@ -2,23 +2,25 @@ import { state } from '../state.js'
 import { renderTab } from './tabs-render.js'
 
 export function initTabs() {
-  const tabs = document.querySelectorAll('.tab')
-
-  tabs.forEach(button => {
+  document.querySelectorAll('[data-tab]').forEach(button => {
     button.addEventListener('click', () => {
       const tabName = button.dataset.tab
-      if (!tabName) return
 
-      state.currentTab = tabName
+      if (!tabName) return
+      if (state.activeTab === tabName) return
+
+      state.activeTab = tabName
 
       updateActiveTabButton(tabName)
       renderTab()
     })
   })
+
+  updateActiveTabButton(state.activeTab || 'orders')
 }
 
 function updateActiveTabButton(activeTab) {
-  document.querySelectorAll('.tab').forEach(button => {
+  document.querySelectorAll('[data-tab]').forEach(button => {
     button.classList.toggle('active', button.dataset.tab === activeTab)
   })
 }

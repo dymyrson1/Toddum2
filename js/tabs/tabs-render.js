@@ -1,4 +1,5 @@
 import { state } from '../state.js'
+
 import { renderOrdersView } from '../views/orders-view.js'
 import { renderRapportView } from '../views/rapport-view.js'
 import { renderLeveringView } from '../views/levering-view.js'
@@ -11,40 +12,38 @@ export function renderTab() {
   const container = document.getElementById('tabContent')
   if (!container) return
 
-  if (state.currentTab === 'orders') {
-    renderOrdersView(container)
-    return
-  }
+  switch (state.activeTab) {
+    case 'orders':
+      renderOrdersView(container)
+      break
 
-  if (state.currentTab === 'rapport') {
-    renderRapportView(container)
-    return
-  }
+    case 'rapport':
+      renderRapportView(container)
+      break
 
-  if (state.currentTab === 'levering') {
-    renderLeveringView(container)
-    return
-  }
+    case 'levering':
+      renderLeveringView(container)
+      break
 
-  if (state.currentTab === 'analytics') {
-    renderAnalyticsView(container)
-    return
-  }
+    case 'analytics':
+      renderAnalyticsView(container)
+      break
 
-  if (state.currentTab === 'logg') {
-    renderLoggView(container)
-    return
-  }
+    case 'logg':
+      renderLoggView(container)
+      break
 
-  if (state.currentTab === 'loggDetaljert') {
-    renderLoggDetaljertView(container)
-    return
-  }
+    case 'loggDetaljert':
+      renderLoggDetaljertView(container)
+      break
 
-  if (state.currentTab === 'settings') {
-    renderSettingsView(container)
-    return
-  }
+    case 'settings':
+      renderSettingsView(container)
+      break
 
-  renderOrdersView(container)
+    default:
+      state.activeTab = 'orders'
+      renderOrdersView(container)
+      break
+  }
 }
