@@ -31,6 +31,11 @@ import {
 } from './products/packaging-utils.js'
 
 import {
+  normalizeProductPackagingTypesForProducts,
+  removePackagingOptionFromWeeks
+} from './products/packaging-state-utils.js'
+
+import {
   moveProductInList,
   normalizeProducts,
   productExists,
@@ -698,21 +703,7 @@ export function removeProductPackagingOption(productName, optionId) {
     .filter(Boolean)
     .filter(option => option.id !== cleanOptionId)
 
-  Object.values(state.weeks).forEach(week => {
-    if (!Array.isArray(week.rows)) return
-
-    week.rows.forEach(row => {
-      const cell = row.cells?.[cleanProduct]
-
-      if (!cell || !Array.isArray(cell.items)) return
-
-      cell.items = cell.items.filter(item => item.packageId !== cleanOptionId)
-
-      if (cell.items.length === 0) {
-        delete row.cells[cleanProduct]
-      }
-    })
-  })
+  removePackagingOptionFromWeeks(state.weeks, cleanProduct, cleanOptionId)
 
   addLog('remove_packaging', {
     actionLabel: 'Fjernet emballasje',
@@ -793,17 +784,10 @@ function applySavedState(savedState) {
 }
 
 function ensureProductPackagingTypes() {
-  state.products.forEach(product => {
-    state.productPackagingTypes[product] = normalizePackagingOptions(
-      state.productPackagingTypes[product] || [createDefaultPackagingOption()]
-    )
-  })
-
-  Object.keys(state.productPackagingTypes).forEach(productName => {
-    if (!state.products.includes(productName)) {
-      delete state.productPackagingTypes[productName]
-    }
-  })
+  state.productPackagingTypes = normalizeProductPackagingTypesForProducts(
+    state.products,
+    state.productPackagingTypes
+  )
 }
 
 function normalizeAllWeekData() {
