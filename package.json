@@ -12,7 +12,8 @@
     "lint:strict": "eslint js tests scripts --max-warnings=0",
     "check:unused": "node scripts/check-unused-files.mjs",
     "check:sizes": "node scripts/check-large-files.mjs",
-    "check": "npm run format:check && npm test && npm run lint && npm run check:unused && npm run check:sizes"
+    "check:css": "node scripts/check-css-audit.mjs",
+    "check": "npm run format:check && npm test && npm run lint && npm run check:unused && npm run check:sizes && npm run check:css"
   },
   "devDependencies": {
     "@eslint/js": "latest",
