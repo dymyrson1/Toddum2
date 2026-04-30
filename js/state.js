@@ -1,25 +1,15 @@
 import { loadFirebaseState, saveFirebaseState } from './firebase.js'
 import { setSyncStatus } from './sync/sync-status.js'
+import {
+  DELIVERY_DAYS,
+  DEFAULT_PACKAGING_OPTION,
+  MAX_LOGS
+} from './app/constants.js'
+import { normalizeName, normalizeLooseText, slugify } from './utils/text.js'
+import { formatNumber, toNumber, trimZeros } from './utils/number.js'
 
-const DELIVERY_DAYS = [
-  'Mandag',
-  'Tirsdag',
-  'Onsdag',
-  'Torsdag',
-  'Fredag',
-  'Lørdag',
-  'Søndag'
-]
 
-const DEFAULT_PACKAGING_OPTION = {
-  id: 'kg__1',
-  packageName: 'kg',
-  weightKg: 1,
-  label: 'kg',
-  isDefault: true
-}
 
-const MAX_LOGS = 300
 
 export const state = {
   currentTab: 'orders',
@@ -588,7 +578,7 @@ function normalizePackagingOption(option) {
   const weightKg = Number(option.weightKg)
 
   return {
-    id: option.id || createPackagingOptionId(packageName),
+id: option.id || createPackagingOptionId(packageName, weightKg),
     packageName,
     label: option.label || packageName,
     weightKg: Number.isFinite(weightKg) && weightKg > 0 ? weightKg : 1,
@@ -1089,6 +1079,10 @@ function createDefaultPackagingOption() {
   return { ...DEFAULT_PACKAGING_OPTION }
 }
 
+function createPackagingOptionId(packageName, weightKg = 1) {
+  return `${slugify(packageName)}__${normalizeWeightKey(weightKg)}`
+}
+
 function createPackagingOption(packageName, weightKgInput) {
   const cleanPackageName = normalizeName(packageName)
   const weightKg = toNumber(weightKgInput)
@@ -1169,40 +1163,12 @@ function formatItemForLog(item) {
   return `${formatNumber(qty)}x${label}`
 }
 
-function formatNumber(value) {
-  return Number(value).toLocaleString('nb-NO', {
-    maximumFractionDigits: 2
-  })
-}
+
 
 function normalizeWeightKey(weightKg) {
   return trimZeros(Number(weightKg).toFixed(3))
 }
 
-function trimZeros(value) {
-  return String(value).replace(/\.?0+$/, '')
-}
-
-function toNumber(value) {
-  if (typeof value === 'number') return value
-  return Number(String(value || '').replace(',', '.'))
-}
-
-function slugify(value) {
-  return String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9а-яіїєåøæ_-]/gi, '')
-}
-
-function normalizeLooseText(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '')
-    .replace('-', '')
-}
 
 function migrateAllWeeksToRows() {
   Object.values(state.weeks).forEach(week => {
@@ -1271,10 +1237,6 @@ function createLogId() {
 function createCustomerId(name) {
   const base = slugify(name || 'kunde') || 'kunde'
   return `customer_${base}_${Math.random().toString(36).slice(2, 7)}`
-}
-
-function normalizeName(value) {
-  return String(value || '').trim()
 }
 
 function updateCurrentYearWeek() {
