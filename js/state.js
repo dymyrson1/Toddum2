@@ -38,6 +38,14 @@ import {
   normalizeOrderRows
 } from './orders/order-utils.js'
 
+
+import {
+  moveProductInList,
+  normalizeProducts,
+  productExists,
+  removeProductFromWeeks
+} from './products/product-utils.js'
+
 export const state = {
   currentTab: 'orders',
   currentDate: new Date(),
@@ -71,9 +79,10 @@ export async function initState() {
     setSyncStatus('error', 'Firebase: load error')
   }
 
-  state.currentDate = new Date()
-  state.deliveryDays = DELIVERY_DAYS
-  state.customers = normalizeCustomers(state.customers)
+state.currentDate = new Date()
+state.deliveryDays = DELIVERY_DAYS
+state.customers = normalizeCustomers(state.customers)
+state.products = normalizeProducts(state.products)
 
   ensureProductPackagingTypes()
   normalizeAllWeekData()
@@ -523,12 +532,12 @@ export function addProduct(name) {
 
   if (!cleanName) return false
 
-  if (state.products.includes(cleanName)) {
+  if (productExists(state.products, cleanName)) {
     alert('Dette produktet finnes allerede')
     return false
   }
 
-  state.products.push(cleanName)
+  state.products = normalizeProducts([...state.products, cleanName])
 
   if (!state.productPackagingTypes[cleanName]) {
     state.productPackagingTypes[cleanName] = [createDefaultPackagingOption()]
@@ -546,19 +555,11 @@ export function addProduct(name) {
 }
 
 export function removeProduct(name) {
-  state.products = state.products.filter(product => product !== name)
+  state.products = normalizeProducts(state.products).filter(product => product !== name)
 
   delete state.productPackagingTypes[name]
 
-  Object.values(state.weeks).forEach(week => {
-    if (!Array.isArray(week.rows)) return
-
-    week.rows.forEach(row => {
-      if (row.cells) {
-        delete row.cells[name]
-      }
-    })
-  })
+  removeProductFromWeeks(state.weeks, name)
 
   addLog('remove_product', {
     actionLabel: 'Fjernet produkt',
@@ -570,24 +571,12 @@ export function removeProduct(name) {
 }
 
 export function moveProduct(productName, direction) {
-  const currentIndex = state.products.indexOf(productName)
+  const oldValue = normalizeProducts(state.products).join(', ')
+  const result = moveProductInList(state.products, productName, direction)
 
-  if (currentIndex === -1) return false
+  if (!result.moved) return false
 
-  const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
-
-  if (targetIndex < 0 || targetIndex >= state.products.length) {
-    return false
-  }
-
-  const oldValue = state.products.join(', ')
-  const products = [...state.products]
-  const currentProduct = products[currentIndex]
-
-  products[currentIndex] = products[targetIndex]
-  products[targetIndex] = currentProduct
-
-  state.products = products
+  state.products = result.products
 
   const newValue = state.products.join(', ')
 
@@ -748,7 +737,7 @@ function addLog(action, details = {}) {
 function prepareStateForSaving() {
   return {
     customers: normalizeCustomers(state.customers),
-    products: state.products,
+    products: normalizeProducts(state.products),
     productPackagingTypes: state.productPackagingTypes,
     weeks: state.weeks,
     logs: state.logs
@@ -760,9 +749,9 @@ function applySavedState(savedState) {
     state.customers = normalizeCustomers(savedState.customers)
   }
 
-  if (Array.isArray(savedState.products)) {
-    state.products = savedState.products
-  }
+if (Array.isArray(savedState.products)) {
+  state.products = normalizeProducts(savedState.products)
+}
 
   if (
     savedState.productPackagingTypes &&
