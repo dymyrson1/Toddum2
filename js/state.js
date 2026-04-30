@@ -66,6 +66,13 @@ import {
 
 import { migrateCellsToOrderRows } from './orders/order-migration-utils.js'
 
+import {
+  findOrderRowById,
+  removeOrderRowById,
+  updateOrderRowCheckValue,
+  updateOrderRowFieldValue
+} from './orders/order-state-utils.js'
+
 export const state = {
   currentTab: 'orders',
   currentDate: new Date(),
@@ -195,14 +202,9 @@ export function addOrderRow() {
 }
 
 export function deleteOrderRow(rowId) {
-  const rows = getCurrentRows()
-  const index = rows.findIndex(row => row.id === rowId)
+  const result = removeOrderRowById(getCurrentRows(), rowId)
 
-  if (index === -1) return
-
-  const row = rows[index]
-
-  rows.splice(index, 1)
+  if (!result.removed) return
 
   if (state.selectedCell?.rowId === rowId) {
     state.selectedCell = null
@@ -210,8 +212,8 @@ export function deleteOrderRow(rowId) {
 
   addLog('delete_row', {
     actionLabel: 'Slettet rad',
-    customerName: row.customerName || '',
-    deliveryDay: row.deliveryDay || ''
+    customerName: result.row.customerName || '',
+    deliveryDay: result.row.deliveryDay || ''
   })
 
   persistState()
@@ -219,26 +221,20 @@ export function deleteOrderRow(rowId) {
 
 export function updateOrderRowField(rowId, field, value) {
   const row = findOrderRow(rowId)
+  const result = updateOrderRowFieldValue(row, field, value)
 
-  if (!row) return
+  if (!result.changed) return
 
-  const oldValue = row[field] || ''
-  const newValue = value || ''
-
-  if (oldValue === newValue) return
-
-  row[field] = newValue
-
-  if (field === 'customerName' && newValue) {
-    ensureCustomerExists(newValue)
+  if (field === 'customerName' && result.newValue) {
+    ensureCustomerExists(result.newValue)
   }
 
   addLog('update_row_field', {
     actionLabel: field === 'customerName' ? 'Endret kunde' : 'Endret leveringsdag',
-    customerName: field === 'customerName' ? newValue : row.customerName || '',
-    deliveryDay: field === 'deliveryDay' ? newValue : row.deliveryDay || '',
-    oldValue,
-    newValue
+    customerName: field === 'customerName' ? result.newValue : row.customerName || '',
+    deliveryDay: field === 'deliveryDay' ? result.newValue : row.deliveryDay || '',
+    oldValue: result.oldValue,
+    newValue: result.newValue
   })
 
   persistState()
@@ -310,38 +306,23 @@ export function deleteOrderCell(rowId, productName) {
 
 export function updateRowCheck(rowId, checkType, checked) {
   const row = findOrderRow(rowId)
+  const result = updateOrderRowCheckValue(row, checkType, checked)
 
-  if (!row) return
-
-  if (!row.checks) {
-    row.checks = {
-      A: false,
-      B: false
-    }
-  }
-
-  const oldValue = Boolean(row.checks[checkType])
-  const newValue = Boolean(checked)
-
-  if (oldValue === newValue) return
-
-  row.checks[checkType] = newValue
+  if (!result.changed) return
 
   addLog('update_check', {
     actionLabel: `Endret avkryssing ${checkType}`,
     customerName: row.customerName || '',
     deliveryDay: row.deliveryDay || '',
-    oldValue: oldValue ? 'På' : 'Av',
-    newValue: newValue ? 'På' : 'Av'
+    oldValue: result.oldValue ? 'På' : 'Av',
+    newValue: result.newValue ? 'På' : 'Av'
   })
 
   persistState()
 }
 
 export function findOrderRow(rowId) {
-  const rows = getCurrentRows()
-
-  return rows.find(row => row.id === rowId) || null
+  return findOrderRowById(getCurrentRows(), rowId)
 }
 
 export function getOrderCell(rowId, productName) {
