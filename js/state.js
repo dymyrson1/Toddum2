@@ -7,7 +7,12 @@ import {
 } from './app/constants.js'
 import { normalizeName, normalizeLooseText, slugify } from './utils/text.js'
 import { formatNumber, toNumber, trimZeros } from './utils/number.js'
-
+import {
+  getISOWeek,
+  getWeekId,
+  getWeekLabel,
+  shiftDateByWeeks
+} from './week/week-utils.js'
 
 
 
@@ -82,11 +87,11 @@ export function persistState() {
 }
 
 export function getCurrentWeekId() {
-  return `${state.currentYear}-W${String(state.currentWeek).padStart(2, '0')}`
+  return getWeekId(state.currentYear, state.currentWeek)
 }
 
 export function getCurrentWeekLabel() {
-  return `Uke ${state.currentWeek}`
+  return getWeekLabel(state.currentWeek)
 }
 
 export function ensureCurrentWeek() {
@@ -112,14 +117,14 @@ export function getCurrentRows() {
 }
 
 export function goToPreviousWeek() {
-  state.currentDate.setDate(state.currentDate.getDate() - 7)
+  state.currentDate = shiftDateByWeeks(state.currentDate, -1)
   updateCurrentYearWeek()
   ensureCurrentWeek()
   persistState()
 }
 
 export function goToNextWeek() {
-  state.currentDate.setDate(state.currentDate.getDate() + 7)
+  state.currentDate = shiftDateByWeeks(state.currentDate, 1)
   updateCurrentYearWeek()
   ensureCurrentWeek()
   persistState()
@@ -1246,26 +1251,6 @@ function updateCurrentYearWeek() {
   state.currentWeek = result.week
 }
 
-function getISOWeek(dateInput) {
-  const date = new Date(Date.UTC(
-    dateInput.getFullYear(),
-    dateInput.getMonth(),
-    dateInput.getDate()
-  ))
-
-  const dayNumber = date.getUTCDay() || 7
-
-  date.setUTCDate(date.getUTCDate() + 4 - dayNumber)
-
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
-
-  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7)
-
-  return {
-    year: date.getUTCFullYear(),
-    week
-  }
-}
 
 export function moveProduct(productName, direction) {
   const currentIndex = state.products.indexOf(productName)

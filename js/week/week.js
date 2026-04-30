@@ -1,5 +1,5 @@
 import {
-  state,
+  getCurrentWeekLabel,
   goToPreviousWeek,
   goToNextWeek
 } from '../state.js'
@@ -79,9 +79,10 @@ function changeWeek(direction) {
 
 export function updateWeekLabel() {
   const label = document.getElementById('weekLabel')
+
   if (!label) return
 
-  label.innerText = `Uke ${state.currentWeek}`
+  label.innerText = getCurrentWeekLabel()
 }
 
 function disableWeekButtons(disabled) {
