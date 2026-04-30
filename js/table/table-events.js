@@ -1,6 +1,6 @@
 import { state, updateCheck, deleteCell } from '../state.js'
 import { openModal } from '../modal/modal.js'
-import { openContextMenu } from './context-menu.js'
+import { openContextMenu, closeContextMenu } from './context-menu.js'
 import { copyCell, pasteCell } from './clipboard.js'
 import { renderTable } from './table-render.js'
 
@@ -21,6 +21,8 @@ export function initTableKeyboardEvents() {
 function attachCellEvents() {
   document.querySelectorAll('.editable-cell[data-key]').forEach(cell => {
     cell.addEventListener('click', () => {
+      closeContextMenu()
+
       const key = cell.dataset.key
       selectCell(key)
       openModal(key)
@@ -37,6 +39,8 @@ function attachCellEvents() {
 function attachCheckboxEvents() {
   document.querySelectorAll('input[data-check]').forEach(checkbox => {
     checkbox.addEventListener('change', () => {
+      closeContextMenu()
+
       const confirmed = confirm('Підтвердити зміну?')
 
       if (!confirmed) {
@@ -79,6 +83,7 @@ function handleTableKeydown(event) {
     if (!confirmed) return
 
     deleteCell(state.selectedCellKey)
+    closeContextMenu()
     renderTable()
   }
 }

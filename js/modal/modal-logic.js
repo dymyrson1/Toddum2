@@ -1,4 +1,4 @@
-import { getCurrentCells, updateCell } from '../state.js'
+import { state, getCurrentCells, updateCell } from '../state.js'
 import { closeModal } from './modal.js'
 import { renderTable } from '../table/table-render.js'
 
@@ -59,13 +59,10 @@ function renderMiniRows(rows) {
 
     tr.innerHTML = `
       <td>
-        <input 
-          type="text" 
-          value="${escapeHtml(row.type || '')}" 
-          data-index="${index}" 
-          data-field="type"
-          placeholder="box / bag / kg"
-        >
+        <select data-index="${index}" data-field="type">
+          <option value="">Обрати</option>
+          ${renderPackagingOptions(row.type)}
+        </select>
       </td>
 
       <td>
@@ -89,9 +86,27 @@ function renderMiniRows(rows) {
   })
 }
 
+function renderPackagingOptions(selectedType) {
+  return state.packagingTypes.map(type => `
+    <option 
+      value="${escapeHtml(type)}" 
+      ${type === selectedType ? 'selected' : ''}
+    >
+      ${escapeHtml(type)}
+    </option>
+  `).join('')
+}
+
 function attachModalEvents(rows) {
-  document.querySelectorAll('#miniTable input').forEach(input => {
+  document.querySelectorAll('#miniTable input, #miniTable select').forEach(input => {
     input.addEventListener('input', () => {
+      const index = Number(input.dataset.index)
+      const field = input.dataset.field
+
+      rows[index][field] = input.value
+    })
+
+    input.addEventListener('change', () => {
       const index = Number(input.dataset.index)
       const field = input.dataset.field
 

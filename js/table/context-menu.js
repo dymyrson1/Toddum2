@@ -65,9 +65,25 @@ export function initContextMenu() {
   })
 
   document.addEventListener('click', event => {
-    if (!menu.contains(event.target)) {
-      closeContextMenu()
+    const target = event.target
+
+    if (
+      menu.classList.contains('hidden') ||
+      menu.contains(target) ||
+      target.closest('.editable-cell')
+    ) {
+      return
     }
+
+    closeContextMenu()
+  })
+
+  document.addEventListener('scroll', () => {
+    closeContextMenu()
+  }, true)
+
+  window.addEventListener('resize', () => {
+    closeContextMenu()
   })
 
   document.addEventListener('keydown', event => {
@@ -82,6 +98,7 @@ export function closeContextMenu() {
   if (!menu) return
 
   menu.classList.add('hidden')
+  activeCellKey = null
 }
 
 function markSelectedCell(key) {

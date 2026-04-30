@@ -1,79 +1,28 @@
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.hidden {
+.modal.hidden {
   display: none;
 }
 
-#miniTable {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-#miniTable td, #miniTable th {
-  border: 1px solid #ccc;
-  padding: 6px;
-}
-
-#miniTable input {
-  width: 100%;
-  border: none;
-  outline: none;
-}
-.context-menu {
-  position: fixed;
-  z-index: 1000;
-  background: white;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-  padding: 6px;
-  min-width: 150px;
-}
-
-.context-menu button {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.context-menu button:hover {
-  background: #f1f5f9;
-}
-
-.context-menu button:disabled {
-  color: #aaa;
-  cursor: not-allowed;
-}
-
-.context-menu button:disabled:hover {
-  background: transparent;
-}
-
 .modal-content {
+  position: relative;
+  z-index: 5001;
+  background: var(--card);
+  color: var(--text);
   width: min(560px, 92vw);
   max-height: 85vh;
   overflow: auto;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
 }
 
 .modal-header {
@@ -91,6 +40,7 @@
 .modal-close {
   border: none;
   background: transparent;
+  color: var(--text);
   font-size: 26px;
   line-height: 1;
   cursor: pointer;
@@ -98,12 +48,20 @@
 
 .modal-cell-key {
   margin-bottom: 14px;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 14px;
 }
 
 #miniTable {
+  border-collapse: collapse;
+  width: 100%;
   margin-bottom: 12px;
+}
+
+#miniTable td,
+#miniTable th {
+  border: 1px solid var(--border);
+  padding: 6px;
 }
 
 #miniTable th:last-child,
@@ -112,9 +70,14 @@
   text-align: center;
 }
 
-#miniTable input {
+#miniTable input,
+#miniTable select {
+  width: 100%;
+  border: none;
+  outline: none;
   padding: 8px;
   background: transparent;
+  color: var(--text);
 }
 
 .remove-row-btn {
@@ -146,11 +109,51 @@
 }
 
 .primary-btn {
-  background: #2563eb;
+  background: var(--accent);
   color: white;
 }
 
 .secondary-btn {
   background: #e5e7eb;
   color: #111827;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 4000;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  min-width: 150px;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.context-menu button:hover {
+  background: var(--header);
+}
+
+.context-menu button:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.context-menu button:disabled:hover {
+  background: transparent;
+}
+
+.context-menu.hidden {
+  display: none;
 }

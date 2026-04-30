@@ -265,3 +265,180 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ===== DARK THEME ===== */
+
+html[data-theme="dark"] {
+  --bg: #0f172a;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --border: #1f2937;
+  --header: #1e293b;
+  --accent: #3b82f6;
+  --accent-soft: #1e3a8a33;
+  --danger: #ef4444;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* фон */
+html[data-theme="dark"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* картки */
+html[data-theme="dark"] .tab-panel,
+html[data-theme="dark"] .settings-card,
+html[data-theme="dark"] .analytics-card,
+html[data-theme="dark"] .analytics-section {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+/* таби */
+html[data-theme="dark"] .tab {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .tab:hover {
+  background: #1e293b;
+}
+
+/* таблиця */
+html[data-theme="dark"] .main-table {
+  background: var(--card);
+}
+
+html[data-theme="dark"] .main-table th,
+html[data-theme="dark"] .main-table td {
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .main-table thead th {
+  background: var(--header);
+}
+
+html[data-theme="dark"] .customer-cell {
+  background: #0f172a;
+}
+
+/* hover */
+html[data-theme="dark"] .editable-cell:hover {
+  background: #1e293b;
+}
+
+/* modal */
+html[data-theme="dark"] .modal-content {
+  background: var(--card);
+}
+
+/* context menu */
+html[data-theme="dark"] .context-menu {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .context-menu button:hover {
+  background: #1e293b;
+}
+
+/* inputs */
+html[data-theme="dark"] input {
+  background: #0f172a;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* toggle button */
+.theme-toggle {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--header);
+}
+
+/* ===== DARK THEME FIXES ===== */
+
+html[data-theme="dark"] .settings-item,
+html[data-theme="dark"] .analytics-row,
+html[data-theme="dark"] .table-scroll {
+  background: #111827;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .settings-form button,
+html[data-theme="dark"] .settings-item button,
+html[data-theme="dark"] .week-btn,
+html[data-theme="dark"] .theme-toggle {
+  background: #0f172a;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .settings-form button:hover,
+html[data-theme="dark"] .settings-item button:hover,
+html[data-theme="dark"] .week-btn:hover,
+html[data-theme="dark"] .theme-toggle:hover {
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .analytics-row {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .settings-item {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .remove-row-btn,
+html[data-theme="dark"] .secondary-btn {
+  background: #1e293b;
+  color: var(--text);
+}
+
+html[data-theme="dark"] .primary-btn {
+  background: var(--accent);
+  color: white;
+}
+
+.sync-status {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.sync-status.connecting {
+  color: #f59e0b;
+}
+
+.sync-status.saved {
+  color: #16a34a;
+}
+
+.sync-status.saving {
+  color: #2563eb;
+}
+
+.sync-status.error {
+  color: #dc2626;
+}
+
+.sync-status.idle {
+  color: var(--muted);
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}

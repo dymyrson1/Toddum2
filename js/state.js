@@ -1,4 +1,5 @@
-import { saveState, loadState } from './storage/local-storage.js'
+import { loadFirebaseState, saveFirebaseState } from './firebase.js'
+import { setSyncStatus } from './sync/sync-status.js'
 
 export const state = {
   currentTab: 'orders',
@@ -11,23 +12,52 @@ export const state = {
 
   customers: ['Client1', 'Client2'],
   products: ['Milk', 'Cheese'],
+  packagingTypes: ['box', 'bag', 'kg', 'pcs'],
 
   weeks: {}
 }
 
-export function initState() {
-  const savedState = loadState()
+let saveTimer = null
 
-  if (savedState) {
-    applySavedState(savedState)
+export async function initState() {
+  try {
+    setSyncStatus('connecting', 'Firebase: connecting...')
+
+    const firebaseState = await loadFirebaseState()
+
+    if (firebaseState) {
+      applySavedState(firebaseState)
+      setSyncStatus('saved', 'Firebase: loaded')
+    } else {
+      setSyncStatus('saved', 'Firebase: connected, no data')
+    }
+  } catch (error) {
+    console.error('Firebase load failed:', error)
+    setSyncStatus('error', 'Firebase: load error')
   }
 
   updateCurrentYearWeek()
   ensureCurrentWeek()
+
+  persistState()
 }
 
 export function persistState() {
-  saveState(state)
+  clearTimeout(saveTimer)
+
+  setSyncStatus('saving', 'Firebase: saving...')
+
+  saveTimer = setTimeout(() => {
+    saveFirebaseState(prepareStateForSaving())
+      .then(() => {
+        console.log('Saved to Firebase')
+        setSyncStatus('saved', 'Firebase: saved')
+      })
+      .catch(error => {
+        console.error('Firebase save failed:', error)
+        setSyncStatus('error', 'Firebase: save error')
+      })
+  }, 400)
 }
 
 export function getCurrentWeekId() {
@@ -41,8 +71,6 @@ export function ensureCurrentWeek() {
     state.weeks[weekId] = {
       cells: {}
     }
-
-    persistState()
   }
 }
 
@@ -123,6 +151,35 @@ export function removeProduct(name) {
   persistState()
 }
 
+export function addPackagingType(name) {
+  const cleanName = normalizeName(name)
+  if (!cleanName) return false
+
+  if (state.packagingTypes.includes(cleanName)) {
+    alert('Такий тип упаковки вже існує')
+    return false
+  }
+
+  state.packagingTypes.push(cleanName)
+  persistState()
+
+  return true
+}
+
+export function removePackagingType(name) {
+  state.packagingTypes = state.packagingTypes.filter(type => type !== name)
+
+  Object.values(state.weeks).forEach(week => {
+    Object.values(week.cells).forEach(cell => {
+      if (!cell.items) return
+
+      cell.items = cell.items.filter(item => item.type !== name)
+    })
+  })
+
+  persistState()
+}
+
 export function updateCell(key, value) {
   const cells = getCurrentCells()
 
@@ -138,6 +195,7 @@ export function updateCell(key, value) {
 export function deleteCell(key) {
   const cells = getCurrentCells()
   delete cells[key]
+
   persistState()
 }
 
@@ -153,7 +211,18 @@ export function updateCheck(customer, checkType, checked) {
   }
 
   cells[key][checkType] = checked
+
   persistState()
+}
+
+function prepareStateForSaving() {
+  return {
+    currentDate: state.currentDate.toISOString(),
+    customers: state.customers,
+    products: state.products,
+    packagingTypes: state.packagingTypes,
+    weeks: state.weeks
+  }
 }
 
 function applySavedState(savedState) {
@@ -167,6 +236,10 @@ function applySavedState(savedState) {
 
   if (Array.isArray(savedState.products)) {
     state.products = savedState.products
+  }
+
+  if (Array.isArray(savedState.packagingTypes)) {
+    state.packagingTypes = savedState.packagingTypes
   }
 
   if (savedState.weeks && typeof savedState.weeks === 'object') {
