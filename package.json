@@ -14,6 +14,12 @@
     "check:sizes": "node scripts/check-large-files.mjs",
     "check:css": "node scripts/check-css-audit.mjs",
     "check:css:groups": "node scripts/check-css-groups.mjs",
+    "css:extract": "node scripts/extract-css-groups.mjs",
+    "css:extract:write": "node scripts/extract-css-groups.mjs --write",
+    "css:extract:logg": "node scripts/extract-css-groups.mjs --group=logg",
+    "css:extract:logg:write": "node scripts/extract-css-groups.mjs --group=logg --write",
+    "css:extract:rapport": "node scripts/extract-css-groups.mjs --group=rapport",
+    "css:extract:rapport:write": "node scripts/extract-css-groups.mjs --group=rapport --write",
     "check": "npm run format:check && npm test && npm run lint && npm run check:unused && npm run check:sizes && npm run check:css && npm run check:css:groups"
   },
   "devDependencies": {

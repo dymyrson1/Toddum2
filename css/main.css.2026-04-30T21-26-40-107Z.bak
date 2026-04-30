@@ -668,29 +668,74 @@ html[data-theme='dark'] .rapport-detail-table th {
 html[data-theme='dark'] .app-top {
   background: var(--bg);
 }
-/* moved to css/logg.css: /* ===== LOGG ===== */
-.logg-header */
 
-/* moved to css/logg.css: .logg-header h2 */
+/* ===== LOGG ===== */
+.logg-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
 
-/* moved to css/logg.css: .logg-list */
+.logg-header h2 {
+  margin: 0 0 6px;
+}
 
-/* moved to css/logg.css: .logg-item */
+.logg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-/* moved to css/logg.css: .logg-item-main */
+.logg-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fbfcfd;
+  padding: 14px;
+}
 
-/* moved to css/logg.css: .logg-action */
+.logg-item-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
 
-/* moved to css/logg.css: .logg-meta */
+.logg-action {
+  font-weight: 700;
+}
 
-/* moved to css/logg.css: .logg-details */
+.logg-meta {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
 
-/* moved to css/logg.css: .logg-details div */
+.logg-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 8px 14px;
+  margin: 0;
+}
 
-/* moved to css/logg.css: .logg-details dt */
+.logg-details div {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  padding: 8px 10px;
+}
 
-/* moved to css/logg.css: .logg-details dd */
+.logg-details dt {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
 
+.logg-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
 
 .danger-btn {
   border: 1px solid var(--danger);
@@ -709,9 +754,14 @@ html[data-theme='dark'] .app-top {
   opacity: 0.5;
   cursor: not-allowed;
 }
-/* moved to css/logg.css: html[data-theme='dark'] .logg-item */
 
-/* moved to css/logg.css: html[data-theme='dark'] .logg-details div */
+html[data-theme='dark'] .logg-item {
+  background: var(--card);
+}
+
+html[data-theme='dark'] .logg-details div {
+  background: #0f172a;
+}
 
 @media (max-width: 760px) {
   .logg-header {
