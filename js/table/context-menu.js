@@ -1,10 +1,12 @@
 import { state, deleteOrderCell } from '../state.js'
-import { openModal } from '../modal/modal.js'
+import { openProductModal } from '../modal/product-modal.js'
 import { renderTable } from './table-render.js'
-import { copyCell, pasteCell, hasCopiedCell } from './clipboard.js'
+import { copyCell, hasCopiedCell, pasteCell } from './clipboard.js'
+import { selectProductCell } from './table-selection.js'
 
 let activeRowId = null
 let activeProductName = null
+let contextMenuInitialized = false
 
 export function openContextMenu(event, rowId, productName) {
   event.preventDefault()
@@ -12,95 +14,39 @@ export function openContextMenu(event, rowId, productName) {
   activeRowId = rowId
   activeProductName = productName
 
-  state.selectedCell = {
-    rowId,
-    productName
-  }
+  selectProductCell(state, rowId, productName)
 
-  const menu = document.getElementById('contextMenu')
+  const menu = getContextMenu()
+
   if (!menu) return
 
   menu.classList.remove('hidden')
   menu.style.left = `${event.clientX}px`
   menu.style.top = `${event.clientY}px`
 
-  updatePasteButton()
-  markSelectedCell(rowId, productName)
+  updatePasteButton(menu)
 }
 
 export function initContextMenu() {
-  const menu = document.getElementById('contextMenu')
+  if (contextMenuInitialized) return
+
+  const menu = getContextMenu()
+
   if (!menu) return
 
-  menu.addEventListener('click', event => {
-    const button = event.target.closest('button')
-    if (!button) return
+  menu.addEventListener('click', handleContextMenuClick)
 
-    const action = button.dataset.action
-    if (!action || !activeRowId || !activeProductName) return
+  document.addEventListener('click', handleDocumentClick)
+  document.addEventListener('scroll', closeContextMenu, true)
+  document.addEventListener('keydown', handleEscapeKey)
+  window.addEventListener('resize', closeContextMenu)
 
-    if (action === 'edit') {
-      closeContextMenu()
-      openModal(activeRowId, activeProductName)
-      return
-    }
-
-    if (action === 'clear') {
-      const confirmed = confirm('Очистити цю клітинку?')
-
-      if (confirmed) {
-        deleteOrderCell(activeRowId, activeProductName)
-        closeContextMenu()
-        renderTable()
-      }
-
-      return
-    }
-
-    if (action === 'copy') {
-      copyCell(activeRowId, activeProductName)
-      closeContextMenu()
-      return
-    }
-
-    if (action === 'paste') {
-      pasteCell(activeRowId, activeProductName)
-      closeContextMenu()
-      return
-    }
-  })
-
-  document.addEventListener('click', event => {
-    const target = event.target
-
-    if (
-      menu.classList.contains('hidden') ||
-      menu.contains(target) ||
-      target.closest('.editable-cell')
-    ) {
-      return
-    }
-
-    closeContextMenu()
-  })
-
-  document.addEventListener('scroll', () => {
-    closeContextMenu()
-  }, true)
-
-  window.addEventListener('resize', () => {
-    closeContextMenu()
-  })
-
-  document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      closeContextMenu()
-    }
-  })
+  contextMenuInitialized = true
 }
 
 export function closeContextMenu() {
-  const menu = document.getElementById('contextMenu')
+  const menu = getContextMenu()
+
   if (!menu) return
 
   menu.classList.add('hidden')
@@ -109,31 +55,69 @@ export function closeContextMenu() {
   activeProductName = null
 }
 
-function markSelectedCell(rowId, productName) {
-  document.querySelectorAll('.editable-cell').forEach(cell => {
-    cell.classList.remove('selected')
-  })
+function handleContextMenuClick(event) {
+  const button = event.target.closest('button[data-action]')
 
-  const cell = document.querySelector(
-    `.editable-cell[data-row-id="${cssEscape(rowId)}"][data-product="${cssEscape(productName)}"]`
-  )
+  if (!button) return
+  if (!activeRowId || !activeProductName) return
 
-  if (cell) {
-    cell.classList.add('selected')
+  const action = button.dataset.action
+
+  if (action === 'edit') {
+    closeContextMenu()
+    openProductModal(activeRowId, activeProductName)
+    return
+  }
+
+  if (action === 'clear') {
+    const confirmed = confirm('Vil du tømme denne cellen?')
+
+    if (!confirmed) return
+
+    deleteOrderCell(activeRowId, activeProductName)
+    closeContextMenu()
+    renderTable()
+    return
+  }
+
+  if (action === 'copy') {
+    copyCell(activeRowId, activeProductName)
+    closeContextMenu()
+    return
+  }
+
+  if (action === 'paste') {
+    pasteCell(activeRowId, activeProductName)
+    closeContextMenu()
+    renderTable()
   }
 }
 
-function updatePasteButton() {
-  const pasteButton = document.querySelector('[data-action="paste"]')
+function handleDocumentClick(event) {
+  const menu = getContextMenu()
+
+  if (!menu) return
+  if (menu.classList.contains('hidden')) return
+  if (menu.contains(event.target)) return
+  if (event.target.closest('.editable-cell')) return
+
+  closeContextMenu()
+}
+
+function handleEscapeKey(event) {
+  if (event.key === 'Escape') {
+    closeContextMenu()
+  }
+}
+
+function updatePasteButton(menu) {
+  const pasteButton = menu.querySelector('[data-action="paste"]')
+
   if (!pasteButton) return
 
   pasteButton.disabled = !hasCopiedCell()
 }
 
-function cssEscape(value) {
-  if (window.CSS && CSS.escape) {
-    return CSS.escape(value)
-  }
-
-  return String(value).replaceAll('"', '\\"')
+function getContextMenu() {
+  return document.getElementById('contextMenu')
 }

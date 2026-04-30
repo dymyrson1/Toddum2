@@ -9,7 +9,7 @@ import {
 
 import { openMerknadModal } from '../modal/merknad-modal.js'
 import { openProductModal } from '../modal/product-modal.js'
-import { closeContextMenu } from './context-menu.js'
+import { closeContextMenu, openContextMenu } from './context-menu.js'
 import { renderTable } from './table-render.js'
 
 import {
@@ -26,10 +26,7 @@ import {
   isAddRowButtonFromEvent
 } from './table-event-targets.js'
 
-import {
-  confirmCheckboxChange,
-  confirmDeleteRow
-} from './table-confirmation.js'
+import { confirmCheckboxChange, confirmDeleteRow } from './table-confirmation.js'
 
 import { selectProductCell } from './table-selection.js'
 import { initTableKeyboardController } from './table-keyboard.js'
@@ -54,6 +51,7 @@ function initTableEvents() {
 
   document.addEventListener('click', handleTableClick)
   document.addEventListener('change', handleTableChange)
+  document.addEventListener('contextmenu', handleTableContextMenu)
 
   tableEventsInitialized = true
 }
@@ -68,6 +66,19 @@ function handleTableClick(event) {
 function handleTableChange(event) {
   if (handleRowFieldChange(event)) return
   if (handleCheckboxChange(event)) return
+}
+
+function handleTableContextMenu(event) {
+  const cell = getProductCellFromEvent(event)
+  const identity = getProductCellIdentity(cell)
+
+  if (!identity) return
+
+  event.preventDefault()
+
+  closeContextMenu()
+  selectProductCell(state, identity.rowId, identity.productName)
+  openContextMenu(event, identity.rowId, identity.productName)
 }
 
 function handleProductCellClick(event) {
