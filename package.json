@@ -8,11 +8,15 @@
     "format:check": "prettier --check \"**/*.{js,css,html,json,md}\"",
     "test": "vitest run",
     "test:watch": "vitest",
+    "lint": "eslint js tests scripts --max-warnings=50",
+    "lint:strict": "eslint js tests scripts --max-warnings=0",
     "check:unused": "node scripts/check-unused-files.mjs",
     "check:sizes": "node scripts/check-large-files.mjs",
-    "check": "npm run format:check && npm test && npm run check:unused && npm run check:sizes"
+    "check": "npm run format:check && npm test && npm run lint && npm run check:unused && npm run check:sizes"
   },
   "devDependencies": {
+    "@eslint/js": "latest",
+    "eslint": "latest",
     "prettier": "latest",
     "vitest": "latest"
   }
