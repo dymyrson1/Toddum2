@@ -1,5 +1,6 @@
-import { state, getCurrentRows, getCustomerName } from '../state.js'
+import { getCurrentRows } from '../state.js'
 import { attachTableEvents } from './table-events.js'
+import { renderCustomerDatalist, renderOrdersTable } from './table-row-render.js'
 
 export function renderOrdersTab() {
   renderTable()
@@ -7,198 +8,15 @@ export function renderOrdersTab() {
 
 export function renderTable() {
   const container = document.getElementById('tableContainer')
+
   if (!container) return
 
   const rows = getCurrentRows()
 
-  let html = `
-    <datalist id="customersDatalist">
-      ${state.customers.map(customer => `
-        <option value="${escapeHtml(getCustomerName(customer))}"></option>
-      `).join('')}
-    </datalist>
-
-    <div class="table-scroll">
-      <table class="main-table">
-        <thead>
-          <tr>
-            <th class="corner-cell">Customer</th>
+  container.innerHTML = `
+    ${renderCustomerDatalist()}
+    ${renderOrdersTable(rows)}
   `
 
-  state.products.forEach(product => {
-    html += `<th>${escapeHtml(product)}</th>`
-  })
-
-  html += `
-            <th class="check-column">A</th>
-            <th class="check-column">B</th>
-            <th class="delivery-day-column">Delivery day</th>
-            <th class="merknad-column">Merknad</th>
-          </tr>
-        </thead>
-
-        <tbody>
-  `
-
-  rows.forEach(row => {
-    html += `
-      <tr 
-        data-row-id="${escapeHtml(row.id)}"
-        class="${getRowStatusClass(row)}"
-      >
-        <th class="customer-cell">
-          <input
-            class="customer-input"
-            type="text"
-            value="${escapeHtml(row.customerName || '')}"
-            list="customersDatalist"
-            placeholder="Customer"
-            data-row-field="customerName"
-            data-row-id="${escapeHtml(row.id)}"
-          >
-        </th>
-    `
-
-    state.products.forEach(product => {
-      const cellData = row.cells?.[product]
-      let cellText = '<span class="cell-empty">—</span>'
-
-      if (cellData && Array.isArray(cellData.items) && cellData.items.length > 0) {
-        cellText = cellData.items
-          .map(item => renderCellItem(item))
-          .join('<br>')
-      }
-
-      html += `
-        <td 
-          class="editable-cell" 
-          data-row-id="${escapeHtml(row.id)}"
-          data-product="${escapeHtml(product)}"
-        >
-          ${cellText}
-        </td>
-      `
-    })
-
-    html += `
-        <td class="check-cell">
-          <input 
-            type="checkbox" 
-            data-row-check="A"
-            data-row-id="${escapeHtml(row.id)}"
-            ${row.checks?.A ? 'checked' : ''}
-          >
-        </td>
-
-        <td class="check-cell">
-          <input 
-            type="checkbox" 
-            data-row-check="B"
-            data-row-id="${escapeHtml(row.id)}"
-            ${row.checks?.B ? 'checked' : ''}
-          >
-        </td>
-
-        <td class="delivery-day-cell">
-          <select 
-            data-row-field="deliveryDay"
-            data-row-id="${escapeHtml(row.id)}"
-          >
-            <option value="">—</option>
-            ${renderDeliveryDayOptions(row.deliveryDay)}
-          </select>
-        </td>
-
-        <td 
-          class="merknad-cell"
-          data-merknad-row-id="${escapeHtml(row.id)}"
-          title="Klikk for å redigere merknad"
-        >
-          ${
-            row.merknad
-              ? escapeHtml(row.merknad)
-              : '<span class="cell-empty">—</span>'
-          }
-        </td>
-      </tr>
-    `
-  })
-
-  html += `
-        </tbody>
-      </table>
-    </div>
-
-    <button id="addOrderRowBtn" class="add-row-main-btn">
-      + Legg til rad
-    </button>
-  `
-
-  container.innerHTML = html
   attachTableEvents()
-}
-
-function getRowStatusClass(row) {
-  const aChecked = Boolean(row.checks?.A)
-  const bChecked = Boolean(row.checks?.B)
-
-  if (aChecked && bChecked) return 'row-status-both'
-  if (aChecked) return 'row-status-a'
-  if (bChecked) return 'row-status-b'
-
-  return ''
-}
-
-function renderCellItem(item) {
-  const qty = Number(item.qty) || 0
-  const label = item.label || item.packageName || item.type || '—'
-  const packageName = String(item.packageName || '').toLowerCase()
-  const labelLower = String(label).toLowerCase()
-
-  if (packageName === 'kg' || labelLower === 'kg') {
-    return `${escapeHtml(formatNumber(qty))}kg`
-  }
-
-  if (
-    packageName === 'l' ||
-    packageName === 'liter' ||
-    packageName === 'literer' ||
-    labelLower === 'l' ||
-    labelLower === 'liter' ||
-    labelLower === 'literer'
-  ) {
-    return `${escapeHtml(formatNumber(qty))}l`
-  }
-
-  if (packageName.includes('spann') || labelLower.includes('spann')) {
-    return `${escapeHtml(formatNumber(qty))} spann`
-  }
-
-  return `${escapeHtml(formatNumber(qty))}x${escapeHtml(label)}`
-}
-
-function renderDeliveryDayOptions(selectedDay) {
-  return state.deliveryDays.map(day => `
-    <option 
-      value="${escapeHtml(day)}"
-      ${day === selectedDay ? 'selected' : ''}
-    >
-      ${escapeHtml(day)}
-    </option>
-  `).join('')
-}
-
-function formatNumber(value) {
-  return Number(value).toLocaleString('nb-NO', {
-    maximumFractionDigits: 2
-  })
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
 }
