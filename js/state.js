@@ -46,6 +46,14 @@ import {
   removeProductFromWeeks
 } from './products/product-utils.js'
 
+import {
+  normalizeOrderCells,
+  normalizeOrderCellItems
+} from './orders/order-cell-utils.js'
+
+
+
+
 export const state = {
   currentTab: 'orders',
   currentDate: new Date(),
@@ -234,7 +242,10 @@ export function updateOrderCell(rowId, productName, value) {
   const oldItems = row.cells[productName]?.items || []
   const oldValue = formatCellForLog(oldItems)
 
-  const cleanItems = normalizeCellItems(productName, value?.items || [])
+const cleanItems = normalizeOrderCellItems(
+  value?.items || [],
+  getPackagingOptionsForProduct(productName)
+)
   const newValue = formatCellForLog(cleanItems)
 
   if (oldValue === newValue) return
@@ -332,9 +343,12 @@ export function getOrderCell(rowId, productName) {
     items: []
   }
 
-  return {
-    items: normalizeCellItems(productName, cell.items || [])
-  }
+return {
+  items: normalizeOrderCellItems(
+    cell.items || [],
+    getPackagingOptionsForProduct(productName)
+  )
+}
 }
 
 export function getCustomerName(customer) {
@@ -802,84 +816,7 @@ function normalizeRows(rows) {
 }
 
 function normalizeRowCells(cells) {
-  const result = {}
-
-  Object.entries(cells || {}).forEach(([productName, cell]) => {
-    const items = normalizeCellItems(productName, cell?.items || [])
-
-    if (items.length > 0) {
-      result[productName] = {
-        items
-      }
-    }
-  })
-
-  return result
-}
-
-function normalizeCellItems(productName, items) {
-  const options = getPackagingOptionsForProduct(productName)
-  const used = new Set()
-
-  return items
-    .map(item => normalizeCellItem(item, options))
-    .filter(Boolean)
-    .filter(item => {
-      if (used.has(item.packageId)) return false
-
-      used.add(item.packageId)
-
-      return true
-    })
-    .sort((a, b) => {
-      return a.weightKg - b.weightKg || a.label.localeCompare(b.label)
-    })
-}
-
-function normalizeCellItem(item, options) {
-  const qty = Number(item?.qty)
-
-  if (!Number.isFinite(qty) || qty <= 0) {
-    return null
-  }
-
-  const rawId = normalizeName(item?.packageId)
-  const rawType = normalizeName(item?.type || item?.packageName || item?.label)
-
-  let option = null
-
-  if (rawId) {
-    option = options.find(entry => entry.id === rawId) || null
-  }
-
-  if (!option && rawType) {
-    const normalizedRawType = normalizeLooseText(rawType)
-
-    option =
-      options.find(entry => {
-        return (
-          normalizeLooseText(entry.id) === normalizedRawType ||
-          normalizeLooseText(entry.packageName) === normalizedRawType ||
-          normalizeLooseText(entry.label) === normalizedRawType
-        )
-      }) || null
-  }
-
-  if (!option && rawType) {
-    option = parsePackagingOption(rawType)
-  }
-
-  if (!option) {
-    return null
-  }
-
-  return {
-    packageId: option.id,
-    packageName: option.packageName,
-    weightKg: option.weightKg,
-    label: option.label,
-    qty
-  }
+  return normalizeOrderCells(cells, getPackagingOptionsForProduct)
 }
 
 
