@@ -4,107 +4,201 @@ import path from 'node:path'
 const rootDir = process.cwd()
 const cssDir = path.join(rootDir, 'css')
 
+const groups = [
+  {
+    name: 'settings',
+    patterns: [
+      '.settings',
+      '.customer-admin',
+      '.products-admin',
+      '.packaging',
+      '.customer-form'
+    ]
+  },
+  {
+    name: 'analytics',
+    patterns: ['.analytics']
+  },
+  {
+    name: 'rapport',
+    patterns: ['.rapport']
+  },
+  {
+    name: 'levering',
+    patterns: ['.levering', '.delivery']
+  },
+  {
+    name: 'logg',
+    patterns: ['.logg', '.log-type']
+  },
+  {
+    name: 'table',
+    patterns: [
+      '.main-table',
+      '.table-',
+      '.editable-cell',
+      '.customer-cell',
+      '.check-cell',
+      '.delivery-day-cell',
+      '.merknad-cell',
+      '.row-status'
+    ]
+  },
+  {
+    name: 'modal',
+    patterns: ['.modal', '#modal', '#miniTable', '.merknad-modal']
+  },
+  {
+    name: 'tabs',
+    patterns: ['.tabs', '.tab-', '.top-bar']
+  },
+  {
+    name: 'buttons-forms',
+    patterns: [
+      'button',
+      'input',
+      'select',
+      'textarea',
+      '.primary-btn',
+      '.secondary-btn',
+      '.remove-row-btn'
+    ]
+  },
+  {
+    name: 'layout-base',
+    patterns: [
+      ':root',
+      '*',
+      'body',
+      'h1',
+      'h2',
+      'h3',
+      '.app',
+      '.card',
+      '.panel',
+      '.toolbar',
+      '.header'
+    ]
+  }
+]
+
 const files = getCssFiles(cssDir)
-
-const selectorStats = []
-const selectorCountMap = new Map()
-
-files.forEach(file => {
+const allBlocks = files.flatMap(file => {
   const content = fs.readFileSync(file, 'utf8')
-  const relativePath = path.relative(rootDir, file)
-  const blocks = extractCssBlocks(content)
 
-  blocks.forEach(block => {
-    const selectors = block.selector
-      .split(',')
-      .map(selector => selector.trim())
-      .filter(Boolean)
-
-    selectors.forEach(selector => {
-      const key = normalizeSelector(selector)
-
-      if (!selectorCountMap.has(key)) {
-        selectorCountMap.set(key, [])
-      }
-
-      selectorCountMap.get(key).push({
-        selector,
-        file: relativePath,
-        line: getLineNumber(content, block.index)
-      })
-    })
-
-    selectorStats.push({
-      file: relativePath,
-      selector: block.selector,
-      line: getLineNumber(content, block.index),
-      declarations: countDeclarations(block.body),
-      bodyLength: block.body.length
-    })
-  })
+  return extractCssBlocks(content).map(block => ({
+    ...block,
+    file,
+    relativePath: path.relative(rootDir, file),
+    line: getLineNumber(content, block.index),
+    declarations: countDeclarations(block.body)
+  }))
 })
 
-printLargestSelectors(selectorStats)
-printDuplicateSelectors(selectorCountMap)
-printCssFileSummary(files)
+const groupStats = groups.map(group => {
+  const blocks = allBlocks.filter(block => matchesGroup(block.selector, group))
 
-function printLargestSelectors(stats) {
-  console.log('\nLargest CSS selector blocks:\n')
+  return {
+    ...group,
+    blocks,
+    declarations: blocks.reduce((sum, block) => sum + block.declarations, 0),
+    linesEstimate: blocks.reduce((sum, block) => {
+      return sum + block.body.split('\n').length + block.selector.split('\n').length + 2
+    }, 0)
+  }
+})
+
+printGroupSummary(groupStats)
+printMainCssCandidates(groupStats)
+printUngroupedMainCssBlocks(allBlocks)
+
+function printGroupSummary(stats) {
+  console.log('\nCSS group summary:\n')
 
   stats
-    .sort((a, b) => b.declarations - a.declarations || b.bodyLength - a.bodyLength)
-    .slice(0, 25)
-    .forEach(item => {
+    .sort((a, b) => b.declarations - a.declarations)
+    .forEach(group => {
       console.log(
-        `${String(item.declarations).padStart(3)} declarations | ${item.file}:${item.line} | ${truncate(
-          item.selector,
-          120
-        )}`
+        `${String(group.declarations).padStart(5)} declarations | ${String(
+          group.linesEstimate
+        ).padStart(5)} est. lines | ${group.name}`
       )
     })
 }
 
-function printDuplicateSelectors(selectorMap) {
-  const duplicates = [...selectorMap.entries()]
-    .filter(([, entries]) => entries.length > 1)
-    .sort((a, b) => b[1].length - a[1].length)
+function printMainCssCandidates(stats) {
+  console.log('\nBest extraction candidates from css/main.css:\n')
 
-  console.log('\nRepeated selectors:\n')
+  stats
+    .map(group => ({
+      ...group,
+      mainBlocks: group.blocks.filter(block => block.relativePath === 'css/main.css')
+    }))
+    .filter(group => group.mainBlocks.length > 0)
+    .sort((a, b) => {
+      const declarationsA = a.mainBlocks.reduce(
+        (sum, block) => sum + block.declarations,
+        0
+      )
+      const declarationsB = b.mainBlocks.reduce(
+        (sum, block) => sum + block.declarations,
+        0
+      )
 
-  if (duplicates.length === 0) {
-    console.log('✅ No repeated selectors found.')
+      return declarationsB - declarationsA
+    })
+    .forEach(group => {
+      const declarations = group.mainBlocks.reduce(
+        (sum, block) => sum + block.declarations,
+        0
+      )
+
+      console.log(
+        `\n${group.name}: ${declarations} declarations in css/main.css`
+      )
+
+      group.mainBlocks.slice(0, 12).forEach(block => {
+        console.log(
+          `  - css/main.css:${block.line} | ${String(block.declarations).padStart(
+            3
+          )} decl | ${truncate(block.selector, 120)}`
+        )
+      })
+    })
+}
+
+function printUngroupedMainCssBlocks(blocks) {
+  const groupedSelectors = new Set()
+
+  groupStats.forEach(group => {
+    group.blocks.forEach(block => {
+      groupedSelectors.add(`${block.relativePath}:${block.line}:${block.selector}`)
+    })
+  })
+
+  const ungrouped = blocks
+    .filter(block => block.relativePath === 'css/main.css')
+    .filter(block => {
+      return !groupedSelectors.has(
+        `${block.relativePath}:${block.line}:${block.selector}`
+      )
+    })
+    .sort((a, b) => b.declarations - a.declarations)
+
+  console.log('\nLargest ungrouped blocks in css/main.css:\n')
+
+  if (ungrouped.length === 0) {
+    console.log('✅ No large ungrouped blocks found.')
     return
   }
 
-  duplicates.slice(0, 30).forEach(([selector, entries]) => {
-    console.log(`${selector} (${entries.length} times)`)
-
-    entries.forEach(entry => {
-      console.log(`  - ${entry.file}:${entry.line}`)
-    })
+  ungrouped.slice(0, 25).forEach(block => {
+    console.log(
+      `css/main.css:${block.line} | ${String(block.declarations).padStart(
+        3
+      )} decl | ${truncate(block.selector, 120)}`
+    )
   })
-}
-
-function printCssFileSummary(files) {
-  console.log('\nCSS file summary:\n')
-
-  files
-    .map(file => {
-      const content = fs.readFileSync(file, 'utf8')
-      const relativePath = path.relative(rootDir, file)
-
-      return {
-        relativePath,
-        lines: content.split('\n').length,
-        bytes: fs.statSync(file).size
-      }
-    })
-    .sort((a, b) => b.lines - a.lines)
-    .forEach(file => {
-      const kb = (file.bytes / 1024).toFixed(1)
-
-      console.log(`${String(file.lines).padStart(5)} lines | ${kb.padStart(6)} KB | ${file.relativePath}`)
-    })
 }
 
 function getCssFiles(dir) {
@@ -154,12 +248,16 @@ function countDeclarations(body) {
     .filter(Boolean).length
 }
 
-function getLineNumber(content, index) {
-  return content.slice(0, index).split('\n').length
+function matchesGroup(selector, group) {
+  const normalizedSelector = selector.toLowerCase()
+
+  return group.patterns.some(pattern => {
+    return normalizedSelector.includes(pattern.toLowerCase())
+  })
 }
 
-function normalizeSelector(selector) {
-  return selector.replace(/\s+/g, ' ').trim()
+function getLineNumber(content, index) {
+  return content.slice(0, index).split('\n').length
 }
 
 function truncate(value, maxLength) {
