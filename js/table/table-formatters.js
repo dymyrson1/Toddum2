@@ -1,3 +1,8 @@
+import { escapeHtml } from '../utils/html.js'
+import { formatNumber } from '../utils/number.js'
+
+export { escapeHtml }
+
 export function getRowStatusClass(row) {
   const aChecked = Boolean(row.checks?.A)
   const bChecked = Boolean(row.checks?.B)
@@ -43,19 +48,4 @@ export function renderCellItem(item) {
   }
 
   return `${escapeHtml(formatNumber(qty))}x${escapeHtml(label)}`
-}
-
-export function formatNumber(value) {
-  return Number(value).toLocaleString('nb-NO', {
-    maximumFractionDigits: 2
-  })
-}
-
-export function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
 }

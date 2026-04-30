@@ -1,3 +1,7 @@
+import { escapeHtml } from '../utils/html.js'
+
+export { escapeHtml }
+
 export function getModalElement() {
   return document.getElementById('modal')
 }
@@ -9,6 +13,8 @@ export function closeModal() {
 
   modal.classList.add('hidden')
   modal.innerHTML = ''
+
+  document.removeEventListener('keydown', handleModalKeydown)
 }
 
 export function openModalContainer() {
@@ -18,14 +24,24 @@ export function openModalContainer() {
 
   modal.classList.remove('hidden')
 
+  attachModalBaseEvents(modal)
+
   return modal
 }
 
-export function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
+function attachModalBaseEvents(modal) {
+  modal.onclick = event => {
+    if (event.target === modal) {
+      closeModal()
+    }
+  }
+
+  document.removeEventListener('keydown', handleModalKeydown)
+  document.addEventListener('keydown', handleModalKeydown)
+}
+
+function handleModalKeydown(event) {
+  if (event.key === 'Escape') {
+    closeModal()
+  }
 }
