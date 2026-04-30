@@ -12,8 +12,7 @@ export function renderRapportView(container) {
       <div class="rapport-header">
         <div>
           <h2>Produksjonsrapport</h2>
-          <div class="muted-text">Uke: <strong>${escapeHtml(data.weekId)}</strong></div>
-        </div>
+            <div class="muted-text"><strong>${escapeHtml(formatUke(data.weekId))}</strong></div>        </div>
       </div>
 
       <div class="rapport-summary-grid">
@@ -71,6 +70,11 @@ function renderProductionSummary(data) {
       `).join('')}
     </div>
   `
+}
+
+function formatUke(weekId) {
+  const match = String(weekId).match(/W(\d+)$/)
+  return match ? `Uke ${Number(match[1])}` : weekId
 }
 
 function escapeHtml(value) {

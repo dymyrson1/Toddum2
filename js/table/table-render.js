@@ -133,10 +133,20 @@ export function renderTable() {
 }
 
 function renderCellItem(item) {
+  const qty = Number(item.qty) || 0
   const label = item.label || item.packageName || item.type || '—'
-  const qty = item.qty ?? ''
+  const packageName = String(item.packageName || '').toLowerCase()
+  const labelLower = String(label).toLowerCase()
 
-  return `${escapeHtml(label)}: ${escapeHtml(qty)}`
+  if (packageName === 'kg' || labelLower === 'kg') {
+    return `${escapeHtml(formatNumber(qty))}kg`
+  }
+
+  if (packageName.includes('spann') || labelLower.includes('spann')) {
+    return `${escapeHtml(formatNumber(qty))} spann`
+  }
+
+  return `${escapeHtml(formatNumber(qty))}-${escapeHtml(label)}`
 }
 
 function renderDeliveryDayOptions(selectedDay) {
@@ -148,6 +158,12 @@ function renderDeliveryDayOptions(selectedDay) {
       ${escapeHtml(day)}
     </option>
   `).join('')
+}
+
+function formatNumber(value) {
+  return Number(value).toLocaleString('nb-NO', {
+    maximumFractionDigits: 2
+  })
 }
 
 function escapeHtml(value) {

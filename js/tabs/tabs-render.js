@@ -2,6 +2,8 @@ import { state } from '../state.js'
 import { renderOrdersView } from '../views/orders-view.js'
 import { renderRapportView } from '../views/rapport-view.js'
 import { renderAnalyticsView } from '../views/analytics-view.js'
+import { renderLoggView } from '../views/logg-view.js'
+import { renderLoggDetaljertView } from '../views/logg-detaljert-view.js'
 import { renderSettingsView } from '../views/settings-view.js'
 
 export function renderTab() {
@@ -20,6 +22,16 @@ export function renderTab() {
 
   if (state.currentTab === 'analytics') {
     renderAnalyticsView(container)
+    return
+  }
+
+  if (state.currentTab === 'logg') {
+    renderLoggView(container)
+    return
+  }
+
+  if (state.currentTab === 'loggDetaljert') {
+    renderLoggDetaljertView(container)
     return
   }
 

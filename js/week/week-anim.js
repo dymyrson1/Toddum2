@@ -6,6 +6,13 @@ export function animateWeekChange(direction, onMiddle) {
     return
   }
 
+  const animationClasses = [
+    'week-slide-out-left',
+    'week-slide-out-right',
+    'week-slide-in-left',
+    'week-slide-in-right'
+  ]
+
   const outClass = direction === 'next'
     ? 'week-slide-out-left'
     : 'week-slide-out-right'
@@ -14,25 +21,22 @@ export function animateWeekChange(direction, onMiddle) {
     ? 'week-slide-in-right'
     : 'week-slide-in-left'
 
-  container.classList.remove(
-    'week-slide-out-left',
-    'week-slide-out-right',
-    'week-slide-in-left',
-    'week-slide-in-right'
-  )
-
+  container.classList.remove(...animationClasses)
   container.classList.add(outClass)
 
   setTimeout(() => {
+    container.classList.remove(outClass)
+
     onMiddle()
 
-    const newContainer = document.getElementById('tableContainer')
-    if (!newContainer) return
+    const updatedContainer = document.getElementById('tableContainer')
+    if (!updatedContainer) return
 
-    newContainer.classList.add(inClass)
+    updatedContainer.classList.remove(...animationClasses)
+    updatedContainer.classList.add(inClass)
 
     setTimeout(() => {
-      newContainer.classList.remove(inClass)
-    }, 220)
+      updatedContainer.classList.remove(inClass)
+    }, 240)
   }, 180)
 }

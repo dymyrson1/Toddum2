@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Orders Table</title>
+  <title>Bestillingstabell</title>
 
   <link rel="stylesheet" href="css/main.css?v=1.0.0" />
   <link rel="stylesheet" href="css/table.css?v=1.0.0" />
@@ -14,23 +14,27 @@
 
 <body>
   <div class="app">
-    <header class="app-header">
-      <div>
-        <h1>Orders Table</h1>
-        <div id="firebaseStatus" class="sync-status idle">Firebase: idle</div>
-      </div>
+    <div class="app-top">
+      <header class="app-header">
+        <div>
+          <h1>Bestillingstabell</h1>
+          <div id="firebaseStatus" class="sync-status idle">Firebase: idle</div>
+        </div>
 
-      <button id="themeToggle" class="theme-toggle">
-        🌙
-      </button>
-    </header>
+        <button id="themeToggle" class="theme-toggle">
+          🌙
+        </button>
+      </header>
 
-    <nav class="tabs">
-      <button data-tab="orders" class="tab active">Orders</button>
-      <button data-tab="rapport" class="tab">Rapport</button>
-      <button data-tab="analytics" class="tab">Analytics</button>
-      <button data-tab="settings" class="tab">Settings</button>
-    </nav>
+      <nav class="tabs">
+        <button data-tab="orders" class="tab active">Orders</button>
+        <button data-tab="rapport" class="tab">Rapport</button>
+        <button data-tab="analytics" class="tab">Analytics</button>
+        <button data-tab="logg" class="tab">Logg</button>
+        <button data-tab="loggDetaljert" class="tab">Detaljert logg</button>
+        <button data-tab="settings" class="tab">Settings</button>
+      </nav>
+    </div>
 
     <main id="tabContent"></main>
   </div>

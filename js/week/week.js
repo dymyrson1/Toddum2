@@ -1,4 +1,5 @@
 import {
+  state,
   getCurrentWeekId,
   goToPreviousWeek,
   goToNextWeek
@@ -42,7 +43,11 @@ function updateLabel() {
   const label = document.getElementById('weekLabel')
   if (!label) return
 
-  label.innerText = getCurrentWeekId()
+  label.innerText = formatWeekLabel()
+}
+
+function formatWeekLabel() {
+  return `Uke ${state.currentWeek}`
 }
 
 function disableWeekButtons(disabled) {

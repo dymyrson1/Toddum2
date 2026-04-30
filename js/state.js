@@ -19,6 +19,8 @@ const DEFAULT_PACKAGING_OPTION = {
   isDefault: true
 }
 
+const MAX_LOGS = 300
+
 export const state = {
   currentTab: 'orders',
 
@@ -34,7 +36,8 @@ export const state = {
 
   deliveryDays: DELIVERY_DAYS,
 
-  weeks: {}
+  weeks: {},
+  logs: []
 }
 
 let saveTimer = null
@@ -56,6 +59,7 @@ export async function initState() {
     setSyncStatus('error', 'Firebase: load error')
   }
 
+  state.currentDate = new Date()
   state.deliveryDays = DELIVERY_DAYS
 
   ensureProductPackagingTypes()
@@ -86,6 +90,10 @@ export function persistState() {
 
 export function getCurrentWeekId() {
   return `${state.currentYear}-W${String(state.currentWeek).padStart(2, '0')}`
+}
+
+export function getCurrentWeekLabel() {
+  return `Uke ${state.currentWeek}`
 }
 
 export function ensureCurrentWeek() {
@@ -139,8 +147,12 @@ export function addOrderRow() {
   }
 
   rows.push(row)
-  persistState()
 
+  addLog('add_row', {
+    actionLabel: 'La til rad'
+  })
+
+  persistState()
   return row
 }
 
@@ -150,11 +162,19 @@ export function deleteOrderRow(rowId) {
 
   if (index === -1) return
 
+  const row = rows[index]
+
   rows.splice(index, 1)
 
   if (state.selectedCell?.rowId === rowId) {
     state.selectedCell = null
   }
+
+  addLog('delete_row', {
+    actionLabel: 'Slettet rad',
+    customerName: row.customerName || '',
+    deliveryDay: row.deliveryDay || ''
+  })
 
   persistState()
 }
@@ -163,7 +183,21 @@ export function updateOrderRowField(rowId, field, value) {
   const row = findOrderRow(rowId)
   if (!row) return
 
-  row[field] = value
+  const oldValue = row[field] || ''
+  const newValue = value || ''
+
+  if (oldValue === newValue) return
+
+  row[field] = newValue
+
+  addLog('update_row_field', {
+    actionLabel: field === 'customerName' ? 'Endret kunde' : 'Endret leveringsdag',
+    customerName: field === 'customerName' ? newValue : row.customerName || '',
+    deliveryDay: field === 'deliveryDay' ? newValue : row.deliveryDay || '',
+    oldValue,
+    newValue
+  })
+
   persistState()
 }
 
@@ -175,7 +209,13 @@ export function updateOrderCell(rowId, productName, value) {
     row.cells = {}
   }
 
+  const oldItems = row.cells[productName]?.items || []
+  const oldValue = formatCellForLog(oldItems)
+
   const cleanItems = normalizeCellItems(productName, value?.items || [])
+  const newValue = formatCellForLog(cleanItems)
+
+  if (oldValue === newValue) return
 
   if (cleanItems.length === 0) {
     delete row.cells[productName]
@@ -185,6 +225,15 @@ export function updateOrderCell(rowId, productName, value) {
     }
   }
 
+  addLog('update_cell', {
+    actionLabel: oldValue ? 'Endret produktcelle' : 'La til produktcelle',
+    customerName: row.customerName || '',
+    deliveryDay: row.deliveryDay || '',
+    productName,
+    oldValue,
+    newValue
+  })
+
   persistState()
 }
 
@@ -192,7 +241,22 @@ export function deleteOrderCell(rowId, productName) {
   const row = findOrderRow(rowId)
   if (!row || !row.cells) return
 
+  const oldItems = row.cells[productName]?.items || []
+  const oldValue = formatCellForLog(oldItems)
+
+  if (!oldValue) return
+
   delete row.cells[productName]
+
+  addLog('delete_cell', {
+    actionLabel: 'Tømte produktcelle',
+    customerName: row.customerName || '',
+    deliveryDay: row.deliveryDay || '',
+    productName,
+    oldValue,
+    newValue: ''
+  })
+
   persistState()
 }
 
@@ -207,7 +271,21 @@ export function updateRowCheck(rowId, checkType, checked) {
     }
   }
 
-  row.checks[checkType] = checked
+  const oldValue = Boolean(row.checks[checkType])
+  const newValue = Boolean(checked)
+
+  if (oldValue === newValue) return
+
+  row.checks[checkType] = newValue
+
+  addLog('update_check', {
+    actionLabel: `Endret avkryssing ${checkType}`,
+    customerName: row.customerName || '',
+    deliveryDay: row.deliveryDay || '',
+    oldValue: oldValue ? 'På' : 'Av',
+    newValue: newValue ? 'På' : 'Av'
+  })
+
   persistState()
 }
 
@@ -235,18 +313,31 @@ export function addCustomer(name) {
   if (!cleanName) return false
 
   if (state.customers.includes(cleanName)) {
-    alert('Такий замовник вже існує')
+    alert('Denne kunden finnes allerede')
     return false
   }
 
   state.customers.push(cleanName)
-  persistState()
 
+  addLog('add_customer', {
+    actionLabel: 'La til kunde',
+    customerName: cleanName,
+    newValue: cleanName
+  })
+
+  persistState()
   return true
 }
 
 export function removeCustomer(name) {
   state.customers = state.customers.filter(customer => customer !== name)
+
+  addLog('remove_customer', {
+    actionLabel: 'Fjernet kunde fra listen',
+    customerName: name,
+    oldValue: name
+  })
+
   persistState()
 }
 
@@ -255,7 +346,7 @@ export function addProduct(name) {
   if (!cleanName) return false
 
   if (state.products.includes(cleanName)) {
-    alert('Такий продукт вже існує')
+    alert('Dette produktet finnes allerede')
     return false
   }
 
@@ -265,8 +356,13 @@ export function addProduct(name) {
     state.productPackagingTypes[cleanName] = [createDefaultPackagingOption()]
   }
 
-  persistState()
+  addLog('add_product', {
+    actionLabel: 'La til produkt',
+    productName: cleanName,
+    newValue: cleanName
+  })
 
+  persistState()
   return true
 }
 
@@ -283,6 +379,12 @@ export function removeProduct(name) {
         delete row.cells[name]
       }
     })
+  })
+
+  addLog('remove_product', {
+    actionLabel: 'Fjernet produkt',
+    productName: name,
+    oldValue: name
   })
 
   persistState()
@@ -305,14 +407,14 @@ export function addProductPackagingOption(productName, packageName, weightKgInpu
   if (!cleanProduct || !cleanPackageName) return false
 
   if (!state.products.includes(cleanProduct)) {
-    alert('Спочатку додай продукт')
+    alert('Legg til produktet først')
     return false
   }
 
   const option = createPackagingOption(cleanPackageName, weightKgInput)
 
   if (!option) {
-    alert('Вкажи коректну назву упаковки і вагу')
+    alert('Skriv inn gyldig emballasjenavn og vekt')
     return false
   }
 
@@ -324,7 +426,7 @@ export function addProductPackagingOption(productName, packageName, weightKgInpu
     .some(item => parsePackagingOption(item)?.id === option.id)
 
   if (exists) {
-    alert('Такий варіант вже існує для цього продукту')
+    alert('Denne emballasjen finnes allerede for dette produktet')
     return false
   }
 
@@ -332,6 +434,12 @@ export function addProductPackagingOption(productName, packageName, weightKgInpu
   state.productPackagingTypes[cleanProduct] = normalizePackagingOptions(
     state.productPackagingTypes[cleanProduct]
   )
+
+  addLog('add_packaging', {
+    actionLabel: 'La til emballasje',
+    productName: cleanProduct,
+    newValue: option.label
+  })
 
   persistState()
   return true
@@ -347,7 +455,7 @@ export function removeProductPackagingOption(productName, optionId) {
     .find(option => option.id === cleanOptionId)
 
   if (optionToRemove?.isDefault) {
-    alert('kg є стандартною мірою і не може бути видалено')
+    alert('kg er standardmålet og kan ikke slettes')
     return false
   }
 
@@ -375,25 +483,52 @@ export function removeProductPackagingOption(productName, optionId) {
     })
   })
 
+  addLog('remove_packaging', {
+    actionLabel: 'Fjernet emballasje',
+    productName: cleanProduct,
+    oldValue: optionToRemove?.label || cleanOptionId
+  })
+
   persistState()
   return true
 }
 
+export function clearLogs() {
+  state.logs = []
+
+  persistState()
+}
+
+function addLog(action, details = {}) {
+  const log = {
+    id: createLogId(),
+    createdAt: new Date().toISOString(),
+    weekId: getCurrentWeekId(),
+    weekLabel: getCurrentWeekLabel(),
+    action,
+    actionLabel: details.actionLabel || action,
+    customerName: details.customerName || '',
+    deliveryDay: details.deliveryDay || '',
+    productName: details.productName || '',
+    oldValue: details.oldValue || '',
+    newValue: details.newValue || '',
+    note: details.note || ''
+  }
+
+  state.logs = [log, ...(state.logs || [])].slice(0, MAX_LOGS)
+}
+
 function prepareStateForSaving() {
   return {
-    currentDate: state.currentDate.toISOString(),
     customers: state.customers,
     products: state.products,
     productPackagingTypes: state.productPackagingTypes,
-    weeks: state.weeks
+    weeks: state.weeks,
+    logs: state.logs
   }
 }
 
 function applySavedState(savedState) {
-  if (savedState.currentDate) {
-    state.currentDate = new Date(savedState.currentDate)
-  }
-
   if (Array.isArray(savedState.customers)) {
     state.customers = savedState.customers
   }
@@ -413,6 +548,10 @@ function applySavedState(savedState) {
 
   if (savedState.weeks && typeof savedState.weeks === 'object') {
     state.weeks = savedState.weeks
+  }
+
+  if (Array.isArray(savedState.logs)) {
+    state.logs = savedState.logs
   }
 
   migrateAllWeeksToRows()
@@ -670,6 +809,37 @@ function formatWeight(weightKg) {
   return `${trimZeros((grams / 1000).toFixed(2))} kg`
 }
 
+function formatCellForLog(items) {
+  return (items || [])
+    .map(item => formatItemForLog(item))
+    .filter(Boolean)
+    .join(', ')
+}
+
+function formatItemForLog(item) {
+  const qty = Number(item.qty) || 0
+  const packageName = String(item.packageName || '').toLowerCase()
+  const label = item.label || item.packageName || item.type || ''
+
+  if (!qty || !label) return ''
+
+  if (packageName === 'kg' || String(label).toLowerCase() === 'kg') {
+    return `${formatNumber(qty)}kg`
+  }
+
+  if (packageName.includes('spann') || String(label).toLowerCase().includes('spann')) {
+    return `${formatNumber(qty)} spann`
+  }
+
+  return `${formatNumber(qty)}x${label}`
+}
+
+function formatNumber(value) {
+  return Number(value).toLocaleString('nb-NO', {
+    maximumFractionDigits: 2
+  })
+}
+
 function normalizeWeightKey(weightKg) {
   return trimZeros(Number(weightKg).toFixed(3))
 }
@@ -756,6 +926,10 @@ function createMigratedRow(customerName) {
 
 function createRowId() {
   return `row_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+}
+
+function createLogId() {
+  return `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
 function normalizeName(value) {
