@@ -8,8 +8,6 @@ import {
   prepareRuntimeStateForSaving
 } from './app/state-persistence-utils.js'
 
-import { normalizeName } from './utils/text.js'
-
 import {
   getISOWeek,
   getWeekId,
@@ -17,27 +15,25 @@ import {
   shiftDateByWeeks
 } from './week/week-utils.js'
 
-import {
-  formatCustomerForLog,
-  normalizeCustomer,
-  normalizeCustomerPatch,
-  normalizeCustomers
-} from './customers/customer-utils.js'
+import { normalizeCustomers } from './customers/customer-utils.js'
 
 import {
   collectCustomerNamesFromWeeks,
-  createCustomerFromName,
-  customerNameExists,
   findCustomerByName,
-  getCustomerNameValue,
-  getNextCustomerDeliveryOrder
+  getCustomerNameValue
 } from './customers/customer-state-utils.js'
+
+import {
+  addCustomerAction,
+  ensureCustomerExistsAction,
+  moveCustomerAction,
+  removeCustomerAction,
+  updateCustomerAction
+} from './customers/customer-actions.js'
 
 import { formatCellForLog } from './products/packaging-utils.js'
 
-import {
-  normalizeProductPackagingTypesForProducts
-} from './products/packaging-state-utils.js'
+import { normalizeProductPackagingTypesForProducts } from './products/packaging-state-utils.js'
 
 import { normalizeProducts } from './products/product-utils.js'
 
@@ -351,157 +347,23 @@ export function getCustomerByName(name) {
 }
 
 export function ensureCustomerExists(name) {
-  const cleanName = normalizeName(name)
-
-  if (!cleanName) return null
-
-  const existingCustomer = getCustomerByName(cleanName)
-
-  if (existingCustomer) {
-    return existingCustomer
-  }
-
-  const customer = createCustomerFromName(
-    cleanName,
-    getNextCustomerDeliveryOrder(state.customers)
-  )
-
-  if (!customer) return null
-
-  state.customers.push(customer)
-  state.customers = normalizeCustomers(state.customers)
-
-  addLog('add_customer', {
-    actionLabel: 'La til kunde automatisk',
-    customerName: customer.name,
-    newValue: customer.name
-  })
-
-  return customer
+  return ensureCustomerExistsAction(createActionContext(), name)
 }
 
 export function addCustomer(customerData) {
-  const customer = normalizeCustomer(customerData)
-
-  if (!customer.name) return false
-
-  if (customerNameExists(state.customers, customer.name)) {
-    alert('Denne kunden finnes allerede')
-    return false
-  }
-
-  customer.deliveryOrder =
-    customer.deliveryOrder || getNextCustomerDeliveryOrder(state.customers)
-
-  state.customers.push(customer)
-  state.customers = normalizeCustomers(state.customers)
-
-  addLog('add_customer', {
-    actionLabel: 'La til kunde',
-    customerName: customer.name,
-    newValue: customer.name
-  })
-
-  persistState()
-
-  return true
+  return addCustomerAction(createActionContext(), customerData)
 }
 
 export function updateCustomer(customerId, patch) {
-  const customer = state.customers.find(item => item.id === customerId)
-
-  if (!customer) return false
-
-  const cleanPatch = normalizeCustomerPatch(patch)
-
-  if (cleanPatch.name !== undefined) {
-    const newName = normalizeName(cleanPatch.name)
-
-    if (!newName) {
-      alert('Kundenavn kan ikke være tomt')
-      return false
-    }
-
-    if (customerNameExists(state.customers, newName, customerId)) {
-      alert('Denne kunden finnes allerede')
-      return false
-    }
-
-    cleanPatch.name = newName
-  }
-
-  const oldValue = formatCustomerForLog(customer)
-
-  Object.assign(customer, cleanPatch)
-
-  state.customers = normalizeCustomers(state.customers)
-
-  const updatedCustomer = state.customers.find(item => item.id === customerId)
-  const newValue = formatCustomerForLog(updatedCustomer || customer)
-
-  if (oldValue === newValue) return true
-
-  addLog('update_customer', {
-    actionLabel: 'Endret kundeinformasjon',
-    customerName: updatedCustomer?.name || customer.name,
-    oldValue,
-    newValue
-  })
-
-  persistState()
-
-  return true
+  return updateCustomerAction(createActionContext(), customerId, patch)
 }
 
 export function moveCustomer(customerId, direction) {
-  const customers = normalizeCustomers(state.customers)
-  const currentIndex = customers.findIndex(customer => customer.id === customerId)
-
-  if (currentIndex === -1) return false
-
-  const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
-
-  if (targetIndex < 0 || targetIndex >= customers.length) {
-    return false
-  }
-
-  const currentCustomer = customers[currentIndex]
-  const targetCustomer = customers[targetIndex]
-
-  customers[currentIndex] = targetCustomer
-  customers[targetIndex] = currentCustomer
-
-  state.customers = customers.map((customer, index) => ({
-    ...customer,
-    deliveryOrder: index + 1
-  }))
-
-  addLog('move_customer', {
-    actionLabel: 'Endret leveringsrekkefølge',
-    customerName: currentCustomer.name,
-    oldValue: `${currentIndex + 1}`,
-    newValue: `${targetIndex + 1}`
-  })
-
-  persistState()
-
-  return true
+  return moveCustomerAction(createActionContext(), customerId, direction)
 }
 
 export function removeCustomer(customerId) {
-  const customer = state.customers.find(item => item.id === customerId)
-
-  if (!customer) return
-
-  state.customers = state.customers.filter(item => item.id !== customerId)
-
-  addLog('remove_customer', {
-    actionLabel: 'Fjernet kunde fra listen',
-    customerName: customer.name,
-    oldValue: customer.name
-  })
-
-  persistState()
+  return removeCustomerAction(createActionContext(), customerId)
 }
 
 export function addProduct(name) {
