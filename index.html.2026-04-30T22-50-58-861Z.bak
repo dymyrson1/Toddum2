@@ -31,18 +31,17 @@
             🌙
           </button>
         </div>
-        <div class="app-top-week-nav">
-          <div class="top-bar global-week-nav">
-            <button id="prevWeek" class="week-btn" title="Forrige uke">Forrige</button>
-
-            <div id="weekLabel" class="week-label">Uke</div>
-
-            <button id="nextWeek" class="week-btn" title="Neste uke">Neste</button>
-          </div>
-        </div>
       </div>
 
-      <div class="week-status-row"></div>
+      <div class="week-status-row">
+        <div class="top-bar global-week-nav">
+          <button id="prevWeek" class="week-btn" title="Forrige uke">Forrige</button>
+
+          <div id="weekLabel" class="week-label">Uke</div>
+
+          <button id="nextWeek" class="week-btn" title="Neste uke">Neste</button>
+        </div>
+      </div>
 
       <main id="tabContent"></main>
     </div>
