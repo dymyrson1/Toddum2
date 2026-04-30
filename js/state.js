@@ -33,27 +33,23 @@ import {
   getNextCustomerDeliveryOrder
 } from './customers/customer-state-utils.js'
 
-import {
-  createDefaultPackagingOption,
-  createPackagingOption,
-  formatCellForLog,
-  getDefaultPackagingOptionForProduct,
-  normalizePackagingOption,
-  normalizePackagingOptions,
-  parsePackagingOption
-} from './products/packaging-utils.js'
+import { formatCellForLog } from './products/packaging-utils.js'
 
 import {
-  normalizeProductPackagingTypesForProducts,
-  removePackagingOptionFromWeeks
+  normalizeProductPackagingTypesForProducts
 } from './products/packaging-state-utils.js'
 
+import { normalizeProducts } from './products/product-utils.js'
+
 import {
-  moveProductInList,
-  normalizeProducts,
-  productExists,
-  removeProductFromWeeks
-} from './products/product-utils.js'
+  addProductAction,
+  addProductPackagingOptionAction,
+  getPackagingOptionsForProductFromState,
+  getPackagingTypesForProductFromState,
+  moveProductAction,
+  removeProductAction,
+  removeProductPackagingOptionAction
+} from './products/product-actions.js'
 
 import { createLogEntry } from './logs/log-utils.js'
 
@@ -509,176 +505,53 @@ export function removeCustomer(customerId) {
 }
 
 export function addProduct(name) {
-  const cleanName = normalizeName(name)
-
-  if (!cleanName) return false
-
-  if (productExists(state.products, cleanName)) {
-    alert('Dette produktet finnes allerede')
-    return false
-  }
-
-  state.products = normalizeProducts([...state.products, cleanName])
-
-  if (!state.productPackagingTypes[cleanName]) {
-    state.productPackagingTypes[cleanName] = [createDefaultPackagingOption()]
-  }
-
-  addLog('add_product', {
-    actionLabel: 'La til produkt',
-    productName: cleanName,
-    newValue: cleanName
-  })
-
-  persistState()
-
-  return true
+  return addProductAction(createActionContext(), name)
 }
 
 export function removeProduct(name) {
-  state.products = normalizeProducts(state.products).filter(product => product !== name)
-
-  delete state.productPackagingTypes[name]
-
-  removeProductFromWeeks(state.weeks, name)
-
-  addLog('remove_product', {
-    actionLabel: 'Fjernet produkt',
-    productName: name,
-    oldValue: name
-  })
-
-  persistState()
+  return removeProductAction(createActionContext(), name)
 }
 
 export function moveProduct(productName, direction) {
-  const oldValue = normalizeProducts(state.products).join(', ')
-  const result = moveProductInList(state.products, productName, direction)
-
-  if (!result.moved) return false
-
-  state.products = result.products
-
-  const newValue = state.products.join(', ')
-
-  addLog('move_product', {
-    actionLabel: 'Endret produktrekkefølge',
-    productName,
-    oldValue,
-    newValue
-  })
-
-  persistState()
-
-  return true
+  return moveProductAction(createActionContext(), productName, direction)
 }
 
 export function getPackagingOptionsForProduct(productName) {
-  const customOptions = state.productPackagingTypes?.[productName] || []
-  const defaultOption = getDefaultPackagingOptionForProduct(productName)
-
-  return [
-    defaultOption,
-    ...customOptions
-      .map(option => normalizePackagingOption(option))
-      .filter(Boolean)
-      .filter(option => !option.isDefault)
-  ].sort((a, b) => {
-    return Number(a.weightKg || 0) - Number(b.weightKg || 0)
-  })
+  return getPackagingOptionsForProductFromState(state, productName)
 }
 
 export function getPackagingTypesForProduct(productName) {
-  return getPackagingOptionsForProduct(productName).map(option => option.label)
+  return getPackagingTypesForProductFromState(state, productName)
 }
 
 export function addProductPackagingOption(productName, packageName, weightKgInput) {
-  const cleanProduct = normalizeName(productName)
-  const cleanPackageName = normalizeName(packageName)
-
-  if (!cleanProduct || !cleanPackageName) return false
-
-  if (!state.products.includes(cleanProduct)) {
-    alert('Legg til produktet først')
-    return false
-  }
-
-  const option = createPackagingOption(cleanPackageName, weightKgInput)
-
-  if (!option) {
-    alert('Skriv inn gyldig emballasjenavn og vekt')
-    return false
-  }
-
-  if (!state.productPackagingTypes[cleanProduct]) {
-    state.productPackagingTypes[cleanProduct] = [createDefaultPackagingOption()]
-  }
-
-  const exists = state.productPackagingTypes[cleanProduct].some(item => {
-    return parsePackagingOption(item)?.id === option.id
-  })
-
-  if (exists) {
-    alert('Denne emballasjen finnes allerede for dette produktet')
-    return false
-  }
-
-  state.productPackagingTypes[cleanProduct].push(option)
-  state.productPackagingTypes[cleanProduct] = normalizePackagingOptions(
-    state.productPackagingTypes[cleanProduct]
+  return addProductPackagingOptionAction(
+    createActionContext(),
+    productName,
+    packageName,
+    weightKgInput
   )
-
-  addLog('add_packaging', {
-    actionLabel: 'La til emballasje',
-    productName: cleanProduct,
-    newValue: option.label
-  })
-
-  persistState()
-
-  return true
 }
 
 export function removeProductPackagingOption(productName, optionId) {
-  const cleanProduct = normalizeName(productName)
-  const cleanOptionId = normalizeName(optionId)
-
-  if (!cleanProduct || !cleanOptionId) return false
-
-  const optionToRemove = getPackagingOptionsForProduct(cleanProduct).find(option => {
-    return option.id === cleanOptionId
-  })
-
-  if (optionToRemove?.isDefault) {
-    alert('kg/l er standardmål og kan ikke slettes')
-    return false
-  }
-
-  if (!state.productPackagingTypes[cleanProduct]) {
-    return false
-  }
-
-  state.productPackagingTypes[cleanProduct] = state.productPackagingTypes[cleanProduct]
-    .map(option => parsePackagingOption(option))
-    .filter(Boolean)
-    .filter(option => option.id !== cleanOptionId)
-
-  removePackagingOptionFromWeeks(state.weeks, cleanProduct, cleanOptionId)
-
-  addLog('remove_packaging', {
-    actionLabel: 'Fjernet emballasje',
-    productName: cleanProduct,
-    oldValue: optionToRemove?.label || cleanOptionId
-  })
-
-  persistState()
-
-  return true
+  return removeProductPackagingOptionAction(
+    createActionContext(),
+    productName,
+    optionId
+  )
 }
 
 export function clearLogs() {
   state.logs = []
   persistState()
+}
+
+function createActionContext() {
+  return {
+    state,
+    addLog,
+    persistState
+  }
 }
 
 function ensureCustomersFromOrderRows() {
