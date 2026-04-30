@@ -3,6 +3,11 @@ import { setSyncStatus } from './sync/sync-status.js'
 
 import { DELIVERY_DAYS, MAX_LOGS } from './app/constants.js'
 
+import {
+  applySavedStateToRuntimeState,
+  prepareRuntimeStateForSaving
+} from './app/state-persistence-utils.js'
+
 import { normalizeName } from './utils/text.js'
 
 import {
@@ -44,20 +49,14 @@ import {
 
 import { createLogEntry } from './logs/log-utils.js'
 
-import {
-  createEmptyOrderRow,
-  normalizeOrderRows
-} from './orders/order-utils.js'
+import { createEmptyOrderRow, normalizeOrderRows } from './orders/order-utils.js'
 
 import {
   normalizeOrderCells,
   normalizeOrderCellItems
 } from './orders/order-cell-utils.js'
 
-import {
-  migrateCellsToOrderRows,
-  migrateWeeksToRows
-} from './orders/order-migration-utils.js'
+import { migrateCellsToOrderRows } from './orders/order-migration-utils.js'
 
 export const state = {
   currentTab: 'orders',
@@ -82,7 +81,7 @@ export async function initState() {
     const firebaseState = await loadFirebaseState()
 
     if (firebaseState) {
-      applySavedState(firebaseState)
+      applySavedStateToRuntimeState(state, firebaseState)
       setSyncStatus('saved', 'Firebase: loaded')
     } else {
       setSyncStatus('saved', 'Firebase: connected, no data')
@@ -111,7 +110,7 @@ export function persistState() {
   setSyncStatus('saving', 'Firebase: saving...')
 
   saveTimer = setTimeout(() => {
-    saveFirebaseState(prepareStateForSaving())
+    saveFirebaseState(prepareRuntimeStateForSaving(state))
       .then(() => {
         console.log('Saved to Firebase')
         setSyncStatus('saved', 'Firebase: saved')
@@ -742,45 +741,6 @@ function addLog(action, details = {}) {
   })
 
   state.logs = [log, ...(state.logs || [])].slice(0, MAX_LOGS)
-}
-
-function prepareStateForSaving() {
-  return {
-    customers: normalizeCustomers(state.customers),
-    products: normalizeProducts(state.products),
-    productPackagingTypes: state.productPackagingTypes,
-    weeks: state.weeks,
-    logs: state.logs
-  }
-}
-
-function applySavedState(savedState) {
-  if (Array.isArray(savedState.customers)) {
-    state.customers = normalizeCustomers(savedState.customers)
-  }
-
-  if (Array.isArray(savedState.products)) {
-    state.products = normalizeProducts(savedState.products)
-  }
-
-  if (
-    savedState.productPackagingTypes &&
-    typeof savedState.productPackagingTypes === 'object'
-  ) {
-    state.productPackagingTypes = savedState.productPackagingTypes
-  }
-
-  state.deliveryDays = DELIVERY_DAYS
-
-  if (savedState.weeks && typeof savedState.weeks === 'object') {
-    state.weeks = savedState.weeks
-  }
-
-  if (Array.isArray(savedState.logs)) {
-    state.logs = savedState.logs
-  }
-
-  migrateWeeksToRows(state.weeks)
 }
 
 function ensureProductPackagingTypes() {
