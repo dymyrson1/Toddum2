@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "format": "prettier --write \"**/*.{js,css,html,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,css,html,json,md}\""
+    "format:check": "prettier --check \"**/*.{js,css,html,json,md}\"",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "prettier": "latest"
+    "prettier": "latest",
+    "vitest": "latest"
   }
 }
