@@ -1,20 +1,13 @@
-import { loadFirebaseState, saveFirebaseState } from './firebase.js'
-import { setSyncStatus } from './sync/sync-status.js'
-
 import { DELIVERY_DAYS } from './app/constants.js'
 
-import {
-  applySavedStateToRuntimeState,
-  prepareRuntimeStateForSaving
-} from './app/state-persistence-utils.js'
+import { createPersistenceController } from './app/persistence-controller.js'
+import { loadRuntimeStateFromFirebase } from './app/state-loader.js'
 
 import {
   ensureCustomersFromOrderRowsInState,
   normalizeAllWeeksInState,
   normalizeRuntimeStateAfterLoad
 } from './app/state-init-utils.js'
-
-import { normalizeCustomers } from './customers/customer-utils.js'
 
 import {
   findCustomerByName,
@@ -30,7 +23,6 @@ import {
 } from './customers/customer-actions.js'
 
 import { normalizeProductPackagingTypesForProducts } from './products/packaging-state-utils.js'
-import { normalizeProducts } from './products/product-utils.js'
 
 import {
   addProductAction,
@@ -42,10 +34,7 @@ import {
   removeProductPackagingOptionAction
 } from './products/product-actions.js'
 
-import {
-  addLogAction,
-  clearLogsAction
-} from './logs/log-actions.js'
+import { addLogAction, clearLogsAction } from './logs/log-actions.js'
 
 import { normalizeOrderRows } from './orders/order-utils.js'
 import { normalizeOrderCells } from './orders/order-cell-utils.js'
@@ -84,24 +73,10 @@ export const state = {
   logs: []
 }
 
-let saveTimer = null
+const persistenceController = createPersistenceController(state)
 
 export async function initState() {
-  try {
-    setSyncStatus('connecting', 'Firebase: connecting...')
-
-    const firebaseState = await loadFirebaseState()
-
-    if (firebaseState) {
-      applySavedStateToRuntimeState(state, firebaseState)
-      setSyncStatus('saved', 'Firebase: loaded')
-    } else {
-      setSyncStatus('saved', 'Firebase: connected, no data')
-    }
-  } catch (error) {
-    console.error('Firebase load failed:', error)
-    setSyncStatus('error', 'Firebase: load error')
-  }
+  await loadRuntimeStateFromFirebase(state)
 
   normalizeRuntimeStateAfterLoad(state)
   ensureProductPackagingTypes()
@@ -113,21 +88,7 @@ export async function initState() {
 }
 
 export function persistState() {
-  clearTimeout(saveTimer)
-
-  setSyncStatus('saving', 'Firebase: saving...')
-
-  saveTimer = setTimeout(() => {
-    saveFirebaseState(prepareRuntimeStateForSaving(state))
-      .then(() => {
-        console.log('Saved to Firebase')
-        setSyncStatus('saved', 'Firebase: saved')
-      })
-      .catch(error => {
-        console.error('Firebase save failed:', error)
-        setSyncStatus('error', 'Firebase: save error')
-      })
-  }, 400)
+  return persistenceController.persistState()
 }
 
 export function getCurrentWeekId() {
