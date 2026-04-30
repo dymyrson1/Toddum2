@@ -4,9 +4,9 @@ import {
   removeCustomer,
   addProduct,
   removeProduct,
-  addProductPackagingType,
-  removeProductPackagingType,
-  getPackagingTypesForProduct
+  addProductPackagingOption,
+  removeProductPackagingOption,
+  getPackagingOptionsForProduct
 } from '../state.js'
 
 import { renderTab } from '../tabs/tabs-render.js'
@@ -23,9 +23,9 @@ export function renderSettingsView(container) {
           <h3>Замовники</h3>
 
           <form id="customerForm" class="settings-form">
-            <input 
-              id="customerInput" 
-              type="text" 
+            <input
+              id="customerInput"
+              type="text"
               placeholder="Новий замовник"
               autocomplete="off"
             >
@@ -39,9 +39,9 @@ export function renderSettingsView(container) {
           <h3>Продукти</h3>
 
           <form id="productForm" class="settings-form">
-            <input 
-              id="productInput" 
-              type="text" 
+            <input
+              id="productInput"
+              type="text"
               placeholder="Новий продукт"
               autocomplete="off"
             >
@@ -53,7 +53,6 @@ export function renderSettingsView(container) {
 
         <div class="settings-card">
           <h3>Упаковка по продуктах</h3>
-
           ${renderPackagingManager(selectedProduct)}
         </div>
 
@@ -94,8 +93,8 @@ function renderPackagingManager(selectedProduct) {
     <div class="settings-form">
       <select id="packagingProductSelect">
         ${state.products.map(product => `
-          <option 
-            value="${escapeHtml(product)}" 
+          <option
+            value="${escapeHtml(product)}"
             ${product === selectedProduct ? 'selected' : ''}
           >
             ${escapeHtml(product)}
@@ -104,15 +103,28 @@ function renderPackagingManager(selectedProduct) {
       </select>
     </div>
 
-    <form id="packagingForm" class="settings-form">
-      <input 
-        id="packagingInput" 
-        type="text" 
-        placeholder="Наприклад: 250g або spann 3kg"
+    <form id="packagingForm" class="settings-form packaging-add-form">
+      <input
+        id="packagingNameInput"
+        type="text"
+        placeholder="Назва упаковки, напр. spann або 250g"
         autocomplete="off"
       >
+
+      <input
+        id="packagingWeightInput"
+        type="number"
+        placeholder="Вага в кг, напр. 3 або 0.125"
+        step="any"
+        min="0"
+      >
+
       <button type="submit">Додати</button>
     </form>
+
+    <div class="settings-note">
+      Для кожного продукту автоматично існує стандартний варіант <strong>kg</strong>.
+    </div>
 
     <div id="packagingList" class="settings-list"></div>
   `
@@ -146,15 +158,23 @@ function renderPackagingList(productName) {
   const list = document.getElementById('packagingList')
   if (!list || !productName) return
 
-  const types = getPackagingTypesForProduct(productName)
+  const options = getPackagingOptionsForProduct(productName)
 
-  list.innerHTML = types.map(type => `
+  list.innerHTML = options.map(option => `
     <div class="settings-item">
-      <span>${escapeHtml(type)}</span>
+      <div class="packaging-item-main">
+        <strong>${escapeHtml(option.label)}</strong>
+        ${
+          option.isDefault
+            ? '<div class="packaging-item-sub">standard</div>'
+            : `<div class="packaging-item-sub">Navn: ${escapeHtml(option.packageName)} · Vekt: ${escapeHtml(formatWeightForUi(option.weightKg))}</div>`
+        }
+      </div>
+
       ${
-        type === 'kg'
+        option.isDefault
           ? '<span class="fixed-label">standard</span>'
-          : `<button data-remove-product-packaging="${escapeHtml(type)}">Видалити</button>`
+          : `<button data-remove-product-packaging="${escapeHtml(option.id)}">Видалити</button>`
       }
     </div>
   `).join('')
@@ -199,17 +219,23 @@ function attachSettingsEvents() {
     }
   }
 
-  if (packagingForm) {
+  if (packagingForm && packagingProductSelect) {
     packagingForm.onsubmit = event => {
       event.preventDefault()
 
-      const input = document.getElementById('packagingInput')
       const productName = packagingProductSelect.value
+      const packagingNameInput = document.getElementById('packagingNameInput')
+      const packagingWeightInput = document.getElementById('packagingWeightInput')
 
-      const added = addProductPackagingType(productName, input.value)
+      const added = addProductPackagingOption(
+        productName,
+        packagingNameInput.value,
+        packagingWeightInput.value
+      )
 
       if (added) {
-        input.value = ''
+        packagingNameInput.value = ''
+        packagingWeightInput.value = ''
         renderPackagingList(productName)
         attachPackagingRemoveEvents(productName)
       }
@@ -248,12 +274,12 @@ function attachSettingsEvents() {
 function attachPackagingRemoveEvents(productName) {
   document.querySelectorAll('[data-remove-product-packaging]').forEach(button => {
     button.onclick = () => {
-      const typeName = button.dataset.removeProductPackaging
-      const confirmed = confirm(`Видалити "${typeName}" для продукту "${productName}"?`)
+      const optionId = button.dataset.removeProductPackaging
+      const confirmed = confirm(`Видалити цей тип упаковки для продукту "${productName}"?`)
 
       if (!confirmed) return
 
-      const removed = removeProductPackagingType(productName, typeName)
+      const removed = removeProductPackagingOption(productName, optionId)
 
       if (removed) {
         renderPackagingList(productName)
@@ -261,6 +287,24 @@ function attachPackagingRemoveEvents(productName) {
       }
     }
   })
+}
+
+function formatWeightForUi(weightKg) {
+  if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    return '—'
+  }
+
+  const grams = Math.round(weightKg * 1000)
+
+  if (grams < 1000) {
+    return `${grams} g`
+  }
+
+  if (grams % 1000 === 0) {
+    return `${grams / 1000} kg`
+  }
+
+  return `${String((grams / 1000).toFixed(2)).replace(/\.?0+$/, '')} kg`
 }
 
 function escapeHtml(value) {

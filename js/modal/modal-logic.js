@@ -2,7 +2,7 @@ import {
   getOrderCell,
   updateOrderCell,
   findOrderRow,
-  getPackagingTypesForProduct
+  getPackagingOptionsForProduct
 } from '../state.js'
 
 import { closeModal } from './modal.js'
@@ -23,7 +23,7 @@ export function renderModalContent(rowId, productName) {
 
   const rows = data.items && data.items.length
     ? cloneData(data.items)
-    : [{ type: '', qty: '' }]
+    : [createMiniRow()]
 
   body.innerHTML = `
     <div class="modal-header">
@@ -65,21 +65,33 @@ function renderMiniRows(rows) {
   tbody.innerHTML = ''
 
   rows.forEach((row, index) => {
+    ensureRowHasValidSelection(rows, index)
+
+    const availableOptions = getAvailableOptionsForRow(rows, index)
     const tr = document.createElement('tr')
 
     tr.innerHTML = `
       <td>
-        <select data-index="${index}" data-field="type">
-          <option value="">Обрати</option>
-          ${renderPackagingOptions(activeProductName, row.type)}
+        <select data-index="${index}" data-field="packageId" ${availableOptions.length === 0 ? 'disabled' : ''}>
+          ${availableOptions.length === 0
+            ? `<option value="">Немає доступних варіантів</option>`
+            : availableOptions.map(option => `
+                <option
+                  value="${escapeHtml(option.id)}"
+                  ${option.id === row.packageId ? 'selected' : ''}
+                >
+                  ${escapeHtml(option.label)}
+                </option>
+              `).join('')
+          }
         </select>
       </td>
 
       <td>
-        <input 
-          type="number" 
-          value="${row.qty || ''}" 
-          data-index="${index}" 
+        <input
+          type="number"
+          value="${row.qty || ''}"
+          data-index="${index}"
           data-field="qty"
           min="0"
           step="0.01"
@@ -94,40 +106,29 @@ function renderMiniRows(rows) {
 
     tbody.appendChild(tr)
   })
-}
 
-function renderPackagingOptions(productName, selectedType) {
-  const types = getPackagingTypesForProduct(productName)
-  const normalizedTypes = [...types]
-
-  if (selectedType && !normalizedTypes.includes(selectedType)) {
-    normalizedTypes.push(selectedType)
-  }
-
-  return normalizedTypes.map(type => `
-    <option 
-      value="${escapeHtml(type)}" 
-      ${type === selectedType ? 'selected' : ''}
-    >
-      ${escapeHtml(type)}
-    </option>
-  `).join('')
+  updateAddRowButtonState(rows)
 }
 
 function attachModalEvents(rows) {
-  document.querySelectorAll('#miniTable input, #miniTable select').forEach(input => {
+  document.querySelectorAll('#miniTable select[data-field="packageId"]').forEach(select => {
+    select.addEventListener('change', () => {
+      const index = Number(select.dataset.index)
+      const selectedOption = getPackagingOptionsForProduct(activeProductName)
+        .find(option => option.id === select.value)
+
+      if (!selectedOption) return
+
+      applyOptionToRow(rows[index], selectedOption)
+      renderMiniRows(rows)
+      attachModalEvents(rows)
+    })
+  })
+
+  document.querySelectorAll('#miniTable input[data-field="qty"]').forEach(input => {
     input.addEventListener('input', () => {
       const index = Number(input.dataset.index)
-      const field = input.dataset.field
-
-      rows[index][field] = input.value
-    })
-
-    input.addEventListener('change', () => {
-      const index = Number(input.dataset.index)
-      const field = input.dataset.field
-
-      rows[index][field] = input.value
+      rows[index].qty = input.value
     })
   })
 
@@ -138,7 +139,7 @@ function attachModalEvents(rows) {
       rows.splice(index, 1)
 
       if (rows.length === 0) {
-        rows.push({ type: '', qty: '' })
+        rows.push(createMiniRow())
       }
 
       renderMiniRows(rows)
@@ -147,7 +148,18 @@ function attachModalEvents(rows) {
   })
 
   document.getElementById('addRowBtn').onclick = () => {
-    rows.push({ type: '', qty: '' })
+    const availableForNewRow = getAvailableOptionsForNewRow(rows)
+
+    if (availableForNewRow.length === 0) {
+      alert('Усі типи упаковки для цього продукту вже використані')
+      return
+    }
+
+    const newRow = createMiniRow()
+    applyOptionToRow(newRow, availableForNewRow[0])
+
+    rows.push(newRow)
+
     renderMiniRows(rows)
     attachModalEvents(rows)
   }
@@ -160,13 +172,84 @@ function attachModalEvents(rows) {
   document.getElementById('modalCloseBtn').onclick = closeModal
 }
 
+function ensureRowHasValidSelection(rows, index) {
+  const row = rows[index]
+  const availableOptions = getAvailableOptionsForRow(rows, index)
+
+  if (availableOptions.length === 0) {
+    row.packageId = ''
+    row.packageName = ''
+    row.weightKg = 0
+    row.label = ''
+    return
+  }
+
+  const currentStillAvailable = availableOptions
+    .some(option => option.id === row.packageId)
+
+  if (currentStillAvailable) return
+
+  applyOptionToRow(row, availableOptions[0])
+}
+
+function getAvailableOptionsForRow(rows, index) {
+  const allOptions = getPackagingOptionsForProduct(activeProductName)
+  const selectedInOtherRows = new Set(
+    rows
+      .filter((_, rowIndex) => rowIndex !== index)
+      .map(row => row.packageId)
+      .filter(Boolean)
+  )
+
+  return allOptions.filter(option => {
+    if (option.id === rows[index].packageId) return true
+    return !selectedInOtherRows.has(option.id)
+  })
+}
+
+function getAvailableOptionsForNewRow(rows) {
+  const allOptions = getPackagingOptionsForProduct(activeProductName)
+  const selected = new Set(rows.map(row => row.packageId).filter(Boolean))
+
+  return allOptions.filter(option => !selected.has(option.id))
+}
+
+function applyOptionToRow(row, option) {
+  row.packageId = option.id
+  row.packageName = option.packageName
+  row.weightKg = option.weightKg
+  row.label = option.label
+}
+
+function createMiniRow() {
+  return {
+    packageId: '',
+    packageName: '',
+    weightKg: 0,
+    label: '',
+    qty: ''
+  }
+}
+
+function updateAddRowButtonState(rows) {
+  const button = document.getElementById('addRowBtn')
+  if (!button) return
+
+  const hasOptions = getAvailableOptionsForNewRow(rows).length > 0
+  button.disabled = !hasOptions
+}
+
 function saveRows(rows) {
   const cleanRows = rows
     .map(row => ({
-      type: String(row.type || '').trim(),
+      packageId: String(row.packageId || '').trim(),
+      packageName: String(row.packageName || '').trim(),
+      weightKg: Number(row.weightKg) || 0,
+      label: String(row.label || '').trim(),
       qty: Number(row.qty)
     }))
-    .filter(row => row.type && row.qty > 0)
+    .filter(row => row.packageId && row.qty > 0)
+    .sort((a, b) => a.weightKg - b.weightKg || a.label.localeCompare(b.label))
 
   updateOrderCell(activeRowId, activeProductName, {
     items: cleanRows

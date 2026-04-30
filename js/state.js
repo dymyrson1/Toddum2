@@ -11,7 +11,13 @@ const DELIVERY_DAYS = [
   'Søndag'
 ]
 
-const DEFAULT_PACKAGING_TYPE = 'kg'
+const DEFAULT_PACKAGING_OPTION = {
+  id: 'kg__1',
+  packageName: 'kg',
+  weightKg: 1,
+  label: 'kg',
+  isDefault: true
+}
 
 export const state = {
   currentTab: 'orders',
@@ -53,6 +59,7 @@ export async function initState() {
   state.deliveryDays = DELIVERY_DAYS
 
   ensureProductPackagingTypes()
+  normalizeAllWeekData()
   updateCurrentYearWeek()
   ensureCurrentWeek()
 
@@ -94,6 +101,8 @@ export function ensureCurrentWeek() {
     state.weeks[weekId].rows = migrateCellsToRows(state.weeks[weekId].cells || {})
     delete state.weeks[weekId].cells
   }
+
+  state.weeks[weekId].rows = normalizeRows(state.weeks[weekId].rows)
 }
 
 export function getCurrentRows() {
@@ -166,10 +175,14 @@ export function updateOrderCell(rowId, productName, value) {
     row.cells = {}
   }
 
-  if (!value || !value.items || value.items.length === 0) {
+  const cleanItems = normalizeCellItems(productName, value?.items || [])
+
+  if (cleanItems.length === 0) {
     delete row.cells[productName]
   } else {
-    row.cells[productName] = value
+    row.cells[productName] = {
+      items: cleanItems
+    }
   }
 
   persistState()
@@ -210,7 +223,11 @@ export function getOrderCell(rowId, productName) {
     return { items: [] }
   }
 
-  return row.cells[productName] || { items: [] }
+  const cell = row.cells[productName] || { items: [] }
+
+  return {
+    items: normalizeCellItems(productName, cell.items || [])
+  }
 }
 
 export function addCustomer(name) {
@@ -245,7 +262,7 @@ export function addProduct(name) {
   state.products.push(cleanName)
 
   if (!state.productPackagingTypes[cleanName]) {
-    state.productPackagingTypes[cleanName] = [DEFAULT_PACKAGING_TYPE]
+    state.productPackagingTypes[cleanName] = [createDefaultPackagingOption()]
   }
 
   persistState()
@@ -271,53 +288,65 @@ export function removeProduct(name) {
   persistState()
 }
 
-export function getPackagingTypesForProduct(productName) {
-  const types = state.productPackagingTypes[productName]
+export function getPackagingOptionsForProduct(productName) {
+  const options = state.productPackagingTypes[productName]
 
-  if (!Array.isArray(types) || types.length === 0) {
-    return [DEFAULT_PACKAGING_TYPE]
-  }
-
-  if (!types.includes(DEFAULT_PACKAGING_TYPE)) {
-    return [DEFAULT_PACKAGING_TYPE, ...types]
-  }
-
-  return types
+  return normalizePackagingOptions(options || [createDefaultPackagingOption()])
 }
 
-export function addProductPackagingType(productName, typeName) {
-  const cleanProduct = normalizeName(productName)
-  const cleanType = normalizeName(typeName)
+export function getPackagingTypesForProduct(productName) {
+  return getPackagingOptionsForProduct(productName).map(option => option.label)
+}
 
-  if (!cleanProduct || !cleanType) return false
+export function addProductPackagingOption(productName, packageName, weightKgInput) {
+  const cleanProduct = normalizeName(productName)
+  const cleanPackageName = normalizeName(packageName)
+
+  if (!cleanProduct || !cleanPackageName) return false
 
   if (!state.products.includes(cleanProduct)) {
     alert('Спочатку додай продукт')
     return false
   }
 
-  if (!state.productPackagingTypes[cleanProduct]) {
-    state.productPackagingTypes[cleanProduct] = [DEFAULT_PACKAGING_TYPE]
-  }
+  const option = createPackagingOption(cleanPackageName, weightKgInput)
 
-  if (state.productPackagingTypes[cleanProduct].includes(cleanType)) {
-    alert('Такий тип упаковки вже існує для цього продукту')
+  if (!option) {
+    alert('Вкажи коректну назву упаковки і вагу')
     return false
   }
 
-  state.productPackagingTypes[cleanProduct].push(cleanType)
-  persistState()
+  if (!state.productPackagingTypes[cleanProduct]) {
+    state.productPackagingTypes[cleanProduct] = [createDefaultPackagingOption()]
+  }
 
+  const exists = state.productPackagingTypes[cleanProduct]
+    .some(item => parsePackagingOption(item)?.id === option.id)
+
+  if (exists) {
+    alert('Такий варіант вже існує для цього продукту')
+    return false
+  }
+
+  state.productPackagingTypes[cleanProduct].push(option)
+  state.productPackagingTypes[cleanProduct] = normalizePackagingOptions(
+    state.productPackagingTypes[cleanProduct]
+  )
+
+  persistState()
   return true
 }
 
-export function removeProductPackagingType(productName, typeName) {
+export function removeProductPackagingOption(productName, optionId) {
   const cleanProduct = normalizeName(productName)
-  const cleanType = normalizeName(typeName)
+  const cleanOptionId = normalizeName(optionId)
 
-  if (!cleanProduct || !cleanType) return false
+  if (!cleanProduct || !cleanOptionId) return false
 
-  if (cleanType === DEFAULT_PACKAGING_TYPE) {
+  const optionToRemove = getPackagingOptionsForProduct(cleanProduct)
+    .find(option => option.id === cleanOptionId)
+
+  if (optionToRemove?.isDefault) {
     alert('kg є стандартною мірою і не може бути видалено')
     return false
   }
@@ -327,7 +356,9 @@ export function removeProductPackagingType(productName, typeName) {
   }
 
   state.productPackagingTypes[cleanProduct] = state.productPackagingTypes[cleanProduct]
-    .filter(type => type !== cleanType)
+    .map(option => parsePackagingOption(option))
+    .filter(Boolean)
+    .filter(option => option.id !== cleanOptionId)
 
   Object.values(state.weeks).forEach(week => {
     if (!Array.isArray(week.rows)) return
@@ -336,7 +367,7 @@ export function removeProductPackagingType(productName, typeName) {
       const cell = row.cells?.[cleanProduct]
       if (!cell || !Array.isArray(cell.items)) return
 
-      cell.items = cell.items.filter(item => item.type !== cleanType)
+      cell.items = cell.items.filter(item => item.packageId !== cleanOptionId)
 
       if (cell.items.length === 0) {
         delete row.cells[cleanProduct]
@@ -345,7 +376,6 @@ export function removeProductPackagingType(productName, typeName) {
   })
 
   persistState()
-
   return true
 }
 
@@ -386,18 +416,13 @@ function applySavedState(savedState) {
   }
 
   migrateAllWeeksToRows()
-  ensureProductPackagingTypes()
 }
 
 function ensureProductPackagingTypes() {
   state.products.forEach(product => {
-    if (!Array.isArray(state.productPackagingTypes[product])) {
-      state.productPackagingTypes[product] = [DEFAULT_PACKAGING_TYPE]
-    }
-
-    if (!state.productPackagingTypes[product].includes(DEFAULT_PACKAGING_TYPE)) {
-      state.productPackagingTypes[product].unshift(DEFAULT_PACKAGING_TYPE)
-    }
+    state.productPackagingTypes[product] = normalizePackagingOptions(
+      state.productPackagingTypes[product] || [createDefaultPackagingOption()]
+    )
   })
 
   Object.keys(state.productPackagingTypes).forEach(productName => {
@@ -405,6 +430,273 @@ function ensureProductPackagingTypes() {
       delete state.productPackagingTypes[productName]
     }
   })
+}
+
+function normalizeAllWeekData() {
+  Object.values(state.weeks).forEach(week => {
+    if (!Array.isArray(week.rows)) {
+      week.rows = []
+    }
+
+    week.rows = normalizeRows(week.rows)
+  })
+}
+
+function normalizeRows(rows) {
+  return rows.map(row => ({
+    id: row.id || createRowId(),
+    customerName: row.customerName || '',
+    deliveryDay: row.deliveryDay || '',
+    cells: normalizeRowCells(row.cells || {}),
+    checks: {
+      A: Boolean(row.checks?.A),
+      B: Boolean(row.checks?.B)
+    }
+  }))
+}
+
+function normalizeRowCells(cells) {
+  const result = {}
+
+  Object.entries(cells || {}).forEach(([productName, cell]) => {
+    const items = normalizeCellItems(productName, cell?.items || [])
+
+    if (items.length > 0) {
+      result[productName] = { items }
+    }
+  })
+
+  return result
+}
+
+function normalizeCellItems(productName, items) {
+  const options = getPackagingOptionsForProduct(productName)
+  const used = new Set()
+
+  const cleanItems = items
+    .map(item => normalizeCellItem(item, options))
+    .filter(Boolean)
+    .filter(item => {
+      if (used.has(item.packageId)) return false
+      used.add(item.packageId)
+      return true
+    })
+    .sort((a, b) => a.weightKg - b.weightKg || a.label.localeCompare(b.label))
+
+  return cleanItems
+}
+
+function normalizeCellItem(item, options) {
+  const qty = Number(item?.qty)
+
+  if (!Number.isFinite(qty) || qty <= 0) {
+    return null
+  }
+
+  const rawId = normalizeName(item?.packageId)
+  const rawType = normalizeName(item?.type || item?.packageName || item?.label)
+
+  let option = null
+
+  if (rawId) {
+    option = options.find(entry => entry.id === rawId) || null
+  }
+
+  if (!option && rawType) {
+    const normalizedRawType = normalizeLooseText(rawType)
+
+    option = options.find(entry =>
+      normalizeLooseText(entry.id) === normalizedRawType ||
+      normalizeLooseText(entry.packageName) === normalizedRawType ||
+      normalizeLooseText(entry.label) === normalizedRawType
+    ) || null
+  }
+
+  if (!option && rawType) {
+    option = parsePackagingOption(rawType)
+  }
+
+  if (!option) {
+    return null
+  }
+
+  return {
+    packageId: option.id,
+    packageName: option.packageName,
+    weightKg: option.weightKg,
+    label: option.label,
+    qty
+  }
+}
+
+function normalizePackagingOptions(options) {
+  const list = Array.isArray(options) ? options : []
+  const result = [createDefaultPackagingOption()]
+
+  list.forEach(entry => {
+    const option = parsePackagingOption(entry)
+
+    if (!option) return
+    if (option.isDefault) return
+
+    const exists = result.some(item => item.id === option.id)
+    if (!exists) {
+      result.push(option)
+    }
+  })
+
+  return result.sort((a, b) => {
+    return a.weightKg - b.weightKg || a.label.localeCompare(b.label)
+  })
+}
+
+function parsePackagingOption(value) {
+  if (!value) return null
+
+  if (typeof value === 'string') {
+    return parsePackagingString(value)
+  }
+
+  if (typeof value === 'object') {
+    const packageName = normalizeName(value.packageName || value.name || '')
+    const weightKg = toNumber(value.weightKg ?? value.weight)
+
+    if (!packageName) return null
+    if (packageName.toLowerCase() === 'kg') return createDefaultPackagingOption()
+
+    if (!Number.isFinite(weightKg) || weightKg <= 0) {
+      return null
+    }
+
+    return createPackagingOption(packageName, weightKg)
+  }
+
+  return null
+}
+
+function parsePackagingString(text) {
+  const cleanText = normalizeName(text)
+  if (!cleanText) return null
+
+  if (cleanText.toLowerCase() === 'kg') {
+    return createDefaultPackagingOption()
+  }
+
+  const gramMatch = cleanText.match(/^([\d.,]+)\s*g$/i)
+  if (gramMatch) {
+    const grams = Number(String(gramMatch[1]).replace(',', '.'))
+    if (!Number.isFinite(grams) || grams <= 0) return null
+
+    return createPackagingOption(cleanText, grams / 1000)
+  }
+
+  const kgOnlyMatch = cleanText.match(/^([\d.,]+)\s*kg$/i)
+  if (kgOnlyMatch) {
+    const kg = Number(String(kgOnlyMatch[1]).replace(',', '.'))
+    if (!Number.isFinite(kg) || kg <= 0) return null
+
+    return createPackagingOption(cleanText, kg)
+  }
+
+  const namedKgMatch = cleanText.match(/^(.*?)\s*-?\s*([\d.,]+)\s*kg$/i)
+  if (namedKgMatch) {
+    const packageName = normalizeName(namedKgMatch[1])
+    const kg = Number(String(namedKgMatch[2]).replace(',', '.'))
+
+    if (packageName && Number.isFinite(kg) && kg > 0) {
+      return createPackagingOption(packageName, kg)
+    }
+  }
+
+  return null
+}
+
+function createDefaultPackagingOption() {
+  return { ...DEFAULT_PACKAGING_OPTION }
+}
+
+function createPackagingOption(packageName, weightKgInput) {
+  const cleanPackageName = normalizeName(packageName)
+  const weightKg = toNumber(weightKgInput)
+
+  if (!cleanPackageName) return null
+
+  if (cleanPackageName.toLowerCase() === 'kg') {
+    return createDefaultPackagingOption()
+  }
+
+  if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    return null
+  }
+
+  return {
+    id: `${slugify(cleanPackageName)}__${normalizeWeightKey(weightKg)}`,
+    packageName: cleanPackageName,
+    weightKg,
+    label: buildPackagingLabel(cleanPackageName, weightKg),
+    isDefault: false
+  }
+}
+
+function buildPackagingLabel(packageName, weightKg) {
+  if (packageName.toLowerCase() === 'kg') {
+    return 'kg'
+  }
+
+  const weightLabel = formatWeight(weightKg)
+
+  if (normalizeLooseText(packageName) === normalizeLooseText(weightLabel)) {
+    return packageName
+  }
+
+  return `${packageName} - ${weightLabel}`
+}
+
+function formatWeight(weightKg) {
+  if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    return ''
+  }
+
+  const grams = Math.round(weightKg * 1000)
+
+  if (grams < 1000) {
+    return `${grams} g`
+  }
+
+  if (grams % 1000 === 0) {
+    return `${grams / 1000} kg`
+  }
+
+  return `${trimZeros((grams / 1000).toFixed(2))} kg`
+}
+
+function normalizeWeightKey(weightKg) {
+  return trimZeros(Number(weightKg).toFixed(3))
+}
+
+function trimZeros(value) {
+  return String(value).replace(/\.?0+$/, '')
+}
+
+function toNumber(value) {
+  if (typeof value === 'number') return value
+  return Number(String(value || '').replace(',', '.'))
+}
+
+function slugify(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9а-яіїєåøæ_-]/gi, '')
+}
+
+function normalizeLooseText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace('-', '')
 }
 
 function migrateAllWeeksToRows() {

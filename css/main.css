@@ -473,3 +473,168 @@ html[data-theme="dark"] .settings-form select {
   color: var(--text);
   border-color: var(--border);
 }
+
+.packaging-add-form {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.packaging-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.packaging-item-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#addRowBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .packaging-add-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rapport-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.rapport-header h2 {
+  margin: 0 0 6px;
+}
+
+.rapport-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.rapport-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fbfcfd;
+  padding: 14px;
+}
+
+.rapport-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.rapport-card strong {
+  font-size: 24px;
+}
+
+.rapport-section {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fbfcfd;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.rapport-section h3 {
+  margin: 0 0 14px;
+}
+
+.rapport-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.rapport-product-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: white;
+  padding: 14px;
+}
+
+.rapport-product-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.rapport-product-header h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.rapport-package-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rapport-package-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: #fbfcfd;
+}
+
+.rapport-detail-scroll {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.rapport-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.rapport-detail-table th,
+.rapport-detail-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.rapport-detail-table th {
+  background: var(--header);
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .rapport-card,
+html[data-theme="dark"] .rapport-section,
+html[data-theme="dark"] .rapport-package-row {
+  background: var(--card);
+}
+
+html[data-theme="dark"] .rapport-product-card,
+html[data-theme="dark"] .rapport-detail-table {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .rapport-detail-table th {
+  background: var(--header);
+}
+
+@media (max-width: 900px) {
+  .rapport-summary-grid,
+  .rapport-products {
+    grid-template-columns: 1fr;
+  }
+}

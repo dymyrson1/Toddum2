@@ -71,7 +71,7 @@ export function renderTable() {
 
       if (cellData && Array.isArray(cellData.items) && cellData.items.length > 0) {
         cellText = cellData.items
-          .map(item => `${escapeHtml(item.type)}: ${escapeHtml(item.qty)}`)
+          .map(item => renderCellItem(item))
           .join('<br>')
       }
 
@@ -130,6 +130,13 @@ export function renderTable() {
 
   container.innerHTML = html
   attachTableEvents()
+}
+
+function renderCellItem(item) {
+  const label = item.label || item.packageName || item.type || '—'
+  const qty = item.qty ?? ''
+
+  return `${escapeHtml(label)}: ${escapeHtml(qty)}`
 }
 
 function renderDeliveryDayOptions(selectedDay) {
