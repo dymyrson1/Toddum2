@@ -1,7 +1,7 @@
 import { loadFirebaseState, saveFirebaseState } from './firebase.js'
 import { setSyncStatus } from './sync/sync-status.js'
 
-import { DELIVERY_DAYS, MAX_LOGS } from './app/constants.js'
+import { DELIVERY_DAYS } from './app/constants.js'
 
 import {
   applySavedStateToRuntimeState,
@@ -9,16 +9,14 @@ import {
 } from './app/state-persistence-utils.js'
 
 import {
-  getISOWeek,
-  getWeekId,
-  getWeekLabel,
-  shiftDateByWeeks
-} from './week/week-utils.js'
+  ensureCustomersFromOrderRowsInState,
+  normalizeAllWeeksInState,
+  normalizeRuntimeStateAfterLoad
+} from './app/state-init-utils.js'
 
 import { normalizeCustomers } from './customers/customer-utils.js'
 
 import {
-  collectCustomerNamesFromWeeks,
   findCustomerByName,
   getCustomerNameValue
 } from './customers/customer-state-utils.js'
@@ -44,12 +42,13 @@ import {
   removeProductPackagingOptionAction
 } from './products/product-actions.js'
 
-import { createLogEntry } from './logs/log-utils.js'
+import {
+  addLogAction,
+  clearLogsAction
+} from './logs/log-actions.js'
 
 import { normalizeOrderRows } from './orders/order-utils.js'
-
 import { normalizeOrderCells } from './orders/order-cell-utils.js'
-
 import { migrateCellsToOrderRows } from './orders/order-migration-utils.js'
 
 import {
@@ -62,6 +61,14 @@ import {
   updateOrderRowFieldAction,
   updateRowCheckAction
 } from './orders/order-actions.js'
+
+import {
+  ensureWeekExistsInState,
+  getCurrentWeekIdFromState,
+  getCurrentWeekLabelFromState,
+  shiftCurrentDateByWeeksInState,
+  updateCurrentYearWeekInState
+} from './week/week-state-utils.js'
 
 export const state = {
   currentTab: 'orders',
@@ -96,11 +103,7 @@ export async function initState() {
     setSyncStatus('error', 'Firebase: load error')
   }
 
-  state.currentDate = new Date()
-  state.deliveryDays = DELIVERY_DAYS
-  state.customers = normalizeCustomers(state.customers)
-  state.products = normalizeProducts(state.products)
-
+  normalizeRuntimeStateAfterLoad(state)
   ensureProductPackagingTypes()
   normalizeAllWeekData()
   ensureCustomersFromOrderRows()
@@ -128,30 +131,20 @@ export function persistState() {
 }
 
 export function getCurrentWeekId() {
-  return getWeekId(state.currentYear, state.currentWeek)
+  return getCurrentWeekIdFromState(state)
 }
 
 export function getCurrentWeekLabel() {
-  return getWeekLabel(state.currentWeek)
+  return getCurrentWeekLabelFromState(state)
 }
 
 export function ensureCurrentWeek() {
-  const weekId = getCurrentWeekId()
-
-  if (!state.weeks[weekId]) {
-    state.weeks[weekId] = {
-      rows: []
-    }
-  }
-
-  if (!Array.isArray(state.weeks[weekId].rows)) {
-    state.weeks[weekId].rows = migrateCellsToOrderRows(
-      state.weeks[weekId].cells || {}
-    )
-    delete state.weeks[weekId].cells
-  }
-
-  state.weeks[weekId].rows = normalizeRows(state.weeks[weekId].rows)
+  ensureWeekExistsInState({
+    state,
+    weekId: getCurrentWeekId(),
+    migrateCellsToOrderRows,
+    normalizeRows
+  })
 }
 
 export function getCurrentRows() {
@@ -161,17 +154,15 @@ export function getCurrentRows() {
 }
 
 export function goToPreviousWeek() {
-  state.currentDate = shiftDateByWeeks(state.currentDate, -1)
+  shiftCurrentDateByWeeksInState(state, -1)
 
-  updateCurrentYearWeek()
   ensureCurrentWeek()
   persistState()
 }
 
 export function goToNextWeek() {
-  state.currentDate = shiftDateByWeeks(state.currentDate, 1)
+  shiftCurrentDateByWeeksInState(state, 1)
 
-  updateCurrentYearWeek()
   ensureCurrentWeek()
   persistState()
 }
@@ -274,8 +265,7 @@ export function removeProductPackagingOption(productName, optionId) {
 }
 
 export function clearLogs() {
-  state.logs = []
-  persistState()
+  return clearLogsAction(createActionContext())
 }
 
 function createActionContext() {
@@ -284,28 +274,19 @@ function createActionContext() {
     addLog,
     persistState,
     getCurrentRows,
+    getCurrentWeekId,
+    getCurrentWeekLabel,
     getPackagingOptionsForProduct,
     ensureCustomerExists
   }
 }
 
-function ensureCustomersFromOrderRows() {
-  const customerNames = collectCustomerNamesFromWeeks(state.weeks)
-
-  customerNames.forEach(customerName => {
-    ensureCustomerExists(customerName)
-  })
+function addLog(action, details = {}) {
+  return addLogAction(createActionContext(), action, details)
 }
 
-function addLog(action, details = {}) {
-  const log = createLogEntry({
-    action,
-    details,
-    weekId: getCurrentWeekId(),
-    weekLabel: getCurrentWeekLabel()
-  })
-
-  state.logs = [log, ...(state.logs || [])].slice(0, MAX_LOGS)
+function ensureCustomersFromOrderRows() {
+  return ensureCustomersFromOrderRowsInState(state, ensureCustomerExists)
 }
 
 function ensureProductPackagingTypes() {
@@ -316,13 +297,7 @@ function ensureProductPackagingTypes() {
 }
 
 function normalizeAllWeekData() {
-  Object.values(state.weeks).forEach(week => {
-    if (!Array.isArray(week.rows)) {
-      week.rows = []
-    }
-
-    week.rows = normalizeRows(week.rows)
-  })
+  return normalizeAllWeeksInState(state, normalizeRows)
 }
 
 function normalizeRows(rows) {
@@ -334,8 +309,5 @@ function normalizeRowCells(cells) {
 }
 
 function updateCurrentYearWeek() {
-  const result = getISOWeek(state.currentDate)
-
-  state.currentYear = result.year
-  state.currentWeek = result.week
+  return updateCurrentYearWeekInState(state)
 }
