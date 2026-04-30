@@ -3,17 +3,18 @@ import path from 'node:path'
 
 const rootDir = process.cwd()
 const jsDir = path.join(rootDir, 'js')
+
 const entryFiles = [
   path.join(rootDir, 'js/app.js'),
   path.join(rootDir, 'js/state.js')
 ]
 
-const ignoredPatterns = [
-  '/node_modules/',
-  '/tests/',
-  '/scripts/',
-  '/dist/'
-]
+const ignoredPatterns = ['/node_modules/', '/tests/', '/scripts/', '/dist/']
+
+const allowedUnusedFiles = [
+  path.join(rootDir, 'js/firebase-migrate.js'),
+  path.join(rootDir, 'js/firebase-seed.js')
+].map(normalizePath)
 
 const allJsFiles = getAllJsFiles(jsDir)
 const importedFiles = new Set()
@@ -28,6 +29,7 @@ entryFiles.forEach(entryFile => {
 const unusedFiles = allJsFiles
   .filter(file => !importedFiles.has(file))
   .filter(file => !entryFiles.includes(file))
+  .filter(file => !allowedUnusedFiles.includes(file))
   .sort()
 
 if (unusedFiles.length === 0) {
@@ -67,6 +69,7 @@ function walkImports(filePath) {
 
 function extractImportPaths(content) {
   const result = []
+
   const patterns = [
     /import\s+[^'"]*from\s+['"]([^'"]+)['"]/g,
     /import\s+['"]([^'"]+)['"]/g,
@@ -90,11 +93,7 @@ function resolveImportPath(fromFile, importPath) {
   const fromDir = path.dirname(fromFile)
   const rawPath = path.resolve(fromDir, importPath)
 
-  const candidates = [
-    rawPath,
-    `${rawPath}.js`,
-    path.join(rawPath, 'index.js')
-  ]
+  const candidates = [rawPath, `${rawPath}.js`, path.join(rawPath, 'index.js')]
 
   const found = candidates.find(candidate => fs.existsSync(candidate))
 
@@ -115,25 +114,23 @@ function resolveImportPath(fromFile, importPath) {
 function getAllJsFiles(dir) {
   if (!fs.existsSync(dir)) return []
 
-  return fs
-    .readdirSync(dir, { withFileTypes: true })
-    .flatMap(entry => {
-      const fullPath = path.join(dir, entry.name)
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const fullPath = path.join(dir, entry.name)
 
-      if (ignoredPatterns.some(pattern => fullPath.includes(pattern))) {
-        return []
-      }
-
-      if (entry.isDirectory()) {
-        return getAllJsFiles(fullPath)
-      }
-
-      if (entry.isFile() && entry.name.endsWith('.js')) {
-        return [normalizePath(fullPath)]
-      }
-
+    if (ignoredPatterns.some(pattern => fullPath.includes(pattern))) {
       return []
-    })
+    }
+
+    if (entry.isDirectory()) {
+      return getAllJsFiles(fullPath)
+    }
+
+    if (entry.isFile() && entry.name.endsWith('.js')) {
+      return [normalizePath(fullPath)]
+    }
+
+    return []
+  })
 }
 
 function normalizePath(filePath) {
