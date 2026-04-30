@@ -23,7 +23,6 @@ export function renderTable() {
         <thead>
           <tr>
             <th class="corner-cell">Customer</th>
-            <th class="delivery-day-column">Delivery day</th>
   `
 
   state.products.forEach(product => {
@@ -33,6 +32,7 @@ export function renderTable() {
   html += `
             <th class="check-column">A</th>
             <th class="check-column">B</th>
+            <th class="delivery-day-column">Delivery day</th>
             <th class="merknad-column">Merknad</th>
           </tr>
         </thead>
@@ -57,16 +57,6 @@ export function renderTable() {
             data-row-id="${escapeHtml(row.id)}"
           >
         </th>
-
-        <td class="delivery-day-cell">
-          <select 
-            data-row-field="deliveryDay"
-            data-row-id="${escapeHtml(row.id)}"
-          >
-            <option value="">—</option>
-            ${renderDeliveryDayOptions(row.deliveryDay)}
-          </select>
-        </td>
     `
 
     state.products.forEach(product => {
@@ -107,6 +97,16 @@ export function renderTable() {
             data-row-id="${escapeHtml(row.id)}"
             ${row.checks?.B ? 'checked' : ''}
           >
+        </td>
+
+        <td class="delivery-day-cell">
+          <select 
+            data-row-field="deliveryDay"
+            data-row-id="${escapeHtml(row.id)}"
+          >
+            <option value="">—</option>
+            ${renderDeliveryDayOptions(row.deliveryDay)}
+          </select>
         </td>
 
         <td 

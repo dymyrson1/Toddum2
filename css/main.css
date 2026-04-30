@@ -2612,38 +2612,6 @@ html[data-theme="dark"] #leveringTab .delivery-row-done:hover td {
   }
 }
 
-/* ===== WEEK NAV + FIREBASE STATUS ROW ===== */
-
-.week-status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 12px;
-  margin-bottom: 18px;
-}
-
-.week-status-row .global-week-nav {
-  margin: 0;
-}
-
-.week-status-row .sync-status {
-  margin: 0;
-  white-space: nowrap;
-  font-size: 13px;
-}
-
-@media (max-width: 760px) {
-  .week-status-row {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .week-status-row .sync-status {
-    align-self: flex-end;
-  }
-}
 /* ===== PRODUCT ADMIN TABLE ===== */
 
 .products-admin-table {

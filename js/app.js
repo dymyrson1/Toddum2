@@ -5,12 +5,14 @@ import { initWeekControls } from './week/week.js'
 import { initContextMenu } from './table/context-menu.js'
 import { initTableKeyboardEvents } from './table/table-events.js'
 
+
 startApp()
 
 async function startApp() {
   console.log('🚀 App starting...')
 
   await initState()
+
 
   initTabs()
   initWeekControls()
