@@ -1,6 +1,8 @@
 import {
   state,
   addCustomer,
+  updateCustomer,
+  moveCustomer,
   removeCustomer,
   addProduct,
   removeProduct,
@@ -15,62 +17,123 @@ export function renderSettingsView(container) {
   const selectedProduct = state.products[0] || ''
 
   container.innerHTML = `
-    <section id="settingsTab" class="tab-panel">
-      <h2>Settings</h2>
+    <section id="settingsTab" class="tab-panel settings-panel">
+      <div class="settings-header">
+        <div>
+          <h2>Innstillinger</h2>
+          <p>Administrer kunder, produkter og emballasje.</p>
+        </div>
+      </div>
 
-      <div class="settings-grid">
-        <div class="settings-card">
-          <h3>Замовники</h3>
+      <div class="settings-layout">
+        <section class="settings-section settings-section-wide">
+          <div class="settings-section-header">
+            <h3>Kunder</h3>
+            <span>${state.customers.length} registrert</span>
+          </div>
 
-          <form id="customerForm" class="settings-form">
-            <input
-              id="customerInput"
-              type="text"
-              placeholder="Новий замовник"
-              autocomplete="off"
-            >
-            <button type="submit">Додати</button>
+          <form id="customerForm" class="customer-form-pro">
+            <label>
+              Navn
+              <input
+                id="customerNameInput"
+                type="text"
+                placeholder="Kundenavn"
+                autocomplete="off"
+              >
+            </label>
+
+            <label>
+              Kontaktperson
+              <input
+                id="customerContactInput"
+                type="text"
+                placeholder="Kontaktperson"
+                autocomplete="off"
+              >
+            </label>
+
+            <label>
+              Telefon
+              <input
+                id="customerPhoneInput"
+                type="text"
+                placeholder="Telefon"
+                autocomplete="off"
+              >
+            </label>
+
+            <label>
+              Adresse
+              <input
+                id="customerAddressInput"
+                type="text"
+                placeholder="Adresse"
+                autocomplete="off"
+              >
+            </label>
+
+            <label>
+              Leveringsnr.
+              <input
+                id="customerDeliveryOrderInput"
+                type="number"
+                placeholder="Auto"
+                min="0"
+                step="1"
+              >
+            </label>
+
+            <button type="submit">Legg til</button>
           </form>
 
-          <div id="customersList" class="settings-list"></div>
-        </div>
+          <div id="customersList" class="customer-admin-table-wrap"></div>
+        </section>
 
-        <div class="settings-card">
-          <h3>Продукти</h3>
+        <section class="settings-section">
+          <div class="settings-section-header">
+            <h3>Produkter</h3>
+            <span>${state.products.length} registrert</span>
+          </div>
 
-          <form id="productForm" class="settings-form">
+          <form id="productForm" class="settings-inline-form">
             <input
               id="productInput"
               type="text"
-              placeholder="Новий продукт"
+              placeholder="Nytt produkt"
               autocomplete="off"
             >
-            <button type="submit">Додати</button>
+            <button type="submit">Legg til</button>
           </form>
 
-          <div id="productsList" class="settings-list"></div>
-        </div>
+          <div id="productsList" class="settings-compact-list"></div>
+        </section>
 
-        <div class="settings-card">
-          <h3>Упаковка по продуктах</h3>
+        <section class="settings-section settings-section-wide">
+          <div class="settings-section-header">
+            <h3>Emballasje per produkt</h3>
+            <span>Standard: kg</span>
+          </div>
+
           ${renderPackagingManager(selectedProduct)}
-        </div>
+        </section>
 
-        <div class="settings-card">
-          <h3>Дні доставки</h3>
+        <section class="settings-section">
+          <div class="settings-section-header">
+            <h3>Leveringsdager</h3>
+            <span>Fast liste</span>
+          </div>
 
           <div class="settings-note">
-            Дні доставки задані як константа норвезькою мовою.
+            Leveringsdager er faste og brukes i bestillingstabellen.
           </div>
 
-          <div class="settings-list">
+          <div class="settings-day-list">
             ${state.deliveryDays.map(day => `
-              <div class="settings-item fixed-item">
-                <span>${escapeHtml(day)}</span>
-              </div>
+              <span>${escapeHtml(day)}</span>
             `).join('')}
           </div>
-        </div>
+        </section>
       </div>
     </section>
   `
@@ -83,73 +146,184 @@ export function renderSettingsView(container) {
 function renderPackagingManager(selectedProduct) {
   if (state.products.length === 0) {
     return `
-      <p class="muted-text">
-        Спочатку додай хоча б один продукт.
-      </p>
+      <div class="settings-empty">
+        Legg til et produkt først.
+      </div>
     `
   }
 
   return `
-    <div class="settings-form">
-      <select id="packagingProductSelect">
-        ${state.products.map(product => `
-          <option
-            value="${escapeHtml(product)}"
-            ${product === selectedProduct ? 'selected' : ''}
-          >
-            ${escapeHtml(product)}
-          </option>
-        `).join('')}
-      </select>
+    <div class="packaging-control-bar">
+      <label>
+        Produkt
+        <select id="packagingProductSelect">
+          ${state.products.map(product => `
+            <option
+              value="${escapeHtml(product)}"
+              ${product === selectedProduct ? 'selected' : ''}
+            >
+              ${escapeHtml(product)}
+            </option>
+          `).join('')}
+        </select>
+      </label>
     </div>
 
-    <form id="packagingForm" class="settings-form packaging-add-form">
-      <input
-        id="packagingNameInput"
-        type="text"
-        placeholder="Назва упаковки, напр. spann або 250g"
-        autocomplete="off"
-      >
+    <form id="packagingForm" class="packaging-form-pro">
+      <label>
+        Emballasje
+        <input
+          id="packagingNameInput"
+          type="text"
+          placeholder="f.eks. spann eller 250g"
+          autocomplete="off"
+        >
+      </label>
 
-      <input
-        id="packagingWeightInput"
-        type="number"
-        placeholder="Вага в кг, напр. 3 або 0.125"
-        step="any"
-        min="0"
-      >
+      <label>
+        Vekt i kg
+        <input
+          id="packagingWeightInput"
+          type="number"
+          placeholder="f.eks. 3 eller 0.125"
+          step="any"
+          min="0"
+        >
+      </label>
 
-      <button type="submit">Додати</button>
+      <button type="submit">Legg til</button>
     </form>
 
-    <div class="settings-note">
-      Для кожного продукту автоматично існує стандартний варіант <strong>kg</strong>.
-    </div>
-
-    <div id="packagingList" class="settings-list"></div>
+    <div id="packagingList" class="packaging-options-list"></div>
   `
 }
 
 function renderCustomersList() {
-  const list = document.getElementById('customersList')
-  if (!list) return
+  const container = document.getElementById('customersList')
+  if (!container) return
 
-  list.innerHTML = state.customers.map(customer => `
-    <div class="settings-item">
-      <span>${escapeHtml(customer)}</span>
-      <button data-remove-customer="${escapeHtml(customer)}">Видалити</button>
-    </div>
-  `).join('')
+  if (state.customers.length === 0) {
+    container.innerHTML = `<div class="settings-empty">Ingen kunder registrert.</div>`
+    return
+  }
+
+  const customers = [...state.customers].sort((a, b) => {
+    return a.deliveryOrder - b.deliveryOrder || a.name.localeCompare(b.name)
+  })
+
+  container.innerHTML = `
+    <table class="customer-admin-table">
+      <thead>
+        <tr>
+          <th>Nr.</th>
+          <th>Navn</th>
+          <th>Kontaktperson</th>
+          <th>Telefon</th>
+          <th>Adresse</th>
+          <th>Rekkefølge</th>
+          <th></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        ${customers.map((customer, index) => `
+          <tr>
+            <td>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value="${escapeHtml(customer.deliveryOrder)}"
+                data-customer-id="${escapeHtml(customer.id)}"
+                data-customer-field="deliveryOrder"
+              >
+            </td>
+
+            <td>
+              <input
+                type="text"
+                value="${escapeHtml(customer.name)}"
+                data-customer-id="${escapeHtml(customer.id)}"
+                data-customer-field="name"
+              >
+            </td>
+
+            <td>
+              <input
+                type="text"
+                value="${escapeHtml(customer.contactPerson)}"
+                data-customer-id="${escapeHtml(customer.id)}"
+                data-customer-field="contactPerson"
+              >
+            </td>
+
+            <td>
+              <input
+                type="text"
+                value="${escapeHtml(customer.phone)}"
+                data-customer-id="${escapeHtml(customer.id)}"
+                data-customer-field="phone"
+              >
+            </td>
+
+            <td>
+              <input
+                type="text"
+                value="${escapeHtml(customer.address)}"
+                data-customer-id="${escapeHtml(customer.id)}"
+                data-customer-field="address"
+              >
+            </td>
+
+            <td class="customer-move-cell">
+              <button
+                class="move-customer-btn"
+                data-move-customer="${escapeHtml(customer.id)}"
+                data-move-direction="up"
+                ${index === 0 ? 'disabled' : ''}
+                title="Flytt opp"
+              >
+                ↑
+              </button>
+
+              <button
+                class="move-customer-btn"
+                data-move-customer="${escapeHtml(customer.id)}"
+                data-move-direction="down"
+                ${index === customers.length - 1 ? 'disabled' : ''}
+                title="Flytt ned"
+              >
+                ↓
+              </button>
+            </td>
+
+            <td>
+              <button data-remove-customer="${escapeHtml(customer.id)}">Slett</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `
+
+  attachCustomerFieldEvents()
+  attachCustomerMoveEvents()
+  attachCustomerRemoveEvents()
 }
 
 function renderProductsList() {
   const list = document.getElementById('productsList')
   if (!list) return
 
+  if (state.products.length === 0) {
+    list.innerHTML = `<div class="settings-empty">Ingen produkter registrert.</div>`
+    return
+  }
+
   list.innerHTML = state.products.map(product => `
-    <div class="settings-item">
+    <div class="settings-list-row">
       <span>${escapeHtml(product)}</span>
-      <button data-remove-product="${escapeHtml(product)}">Видалити</button>
+      <button data-remove-product="${escapeHtml(product)}">Slett</button>
     </div>
   `).join('')
 }
@@ -160,24 +334,34 @@ function renderPackagingList(productName) {
 
   const options = getPackagingOptionsForProduct(productName)
 
-  list.innerHTML = options.map(option => `
-    <div class="settings-item">
-      <div class="packaging-item-main">
-        <strong>${escapeHtml(option.label)}</strong>
-        ${
-          option.isDefault
-            ? '<div class="packaging-item-sub">standard</div>'
-            : `<div class="packaging-item-sub">Navn: ${escapeHtml(option.packageName)} · Vekt: ${escapeHtml(formatWeightForUi(option.weightKg))}</div>`
-        }
+  list.innerHTML = `
+    <div class="packaging-options-table">
+      <div class="packaging-options-head">
+        <span>Emballasje</span>
+        <span>Vekt</span>
+        <span></span>
       </div>
 
-      ${
-        option.isDefault
-          ? '<span class="fixed-label">standard</span>'
-          : `<button data-remove-product-packaging="${escapeHtml(option.id)}">Видалити</button>`
-      }
+      ${options.map(option => `
+        <div class="packaging-options-row">
+          <span>
+            <strong>${escapeHtml(option.label)}</strong>
+            ${option.isDefault ? '<small>Standard</small>' : ''}
+          </span>
+
+          <span>${escapeHtml(formatWeightForUi(option.weightKg))}</span>
+
+          <span>
+            ${
+              option.isDefault
+                ? '<em>Fast</em>'
+                : `<button data-remove-product-packaging="${escapeHtml(option.id)}">Slett</button>`
+            }
+          </span>
+        </div>
+      `).join('')}
     </div>
-  `).join('')
+  `
 }
 
 function attachSettingsEvents() {
@@ -189,11 +373,15 @@ function attachSettingsEvents() {
   customerForm.onsubmit = event => {
     event.preventDefault()
 
-    const input = document.getElementById('customerInput')
-    const added = addCustomer(input.value)
+    const added = addCustomer({
+      name: document.getElementById('customerNameInput').value,
+      contactPerson: document.getElementById('customerContactInput').value,
+      phone: document.getElementById('customerPhoneInput').value,
+      address: document.getElementById('customerAddressInput').value,
+      deliveryOrder: document.getElementById('customerDeliveryOrderInput').value
+    })
 
     if (added) {
-      input.value = ''
       renderTab()
     }
   }
@@ -242,22 +430,60 @@ function attachSettingsEvents() {
     }
   }
 
+  attachProductEvents()
+
+  if (packagingProductSelect) {
+    attachPackagingRemoveEvents(packagingProductSelect.value)
+  }
+}
+
+function attachCustomerFieldEvents() {
+  document.querySelectorAll('[data-customer-field]').forEach(input => {
+    input.addEventListener('change', () => {
+      updateCustomer(input.dataset.customerId, {
+        [input.dataset.customerField]: input.value
+      })
+
+      renderCustomersList()
+    })
+  })
+}
+
+function attachCustomerMoveEvents() {
+  document.querySelectorAll('[data-move-customer]').forEach(button => {
+    button.onclick = () => {
+      const moved = moveCustomer(
+        button.dataset.moveCustomer,
+        button.dataset.moveDirection
+      )
+
+      if (moved) {
+        renderCustomersList()
+      }
+    }
+  })
+}
+
+function attachCustomerRemoveEvents() {
   document.querySelectorAll('[data-remove-customer]').forEach(button => {
     button.onclick = () => {
-      const name = button.dataset.removeCustomer
-      const confirmed = confirm(`Видалити замовника "${name}" зі списку?`)
+      const customerId = button.dataset.removeCustomer
+      const customer = state.customers.find(item => item.id === customerId)
+      const confirmed = confirm(`Vil du slette kunden "${customer?.name || ''}" fra listen?`)
 
       if (!confirmed) return
 
-      removeCustomer(name)
+      removeCustomer(customerId)
       renderTab()
     }
   })
+}
 
+function attachProductEvents() {
   document.querySelectorAll('[data-remove-product]').forEach(button => {
     button.onclick = () => {
       const name = button.dataset.removeProduct
-      const confirmed = confirm(`Видалити продукт "${name}" і всі його дані?`)
+      const confirmed = confirm(`Vil du slette produktet "${name}" og alle tilhørende data?`)
 
       if (!confirmed) return
 
@@ -265,17 +491,13 @@ function attachSettingsEvents() {
       renderTab()
     }
   })
-
-  if (packagingProductSelect) {
-    attachPackagingRemoveEvents(packagingProductSelect.value)
-  }
 }
 
 function attachPackagingRemoveEvents(productName) {
   document.querySelectorAll('[data-remove-product-packaging]').forEach(button => {
     button.onclick = () => {
       const optionId = button.dataset.removeProductPackaging
-      const confirmed = confirm(`Видалити цей тип упаковки для продукту "${productName}"?`)
+      const confirmed = confirm(`Vil du slette denne emballasjen for produktet "${productName}"?`)
 
       if (!confirmed) return
 

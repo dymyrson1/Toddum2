@@ -1,4 +1,4 @@
-import { state, getCurrentRows } from '../state.js'
+import { state, getCurrentRows, getCustomerName } from '../state.js'
 import { attachTableEvents } from './table-events.js'
 
 export function renderOrdersTab() {
@@ -14,7 +14,7 @@ export function renderTable() {
   let html = `
     <datalist id="customersDatalist">
       ${state.customers.map(customer => `
-        <option value="${escapeHtml(customer)}"></option>
+        <option value="${escapeHtml(getCustomerName(customer))}"></option>
       `).join('')}
     </datalist>
 
@@ -40,8 +40,11 @@ export function renderTable() {
   `
 
   rows.forEach(row => {
-    html += `
-      <tr data-row-id="${escapeHtml(row.id)}">
+html += `
+  <tr 
+    data-row-id="${escapeHtml(row.id)}"
+    class="${getRowStatusClass(row)}"
+  >
         <th class="customer-cell">
           <input
             class="customer-input"
@@ -109,7 +112,7 @@ export function renderTable() {
           <button 
             class="delete-row-btn" 
             data-delete-row="${escapeHtml(row.id)}"
-            title="Видалити рядок"
+            title="Slett rad"
           >
             ×
           </button>
@@ -124,12 +127,22 @@ export function renderTable() {
     </div>
 
     <button id="addOrderRowBtn" class="add-row-main-btn">
-      + Додати рядок
+      + Legg til rad
     </button>
   `
 
   container.innerHTML = html
   attachTableEvents()
+}
+function getRowStatusClass(row) {
+  const aChecked = Boolean(row.checks?.A)
+  const bChecked = Boolean(row.checks?.B)
+
+  if (aChecked && bChecked) return 'row-status-both'
+  if (aChecked) return 'row-status-a'
+  if (bChecked) return 'row-status-b'
+
+  return ''
 }
 
 function renderCellItem(item) {
@@ -146,7 +159,7 @@ function renderCellItem(item) {
     return `${escapeHtml(formatNumber(qty))} spann`
   }
 
-  return `${escapeHtml(formatNumber(qty))}-${escapeHtml(label)}`
+  return `${escapeHtml(formatNumber(qty))}x${escapeHtml(label)}`
 }
 
 function renderDeliveryDayOptions(selectedDay) {

@@ -62,6 +62,8 @@ export async function initState() {
   state.currentDate = new Date()
   state.deliveryDays = DELIVERY_DAYS
 
+  state.customers = normalizeCustomers(state.customers)
+
   ensureProductPackagingTypes()
   normalizeAllWeekData()
   updateCurrentYearWeek()
@@ -308,34 +310,147 @@ export function getOrderCell(rowId, productName) {
   }
 }
 
-export function addCustomer(name) {
-  const cleanName = normalizeName(name)
-  if (!cleanName) return false
+export function getCustomerName(customer) {
+  if (typeof customer === 'string') return customer
+  return customer?.name || ''
+}
 
-  if (state.customers.includes(cleanName)) {
+export function getCustomerByName(name) {
+  const cleanName = normalizeName(name).toLowerCase()
+
+  return state.customers.find(customer => {
+    return normalizeName(getCustomerName(customer)).toLowerCase() === cleanName
+  }) || null
+}
+
+export function addCustomer(customerData) {
+  const customer = normalizeCustomer(customerData)
+
+  if (!customer.name) return false
+
+  const exists = state.customers.some(item => {
+    return normalizeName(item.name).toLowerCase() === customer.name.toLowerCase()
+  })
+
+  if (exists) {
     alert('Denne kunden finnes allerede')
     return false
   }
 
-  state.customers.push(cleanName)
+  const maxOrder = state.customers.reduce((max, item) => {
+    return Math.max(max, Number(item.deliveryOrder) || 0)
+  }, 0)
+
+  customer.deliveryOrder = customer.deliveryOrder || maxOrder + 1
+
+  state.customers.push(customer)
+  state.customers = normalizeCustomers(state.customers)
 
   addLog('add_customer', {
     actionLabel: 'La til kunde',
-    customerName: cleanName,
-    newValue: cleanName
+    customerName: customer.name,
+    newValue: customer.name
   })
 
   persistState()
   return true
 }
 
-export function removeCustomer(name) {
-  state.customers = state.customers.filter(customer => customer !== name)
+export function updateCustomer(customerId, patch) {
+  const customer = state.customers.find(item => item.id === customerId)
+  if (!customer) return false
+
+  const cleanPatch = normalizeCustomerPatch(patch)
+
+  if (cleanPatch.name !== undefined) {
+    const newName = normalizeName(cleanPatch.name)
+
+    if (!newName) {
+      alert('Kundenavn kan ikke være tomt')
+      return false
+    }
+
+    const duplicate = state.customers.some(item => {
+      return item.id !== customerId &&
+        normalizeName(item.name).toLowerCase() === newName.toLowerCase()
+    })
+
+    if (duplicate) {
+      alert('Denne kunden finnes allerede')
+      return false
+    }
+
+    cleanPatch.name = newName
+  }
+
+  const oldValue = formatCustomerForLog(customer)
+
+  Object.assign(customer, cleanPatch)
+
+  state.customers = normalizeCustomers(state.customers)
+
+  const updatedCustomer = state.customers.find(item => item.id === customerId)
+  const newValue = formatCustomerForLog(updatedCustomer || customer)
+
+  if (oldValue === newValue) return true
+
+  addLog('update_customer', {
+    actionLabel: 'Endret kundeinformasjon',
+    customerName: updatedCustomer?.name || customer.name,
+    oldValue,
+    newValue
+  })
+
+  persistState()
+  return true
+}
+
+export function moveCustomer(customerId, direction) {
+  const customers = normalizeCustomers(state.customers)
+  const currentIndex = customers.findIndex(customer => customer.id === customerId)
+
+  if (currentIndex === -1) return false
+
+  const targetIndex = direction === 'up'
+    ? currentIndex - 1
+    : currentIndex + 1
+
+  if (targetIndex < 0 || targetIndex >= customers.length) {
+    return false
+  }
+
+  const currentCustomer = customers[currentIndex]
+  const targetCustomer = customers[targetIndex]
+
+  customers[currentIndex] = targetCustomer
+  customers[targetIndex] = currentCustomer
+
+  state.customers = customers.map((customer, index) => ({
+    ...customer,
+    deliveryOrder: index + 1
+  }))
+
+  addLog('move_customer', {
+    actionLabel: 'Endret leveringsrekkefølge',
+    customerName: currentCustomer.name,
+    oldValue: `${currentIndex + 1}`,
+    newValue: `${targetIndex + 1}`
+  })
+
+  persistState()
+  return true
+}
+
+export function removeCustomer(customerId) {
+  const customer = state.customers.find(item => item.id === customerId)
+  if (!customer) return
+
+  state.customers = state.customers.filter(item => item.id !== customerId)
 
   addLog('remove_customer', {
     actionLabel: 'Fjernet kunde fra listen',
-    customerName: name,
-    oldValue: name
+    customerName: customer.name,
+    oldValue: customer.name
   })
 
   persistState()
@@ -495,7 +610,6 @@ export function removeProductPackagingOption(productName, optionId) {
 
 export function clearLogs() {
   state.logs = []
-
   persistState()
 }
 
@@ -520,7 +634,7 @@ function addLog(action, details = {}) {
 
 function prepareStateForSaving() {
   return {
-    customers: state.customers,
+    customers: normalizeCustomers(state.customers),
     products: state.products,
     productPackagingTypes: state.productPackagingTypes,
     weeks: state.weeks,
@@ -530,7 +644,7 @@ function prepareStateForSaving() {
 
 function applySavedState(savedState) {
   if (Array.isArray(savedState.customers)) {
-    state.customers = savedState.customers
+    state.customers = normalizeCustomers(savedState.customers)
   }
 
   if (Array.isArray(savedState.products)) {
@@ -555,6 +669,104 @@ function applySavedState(savedState) {
   }
 
   migrateAllWeeksToRows()
+}
+
+function normalizeCustomers(customers) {
+  if (!Array.isArray(customers)) return []
+
+  const normalized = customers
+    .map(customer => normalizeCustomer(customer))
+    .filter(customer => customer.name)
+
+  normalized.sort((a, b) => {
+    const orderA = Number(a.deliveryOrder) || 0
+    const orderB = Number(b.deliveryOrder) || 0
+
+    if (orderA !== orderB) {
+      if (orderA === 0) return 1
+      if (orderB === 0) return -1
+      return orderA - orderB
+    }
+
+    return a.name.localeCompare(b.name)
+  })
+
+  return normalized.map((customer, index) => ({
+    ...customer,
+    deliveryOrder: index + 1
+  }))
+}
+
+function normalizeCustomer(customer) {
+  if (typeof customer === 'string') {
+    const name = normalizeName(customer)
+
+    return {
+      id: createCustomerId(name),
+      name,
+      contactPerson: '',
+      phone: '',
+      address: '',
+      deliveryOrder: 0
+    }
+  }
+
+  const name = normalizeName(customer?.name)
+
+  return {
+    id: customer?.id || createCustomerId(name),
+    name,
+    contactPerson: normalizeName(customer?.contactPerson),
+    phone: normalizeName(customer?.phone),
+    address: normalizeName(customer?.address),
+    deliveryOrder: normalizeDeliveryOrder(customer?.deliveryOrder)
+  }
+}
+
+function normalizeCustomerPatch(patch) {
+  const result = {}
+
+  if (patch.name !== undefined) {
+    result.name = normalizeName(patch.name)
+  }
+
+  if (patch.contactPerson !== undefined) {
+    result.contactPerson = normalizeName(patch.contactPerson)
+  }
+
+  if (patch.phone !== undefined) {
+    result.phone = normalizeName(patch.phone)
+  }
+
+  if (patch.address !== undefined) {
+    result.address = normalizeName(patch.address)
+  }
+
+  if (patch.deliveryOrder !== undefined) {
+    result.deliveryOrder = normalizeDeliveryOrder(patch.deliveryOrder)
+  }
+
+  return result
+}
+
+function normalizeDeliveryOrder(value) {
+  const number = Number(value)
+
+  if (!Number.isFinite(number) || number < 0) {
+    return 0
+  }
+
+  return Math.round(number)
+}
+
+function formatCustomerForLog(customer) {
+  return [
+    customer.name,
+    customer.contactPerson,
+    customer.phone,
+    customer.address,
+    customer.deliveryOrder ? `Nr. ${customer.deliveryOrder}` : ''
+  ].filter(Boolean).join(' · ')
 }
 
 function ensureProductPackagingTypes() {
@@ -930,6 +1142,11 @@ function createRowId() {
 
 function createLogId() {
   return `log_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+}
+
+function createCustomerId(name) {
+  const base = slugify(name || 'kunde') || 'kunde'
+  return `customer_${base}_${Math.random().toString(36).slice(2, 7)}`
 }
 
 function normalizeName(value) {

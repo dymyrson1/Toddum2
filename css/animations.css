@@ -1,17 +1,36 @@
+.week-slide-out-left,
+.week-slide-out-right,
+.week-slide-in-right,
+.week-slide-in-left {
+  animation-duration: var(--week-animation-duration);
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+}
+
+.week-slide-out-left,
+.week-slide-out-right {
+  --week-animation-duration: 0.18s;
+}
+
+.week-slide-in-right,
+.week-slide-in-left {
+  --week-animation-duration: 0.22s;
+}
+
 .week-slide-out-left {
-  animation: weekSlideOutLeft 0.18s ease forwards;
+  animation-name: weekSlideOutLeft;
 }
 
 .week-slide-out-right {
-  animation: weekSlideOutRight 0.18s ease forwards;
+  animation-name: weekSlideOutRight;
 }
 
 .week-slide-in-right {
-  animation: weekSlideInRight 0.22s ease forwards;
+  animation-name: weekSlideInRight;
 }
 
 .week-slide-in-left {
-  animation: weekSlideInLeft 0.22s ease forwards;
+  animation-name: weekSlideInLeft;
 }
 
 @keyframes weekSlideOutLeft {

@@ -1,6 +1,7 @@
 import { state } from '../state.js'
 import { renderOrdersView } from '../views/orders-view.js'
 import { renderRapportView } from '../views/rapport-view.js'
+import { renderLeveringView } from '../views/levering-view.js'
 import { renderAnalyticsView } from '../views/analytics-view.js'
 import { renderLoggView } from '../views/logg-view.js'
 import { renderLoggDetaljertView } from '../views/logg-detaljert-view.js'
@@ -17,6 +18,11 @@ export function renderTab() {
 
   if (state.currentTab === 'rapport') {
     renderRapportView(container)
+    return
+  }
+
+  if (state.currentTab === 'levering') {
+    renderLeveringView(container)
     return
   }
 

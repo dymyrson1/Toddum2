@@ -340,3 +340,76 @@ html[data-theme="dark"] .delivery-day-cell select option {
     min-width: 120px;
   }
 }
+/* TEST TABLE CSS LOADED */
+.main-table {
+  outline: 4px solid red;
+}
+
+/* ===== ROW STATUS HIGHLIGHT ===== */
+
+.main-table tbody tr.row-status-a td,
+.main-table tbody tr.row-status-a th.customer-cell {
+  background: rgba(59, 130, 246, 0.10);
+}
+
+.main-table tbody tr.row-status-b td,
+.main-table tbody tr.row-status-b th.customer-cell {
+  background: rgba(22, 163, 74, 0.10);
+}
+
+.main-table tbody tr.row-status-both td,
+.main-table tbody tr.row-status-both th.customer-cell {
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.main-table tbody tr.row-status-a:hover td,
+.main-table tbody tr.row-status-a:hover th.customer-cell {
+  background: rgba(59, 130, 246, 0.16);
+}
+
+.main-table tbody tr.row-status-b:hover td,
+.main-table tbody tr.row-status-b:hover th.customer-cell {
+  background: rgba(22, 163, 74, 0.16);
+}
+
+.main-table tbody tr.row-status-both:hover td,
+.main-table tbody tr.row-status-both:hover th.customer-cell {
+  background: rgba(245, 158, 11, 0.20);
+}
+
+html[data-theme="dark"] .main-table tbody tr.row-status-a td,
+html[data-theme="dark"] .main-table tbody tr.row-status-a th.customer-cell {
+  background: rgba(59, 130, 246, 0.16);
+}
+
+html[data-theme="dark"] .main-table tbody tr.row-status-b td,
+html[data-theme="dark"] .main-table tbody tr.row-status-b th.customer-cell {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+html[data-theme="dark"] .main-table tbody tr.row-status-both td,
+html[data-theme="dark"] .main-table tbody tr.row-status-both th.customer-cell {
+  background: rgba(245, 158, 11, 0.16);
+}
+
+/* ===== ROW STATUS BOTH = GREEN ===== */
+
+.table-scroll .main-table tbody tr.row-status-both > td,
+.table-scroll .main-table tbody tr.row-status-both > th.customer-cell {
+  background: rgba(22, 163, 74, 0.18) !important;
+}
+
+.table-scroll .main-table tbody tr.row-status-both:hover > td,
+.table-scroll .main-table tbody tr.row-status-both:hover > th.customer-cell {
+  background: rgba(22, 163, 74, 0.24) !important;
+}
+
+html[data-theme="dark"] .table-scroll .main-table tbody tr.row-status-both > td,
+html[data-theme="dark"] .table-scroll .main-table tbody tr.row-status-both > th.customer-cell {
+  background: rgba(34, 197, 94, 0.18) !important;
+}
+
+html[data-theme="dark"] .table-scroll .main-table tbody tr.row-status-both:hover > td,
+html[data-theme="dark"] .table-scroll .main-table tbody tr.row-status-both:hover > th.customer-cell {
+  background: rgba(34, 197, 94, 0.25) !important;
+}

@@ -1,0 +1,366 @@
+/* ===== MOBILE ADAPTATION ===== */
+
+@media (max-width: 760px) {
+  body {
+    font-size: 14px;
+  }
+
+  .app {
+    padding: 10px;
+  }
+
+  .app-top {
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+
+  .app-header {
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+  }
+
+  .sync-status {
+    font-size: 11px;
+    margin-top: 3px;
+  }
+
+  .theme-toggle {
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    font-size: 13px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  .tab-panel {
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .top-bar {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .week-btn {
+    padding: 7px 10px;
+    border-radius: 8px;
+  }
+
+  .week-label {
+    min-width: 80px;
+    font-size: 14px;
+  }
+
+  .rapport-hero,
+  .levering-hero,
+  .settings-header {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .rapport-hero h2,
+  .levering-hero h2,
+  .settings-header h2 {
+    font-size: 20px;
+  }
+
+  .rapport-total-weight,
+  .levering-summary {
+    min-width: unset;
+    width: 100%;
+    text-align: left;
+    padding: 12px;
+  }
+
+  .rapport-total-weight strong,
+  .levering-summary strong {
+    font-size: 22px;
+  }
+
+  .rapport-kpi-grid,
+  .settings-layout,
+  .analytics-grid,
+  .analytics-sections {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .rapport-section.clean,
+  .settings-section,
+  .levering-day-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .rapport-section-header,
+  .settings-section-header,
+  .levering-day-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .settings-inline-form {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-form-pro,
+  .packaging-form-pro {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-form-pro button,
+  .packaging-form-pro button,
+  .settings-inline-form button {
+    width: 100%;
+  }
+
+  .settings-day-list {
+    gap: 6px;
+  }
+
+  .settings-day-list span {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+
+  .levering-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .levering-product-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .pro-log-header,
+  .logg-header.compact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .danger-btn,
+  .danger-btn.compact {
+    width: 100%;
+  }
+
+  .table-scroll {
+    border-radius: 12px;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-table {
+    min-width: 760px;
+  }
+
+  .main-table th,
+  .main-table td {
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  .corner-cell,
+  .customer-cell {
+    min-width: 150px;
+    max-width: 180px;
+  }
+
+  .customer-input {
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+
+  .delivery-day-column,
+  .delivery-day-cell {
+    min-width: 120px;
+  }
+
+  .delivery-day-cell select {
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+
+  .editable-cell {
+    min-width: 105px;
+    max-width: 130px;
+    height: 38px;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .check-column,
+  .check-cell {
+    width: 42px;
+    min-width: 42px;
+  }
+
+  .check-cell input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .row-action-column,
+  .row-action-cell {
+    width: 40px;
+    min-width: 40px;
+  }
+
+  .delete-row-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 17px;
+  }
+
+  .add-row-main-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 9px 12px;
+    border-radius: 9px;
+  }
+
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0;
+    padding: 14px;
+  }
+
+  .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+  }
+
+  .modal-cell-key {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  #miniTable th,
+  #miniTable td {
+    padding: 5px;
+    font-size: 12px;
+  }
+
+  #miniTable input,
+  #miniTable select {
+    padding: 7px;
+    font-size: 13px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  .context-menu {
+    min-width: 170px;
+  }
+
+  .context-menu button {
+    padding: 10px 12px;
+  }
+}
+
+/* ===== MOBILE TABS SCROLL FIX ===== */
+
+@media (max-width: 760px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-top {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .tabs {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    padding-bottom: 6px;
+  }
+
+  .tabs::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .tabs::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 999px;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  #tabContent {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .table-scroll,
+  .rapport-table-wrap,
+  .pro-log-table-wrap,
+  .logg-table-wrap,
+  .customer-admin-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+}

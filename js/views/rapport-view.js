@@ -1,5 +1,6 @@
 import {
   getRapportData,
+  formatNumber,
   formatWeightKg,
   formatPackageLine
 } from '../rapport/rapport.js'
@@ -8,39 +9,58 @@ export function renderRapportView(container) {
   const data = getRapportData()
 
   container.innerHTML = `
-    <section id="rapportTab" class="tab-panel">
-      <div class="rapport-header">
+    <section id="rapportTab" class="tab-panel rapport-panel">
+      <div class="rapport-hero">
         <div>
           <h2>Produksjonsrapport</h2>
-            <div class="muted-text"><strong>${escapeHtml(formatUke(data.weekId))}</strong></div>        </div>
-      </div>
-
-      <div class="rapport-summary-grid">
-        <div class="rapport-card">
-          <span>Produkter</span>
-          <strong>${data.products.length}</strong>
+          <p>${escapeHtml(formatUke(data.weekId))}</p>
         </div>
 
-        <div class="rapport-card">
-          <span>Ordrelinjer</span>
-          <strong>${data.totalOrderLines}</strong>
-        </div>
-
-        <div class="rapport-card">
+        <div class="rapport-total-weight">
           <span>Total vekt</span>
           <strong>${formatWeightKg(data.totalWeight)}</strong>
         </div>
       </div>
 
-      <div class="rapport-section">
-        <h3>Dette må produseres</h3>
-        ${renderProductionSummary(data)}
+      <div class="rapport-kpi-grid">
+        <div class="rapport-kpi">
+          <span>Produkter</span>
+          <strong>${data.products.length}</strong>
+        </div>
+
+        <div class="rapport-kpi">
+          <span>Ordrelinjer</span>
+          <strong>${data.totalOrderLines}</strong>
+        </div>
+
+        <div class="rapport-kpi">
+          <span>Total vekt</span>
+          <strong>${formatWeightKg(data.totalWeight)}</strong>
+        </div>
+      </div>
+
+      <div class="rapport-section clean">
+        <div class="rapport-section-header">
+          <h3>Produktoversikt</h3>
+          <span>Hva som må produseres denne uken</span>
+        </div>
+
+        ${renderProductionTable(data)}
+      </div>
+
+      <div class="rapport-section clean">
+        <div class="rapport-section-header">
+          <h3>Sammendrag per produkt</h3>
+          <span>Total vekt per produkt</span>
+        </div>
+
+        ${renderProductSummary(data)}
       </div>
     </section>
   `
 }
 
-function renderProductionSummary(data) {
+function renderProductionTable(data) {
   if (data.products.length === 0) {
     return `
       <div class="empty-table-message">
@@ -49,27 +69,97 @@ function renderProductionSummary(data) {
     `
   }
 
+  const rows = data.products.flatMap(product => {
+    return product.packages.map(packageEntry => ({
+      productName: product.productName,
+      packageEntry
+    }))
+  })
+
   return `
-    <div class="rapport-products">
+    <div class="rapport-table-wrap">
+      <table class="rapport-production-table">
+        <thead>
+          <tr>
+            <th>Produkt</th>
+            <th>Emballasje</th>
+            <th>Antall</th>
+            <th>Enhetsvekt</th>
+            <th>Total vekt</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows.map(row => `
+            <tr>
+              <td>
+                <strong>${escapeHtml(row.productName)}</strong>
+              </td>
+              <td>${escapeHtml(formatPackageName(row.packageEntry))}</td>
+              <td>${escapeHtml(formatAmount(row.packageEntry))}</td>
+              <td>${escapeHtml(formatUnitWeight(row.packageEntry))}</td>
+              <td>
+                <strong>${formatWeightKg(row.packageEntry.totalWeight)}</strong>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `
+}
+
+function renderProductSummary(data) {
+  if (data.products.length === 0) {
+    return `
+      <div class="empty-table-message">
+        Ingen produkter å vise.
+      </div>
+    `
+  }
+
+  return `
+    <div class="rapport-summary-list">
       ${data.products.map(product => `
-        <div class="rapport-product-card">
-          <div class="rapport-product-header">
-            <h4>${escapeHtml(product.productName)}</h4>
-            <strong>${formatWeightKg(product.totalWeight)}</strong>
+        <div class="rapport-summary-row">
+          <div>
+            <strong>${escapeHtml(product.productName)}</strong>
+            <span>${product.packages.length} emballasjetyper</span>
           </div>
 
-          <div class="rapport-package-list">
-            ${product.packages.map(packageEntry => `
-              <div class="rapport-package-row">
-                <span>${escapeHtml(formatPackageLine(packageEntry))}</span>
-                <strong>${formatWeightKg(packageEntry.totalWeight)}</strong>
-              </div>
-            `).join('')}
-          </div>
+          <strong>${formatWeightKg(product.totalWeight)}</strong>
         </div>
       `).join('')}
     </div>
   `
+}
+
+function formatAmount(packageEntry) {
+  if (packageEntry.packageName.toLowerCase() === 'kg') {
+    return `${formatNumber(packageEntry.qty)} kg`
+  }
+
+  if (packageEntry.packageName.toLowerCase().includes('spann')) {
+    return `${formatNumber(packageEntry.qty)} spann`
+  }
+
+  return `${formatNumber(packageEntry.qty)} stk`
+}
+
+function formatPackageName(packageEntry) {
+  if (packageEntry.packageName.toLowerCase() === 'kg') {
+    return 'Løs vekt'
+  }
+
+  return packageEntry.label
+}
+
+function formatUnitWeight(packageEntry) {
+  if (packageEntry.packageName.toLowerCase() === 'kg') {
+    return '1 kg'
+  }
+
+  return formatWeightKg(packageEntry.weightKg)
 }
 
 function formatUke(weekId) {

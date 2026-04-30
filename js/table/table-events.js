@@ -84,18 +84,13 @@ function attachCheckboxEvents() {
     checkbox.addEventListener('change', () => {
       closeContextMenu()
 
-      const confirmed = confirm('Підтвердити зміну?')
-
-      if (!confirmed) {
-        checkbox.checked = !checkbox.checked
-        return
-      }
-
       updateRowCheck(
         checkbox.dataset.rowId,
         checkbox.dataset.rowCheck,
         checkbox.checked
       )
+
+      renderTable()
     })
   })
 }
