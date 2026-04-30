@@ -4,13 +4,16 @@ import {
   removeCustomer,
   addProduct,
   removeProduct,
-  addPackagingType,
-  removePackagingType
+  addProductPackagingType,
+  removeProductPackagingType,
+  getPackagingTypesForProduct
 } from '../state.js'
 
 import { renderTab } from '../tabs/tabs-render.js'
 
 export function renderSettingsView(container) {
+  const selectedProduct = state.products[0] || ''
+
   container.innerHTML = `
     <section id="settingsTab" class="tab-panel">
       <h2>Settings</h2>
@@ -49,19 +52,25 @@ export function renderSettingsView(container) {
         </div>
 
         <div class="settings-card">
-          <h3>Типи упаковки</h3>
+          <h3>Упаковка по продуктах</h3>
 
-          <form id="packagingForm" class="settings-form">
-            <input 
-              id="packagingInput" 
-              type="text" 
-              placeholder="Новий тип упаковки"
-              autocomplete="off"
-            >
-            <button type="submit">Додати</button>
-          </form>
+          ${renderPackagingManager(selectedProduct)}
+        </div>
 
-          <div id="packagingList" class="settings-list"></div>
+        <div class="settings-card">
+          <h3>Дні доставки</h3>
+
+          <div class="settings-note">
+            Дні доставки задані як константа норвезькою мовою.
+          </div>
+
+          <div class="settings-list">
+            ${state.deliveryDays.map(day => `
+              <div class="settings-item fixed-item">
+                <span>${escapeHtml(day)}</span>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </div>
     </section>
@@ -69,8 +78,44 @@ export function renderSettingsView(container) {
 
   renderCustomersList()
   renderProductsList()
-  renderPackagingList()
   attachSettingsEvents()
+}
+
+function renderPackagingManager(selectedProduct) {
+  if (state.products.length === 0) {
+    return `
+      <p class="muted-text">
+        Спочатку додай хоча б один продукт.
+      </p>
+    `
+  }
+
+  return `
+    <div class="settings-form">
+      <select id="packagingProductSelect">
+        ${state.products.map(product => `
+          <option 
+            value="${escapeHtml(product)}" 
+            ${product === selectedProduct ? 'selected' : ''}
+          >
+            ${escapeHtml(product)}
+          </option>
+        `).join('')}
+      </select>
+    </div>
+
+    <form id="packagingForm" class="settings-form">
+      <input 
+        id="packagingInput" 
+        type="text" 
+        placeholder="Наприклад: 250g або spann 3kg"
+        autocomplete="off"
+      >
+      <button type="submit">Додати</button>
+    </form>
+
+    <div id="packagingList" class="settings-list"></div>
+  `
 }
 
 function renderCustomersList() {
@@ -97,14 +142,20 @@ function renderProductsList() {
   `).join('')
 }
 
-function renderPackagingList() {
+function renderPackagingList(productName) {
   const list = document.getElementById('packagingList')
-  if (!list) return
+  if (!list || !productName) return
 
-  list.innerHTML = state.packagingTypes.map(type => `
+  const types = getPackagingTypesForProduct(productName)
+
+  list.innerHTML = types.map(type => `
     <div class="settings-item">
       <span>${escapeHtml(type)}</span>
-      <button data-remove-packaging="${escapeHtml(type)}">Видалити</button>
+      ${
+        type === 'kg'
+          ? '<span class="fixed-label">standard</span>'
+          : `<button data-remove-product-packaging="${escapeHtml(type)}">Видалити</button>`
+      }
     </div>
   `).join('')
 }
@@ -113,6 +164,7 @@ function attachSettingsEvents() {
   const customerForm = document.getElementById('customerForm')
   const productForm = document.getElementById('productForm')
   const packagingForm = document.getElementById('packagingForm')
+  const packagingProductSelect = document.getElementById('packagingProductSelect')
 
   customerForm.onsubmit = event => {
     event.preventDefault()
@@ -138,22 +190,36 @@ function attachSettingsEvents() {
     }
   }
 
-  packagingForm.onsubmit = event => {
-    event.preventDefault()
+  if (packagingProductSelect) {
+    renderPackagingList(packagingProductSelect.value)
 
-    const input = document.getElementById('packagingInput')
-    const added = addPackagingType(input.value)
+    packagingProductSelect.onchange = () => {
+      renderPackagingList(packagingProductSelect.value)
+      attachPackagingRemoveEvents(packagingProductSelect.value)
+    }
+  }
 
-    if (added) {
-      input.value = ''
-      renderTab()
+  if (packagingForm) {
+    packagingForm.onsubmit = event => {
+      event.preventDefault()
+
+      const input = document.getElementById('packagingInput')
+      const productName = packagingProductSelect.value
+
+      const added = addProductPackagingType(productName, input.value)
+
+      if (added) {
+        input.value = ''
+        renderPackagingList(productName)
+        attachPackagingRemoveEvents(productName)
+      }
     }
   }
 
   document.querySelectorAll('[data-remove-customer]').forEach(button => {
     button.onclick = () => {
       const name = button.dataset.removeCustomer
-      const confirmed = confirm(`Видалити замовника "${name}" і всі його дані?`)
+      const confirmed = confirm(`Видалити замовника "${name}" зі списку?`)
 
       if (!confirmed) return
 
@@ -174,15 +240,25 @@ function attachSettingsEvents() {
     }
   })
 
-  document.querySelectorAll('[data-remove-packaging]').forEach(button => {
+  if (packagingProductSelect) {
+    attachPackagingRemoveEvents(packagingProductSelect.value)
+  }
+}
+
+function attachPackagingRemoveEvents(productName) {
+  document.querySelectorAll('[data-remove-product-packaging]').forEach(button => {
     button.onclick = () => {
-      const name = button.dataset.removePackaging
-      const confirmed = confirm(`Видалити тип упаковки "${name}" з усіх замовлень?`)
+      const typeName = button.dataset.removeProductPackaging
+      const confirmed = confirm(`Видалити "${typeName}" для продукту "${productName}"?`)
 
       if (!confirmed) return
 
-      removePackagingType(name)
-      renderTab()
+      const removed = removeProductPackagingType(productName, typeName)
+
+      if (removed) {
+        renderPackagingList(productName)
+        attachPackagingRemoveEvents(productName)
+      }
     }
   })
 }

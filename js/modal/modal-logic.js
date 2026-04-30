@@ -1,19 +1,27 @@
-import { state, getCurrentCells, updateCell } from '../state.js'
+import {
+  getOrderCell,
+  updateOrderCell,
+  findOrderRow,
+  getPackagingTypesForProduct
+} from '../state.js'
+
 import { closeModal } from './modal.js'
 import { renderTable } from '../table/table-render.js'
 
-let activeKey = null
+let activeRowId = null
+let activeProductName = null
 
-export function renderModalContent(key) {
-  activeKey = key
+export function renderModalContent(rowId, productName) {
+  activeRowId = rowId
+  activeProductName = productName
 
   const body = document.getElementById('modalBody')
   if (!body) return
 
-  const cells = getCurrentCells()
-  const data = cells[key] || { items: [] }
+  const row = findOrderRow(rowId)
+  const data = getOrderCell(rowId, productName)
 
-  const rows = data.items.length
+  const rows = data.items && data.items.length
     ? cloneData(data.items)
     : [{ type: '', qty: '' }]
 
@@ -23,7 +31,9 @@ export function renderModalContent(key) {
       <button id="modalCloseBtn" class="modal-close">×</button>
     </div>
 
-    <div class="modal-cell-key">${escapeHtml(key)}</div>
+    <div class="modal-cell-key">
+      ${escapeHtml(row?.customerName || 'Без замовника')} — ${escapeHtml(productName)}
+    </div>
 
     <table id="miniTable">
       <thead>
@@ -61,7 +71,7 @@ function renderMiniRows(rows) {
       <td>
         <select data-index="${index}" data-field="type">
           <option value="">Обрати</option>
-          ${renderPackagingOptions(row.type)}
+          ${renderPackagingOptions(activeProductName, row.type)}
         </select>
       </td>
 
@@ -86,8 +96,15 @@ function renderMiniRows(rows) {
   })
 }
 
-function renderPackagingOptions(selectedType) {
-  return state.packagingTypes.map(type => `
+function renderPackagingOptions(productName, selectedType) {
+  const types = getPackagingTypesForProduct(productName)
+  const normalizedTypes = [...types]
+
+  if (selectedType && !normalizedTypes.includes(selectedType)) {
+    normalizedTypes.push(selectedType)
+  }
+
+  return normalizedTypes.map(type => `
     <option 
       value="${escapeHtml(type)}" 
       ${type === selectedType ? 'selected' : ''}
@@ -151,7 +168,7 @@ function saveRows(rows) {
     }))
     .filter(row => row.type && row.qty > 0)
 
-  updateCell(activeKey, {
+  updateOrderCell(activeRowId, activeProductName, {
     items: cleanRows
   })
 

@@ -6,7 +6,7 @@ function handleModalKeydown(event) {
   }
 }
 
-export function openModal(key) {
+export function openModal(rowId, productName) {
   const modal = document.getElementById('modal')
   if (!modal) return
 
@@ -18,7 +18,7 @@ export function openModal(key) {
     </div>
   `
 
-  renderModalContent(key)
+  renderModalContent(rowId, productName)
   attachModalBaseEvents()
 }
 

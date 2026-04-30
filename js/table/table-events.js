@@ -1,4 +1,12 @@
-import { state, updateCheck, deleteCell } from '../state.js'
+import {
+  state,
+  addOrderRow,
+  deleteOrderRow,
+  updateOrderRowField,
+  updateRowCheck,
+  deleteOrderCell
+} from '../state.js'
+
 import { openModal } from '../modal/modal.js'
 import { openContextMenu, closeContextMenu } from './context-menu.js'
 import { copyCell, pasteCell } from './clipboard.js'
@@ -7,8 +15,11 @@ import { renderTable } from './table-render.js'
 let keyboardEventsInitialized = false
 
 export function attachTableEvents() {
+  attachAddRowEvent()
+  attachRowFieldEvents()
   attachCellEvents()
   attachCheckboxEvents()
+  attachDeleteRowEvents()
 }
 
 export function initTableKeyboardEvents() {
@@ -18,26 +29,58 @@ export function initTableKeyboardEvents() {
   keyboardEventsInitialized = true
 }
 
+function attachAddRowEvent() {
+  const button = document.getElementById('addOrderRowBtn')
+  if (!button) return
+
+  button.onclick = () => {
+    addOrderRow()
+    renderTable()
+  }
+}
+
+function attachRowFieldEvents() {
+  document.querySelectorAll('[data-row-field]').forEach(field => {
+    field.addEventListener('change', () => {
+      const rowId = field.dataset.rowId
+      const fieldName = field.dataset.rowField
+
+      updateOrderRowField(rowId, fieldName, field.value)
+    })
+
+    field.addEventListener('blur', () => {
+      const rowId = field.dataset.rowId
+      const fieldName = field.dataset.rowField
+
+      updateOrderRowField(rowId, fieldName, field.value)
+    })
+  })
+}
+
 function attachCellEvents() {
-  document.querySelectorAll('.editable-cell[data-key]').forEach(cell => {
+  document.querySelectorAll('.editable-cell[data-row-id][data-product]').forEach(cell => {
     cell.addEventListener('click', () => {
       closeContextMenu()
 
-      const key = cell.dataset.key
-      selectCell(key)
-      openModal(key)
+      const rowId = cell.dataset.rowId
+      const productName = cell.dataset.product
+
+      selectCell(rowId, productName)
+      openModal(rowId, productName)
     })
 
     cell.addEventListener('contextmenu', event => {
-      const key = cell.dataset.key
-      selectCell(key)
-      openContextMenu(event, key)
+      const rowId = cell.dataset.rowId
+      const productName = cell.dataset.product
+
+      selectCell(rowId, productName)
+      openContextMenu(event, rowId, productName)
     })
   })
 }
 
 function attachCheckboxEvents() {
-  document.querySelectorAll('input[data-check]').forEach(checkbox => {
+  document.querySelectorAll('input[data-row-check]').forEach(checkbox => {
     checkbox.addEventListener('change', () => {
       closeContextMenu()
 
@@ -48,10 +91,27 @@ function attachCheckboxEvents() {
         return
       }
 
-      const [customer, checkType] = checkbox.dataset.check.split('__')
-
-      updateCheck(customer, checkType, checkbox.checked)
+      updateRowCheck(
+        checkbox.dataset.rowId,
+        checkbox.dataset.rowCheck,
+        checkbox.checked
+      )
     })
+  })
+}
+
+function attachDeleteRowEvents() {
+  document.querySelectorAll('[data-delete-row]').forEach(button => {
+    button.onclick = () => {
+      const rowId = button.dataset.deleteRow
+      const confirmed = confirm('Видалити цей рядок?')
+
+      if (!confirmed) return
+
+      deleteOrderRow(rowId)
+      closeContextMenu()
+      renderTable()
+    }
   })
 }
 
@@ -60,19 +120,20 @@ function handleTableKeydown(event) {
   const modalIsOpen = modal && !modal.classList.contains('hidden')
 
   if (modalIsOpen) return
-  if (!state.selectedCellKey) return
+  if (isTypingInsideField(event.target)) return
+  if (!state.selectedCell) return
 
   const key = event.key.toLowerCase()
 
   if ((event.metaKey || event.ctrlKey) && key === 'c') {
     event.preventDefault()
-    copyCell(state.selectedCellKey)
+    copyCell(state.selectedCell.rowId, state.selectedCell.productName)
     return
   }
 
   if ((event.metaKey || event.ctrlKey) && key === 'v') {
     event.preventDefault()
-    pasteCell(state.selectedCellKey)
+    pasteCell(state.selectedCell.rowId, state.selectedCell.productName)
     return
   }
 
@@ -82,20 +143,39 @@ function handleTableKeydown(event) {
     const confirmed = confirm('Очистити вибрану клітинку?')
     if (!confirmed) return
 
-    deleteCell(state.selectedCellKey)
+    deleteOrderCell(state.selectedCell.rowId, state.selectedCell.productName)
     closeContextMenu()
     renderTable()
   }
 }
 
-function selectCell(key) {
-  state.selectedCellKey = key
+function isTypingInsideField(target) {
+  if (!target) return false
+
+  const tagName = target.tagName?.toLowerCase()
+
+  return (
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select' ||
+    target.isContentEditable
+  )
+}
+
+function selectCell(rowId, productName) {
+  state.selectedCell = {
+    rowId,
+    productName
+  }
 
   document.querySelectorAll('.editable-cell').forEach(cell => {
     cell.classList.remove('selected')
   })
 
-  const cell = document.querySelector(`.editable-cell[data-key="${cssEscape(key)}"]`)
+  const cell = document.querySelector(
+    `.editable-cell[data-row-id="${cssEscape(rowId)}"][data-product="${cssEscape(productName)}"]`
+  )
+
   if (cell) {
     cell.classList.add('selected')
   }

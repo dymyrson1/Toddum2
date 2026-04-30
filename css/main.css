@@ -442,3 +442,34 @@ html[data-theme="dark"] .primary-btn {
   justify-content: space-between;
   gap: 16px;
 }
+
+.settings-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.settings-item.fixed-item {
+  justify-content: flex-start;
+}
+
+.settings-form select {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 10px;
+  font-size: 14px;
+  background: white;
+  color: var(--text);
+}
+
+.fixed-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+html[data-theme="dark"] .settings-form select {
+  background: #0f172a;
+  color: var(--text);
+  border-color: var(--border);
+}

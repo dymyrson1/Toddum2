@@ -1,15 +1,21 @@
-import { state, deleteCell } from '../state.js'
+import { state, deleteOrderCell } from '../state.js'
 import { openModal } from '../modal/modal.js'
 import { renderTable } from './table-render.js'
 import { copyCell, pasteCell, hasCopiedCell } from './clipboard.js'
 
-let activeCellKey = null
+let activeRowId = null
+let activeProductName = null
 
-export function openContextMenu(event, key) {
+export function openContextMenu(event, rowId, productName) {
   event.preventDefault()
 
-  activeCellKey = key
-  state.selectedCellKey = key
+  activeRowId = rowId
+  activeProductName = productName
+
+  state.selectedCell = {
+    rowId,
+    productName
+  }
 
   const menu = document.getElementById('contextMenu')
   if (!menu) return
@@ -19,7 +25,7 @@ export function openContextMenu(event, key) {
   menu.style.top = `${event.clientY}px`
 
   updatePasteButton()
-  markSelectedCell(key)
+  markSelectedCell(rowId, productName)
 }
 
 export function initContextMenu() {
@@ -31,11 +37,11 @@ export function initContextMenu() {
     if (!button) return
 
     const action = button.dataset.action
-    if (!action || !activeCellKey) return
+    if (!action || !activeRowId || !activeProductName) return
 
     if (action === 'edit') {
       closeContextMenu()
-      openModal(activeCellKey)
+      openModal(activeRowId, activeProductName)
       return
     }
 
@@ -43,7 +49,7 @@ export function initContextMenu() {
       const confirmed = confirm('Очистити цю клітинку?')
 
       if (confirmed) {
-        deleteCell(activeCellKey)
+        deleteOrderCell(activeRowId, activeProductName)
         closeContextMenu()
         renderTable()
       }
@@ -52,13 +58,13 @@ export function initContextMenu() {
     }
 
     if (action === 'copy') {
-      copyCell(activeCellKey)
+      copyCell(activeRowId, activeProductName)
       closeContextMenu()
       return
     }
 
     if (action === 'paste') {
-      pasteCell(activeCellKey)
+      pasteCell(activeRowId, activeProductName)
       closeContextMenu()
       return
     }
@@ -98,15 +104,20 @@ export function closeContextMenu() {
   if (!menu) return
 
   menu.classList.add('hidden')
-  activeCellKey = null
+
+  activeRowId = null
+  activeProductName = null
 }
 
-function markSelectedCell(key) {
+function markSelectedCell(rowId, productName) {
   document.querySelectorAll('.editable-cell').forEach(cell => {
     cell.classList.remove('selected')
   })
 
-  const cell = document.querySelector(`.editable-cell[data-key="${cssEscape(key)}"]`)
+  const cell = document.querySelector(
+    `.editable-cell[data-row-id="${cssEscape(rowId)}"][data-product="${cssEscape(productName)}"]`
+  )
+
   if (cell) {
     cell.classList.add('selected')
   }

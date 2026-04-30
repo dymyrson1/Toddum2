@@ -1,6 +1,18 @@
 import { loadFirebaseState, saveFirebaseState } from './firebase.js'
 import { setSyncStatus } from './sync/sync-status.js'
 
+const DELIVERY_DAYS = [
+  'Mandag',
+  'Tirsdag',
+  'Onsdag',
+  'Torsdag',
+  'Fredag',
+  'Lørdag',
+  'Søndag'
+]
+
+const DEFAULT_PACKAGING_TYPE = 'kg'
+
 export const state = {
   currentTab: 'orders',
 
@@ -8,11 +20,13 @@ export const state = {
   currentYear: null,
   currentWeek: null,
 
-  selectedCellKey: null,
+  selectedCell: null,
 
-  customers: ['Client1', 'Client2'],
-  products: ['Milk', 'Cheese'],
-  packagingTypes: ['box', 'bag', 'kg', 'pcs'],
+  customers: [],
+  products: [],
+  productPackagingTypes: {},
+
+  deliveryDays: DELIVERY_DAYS,
 
   weeks: {}
 }
@@ -36,6 +50,9 @@ export async function initState() {
     setSyncStatus('error', 'Firebase: load error')
   }
 
+  state.deliveryDays = DELIVERY_DAYS
+
+  ensureProductPackagingTypes()
   updateCurrentYearWeek()
   ensureCurrentWeek()
 
@@ -69,14 +86,19 @@ export function ensureCurrentWeek() {
 
   if (!state.weeks[weekId]) {
     state.weeks[weekId] = {
-      cells: {}
+      rows: []
     }
+  }
+
+  if (!Array.isArray(state.weeks[weekId].rows)) {
+    state.weeks[weekId].rows = migrateCellsToRows(state.weeks[weekId].cells || {})
+    delete state.weeks[weekId].cells
   }
 }
 
-export function getCurrentCells() {
+export function getCurrentRows() {
   ensureCurrentWeek()
-  return state.weeks[getCurrentWeekId()].cells
+  return state.weeks[getCurrentWeekId()].rows
 }
 
 export function goToPreviousWeek() {
@@ -91,6 +113,104 @@ export function goToNextWeek() {
   updateCurrentYearWeek()
   ensureCurrentWeek()
   persistState()
+}
+
+export function addOrderRow() {
+  const rows = getCurrentRows()
+
+  const row = {
+    id: createRowId(),
+    customerName: '',
+    deliveryDay: '',
+    cells: {},
+    checks: {
+      A: false,
+      B: false
+    }
+  }
+
+  rows.push(row)
+  persistState()
+
+  return row
+}
+
+export function deleteOrderRow(rowId) {
+  const rows = getCurrentRows()
+  const index = rows.findIndex(row => row.id === rowId)
+
+  if (index === -1) return
+
+  rows.splice(index, 1)
+
+  if (state.selectedCell?.rowId === rowId) {
+    state.selectedCell = null
+  }
+
+  persistState()
+}
+
+export function updateOrderRowField(rowId, field, value) {
+  const row = findOrderRow(rowId)
+  if (!row) return
+
+  row[field] = value
+  persistState()
+}
+
+export function updateOrderCell(rowId, productName, value) {
+  const row = findOrderRow(rowId)
+  if (!row) return
+
+  if (!row.cells) {
+    row.cells = {}
+  }
+
+  if (!value || !value.items || value.items.length === 0) {
+    delete row.cells[productName]
+  } else {
+    row.cells[productName] = value
+  }
+
+  persistState()
+}
+
+export function deleteOrderCell(rowId, productName) {
+  const row = findOrderRow(rowId)
+  if (!row || !row.cells) return
+
+  delete row.cells[productName]
+  persistState()
+}
+
+export function updateRowCheck(rowId, checkType, checked) {
+  const row = findOrderRow(rowId)
+  if (!row) return
+
+  if (!row.checks) {
+    row.checks = {
+      A: false,
+      B: false
+    }
+  }
+
+  row.checks[checkType] = checked
+  persistState()
+}
+
+export function findOrderRow(rowId) {
+  const rows = getCurrentRows()
+  return rows.find(row => row.id === rowId) || null
+}
+
+export function getOrderCell(rowId, productName) {
+  const row = findOrderRow(rowId)
+
+  if (!row || !row.cells) {
+    return { items: [] }
+  }
+
+  return row.cells[productName] || { items: [] }
 }
 
 export function addCustomer(name) {
@@ -110,15 +230,6 @@ export function addCustomer(name) {
 
 export function removeCustomer(name) {
   state.customers = state.customers.filter(customer => customer !== name)
-
-  Object.values(state.weeks).forEach(week => {
-    Object.keys(week.cells).forEach(key => {
-      if (key.startsWith(`${name}__`)) {
-        delete week.cells[key]
-      }
-    })
-  })
-
   persistState()
 }
 
@@ -132,6 +243,11 @@ export function addProduct(name) {
   }
 
   state.products.push(cleanName)
+
+  if (!state.productPackagingTypes[cleanName]) {
+    state.productPackagingTypes[cleanName] = [DEFAULT_PACKAGING_TYPE]
+  }
+
   persistState()
 
   return true
@@ -140,10 +256,14 @@ export function addProduct(name) {
 export function removeProduct(name) {
   state.products = state.products.filter(product => product !== name)
 
+  delete state.productPackagingTypes[name]
+
   Object.values(state.weeks).forEach(week => {
-    Object.keys(week.cells).forEach(key => {
-      if (key.endsWith(`__${name}`)) {
-        delete week.cells[key]
+    if (!Array.isArray(week.rows)) return
+
+    week.rows.forEach(row => {
+      if (row.cells) {
+        delete row.cells[name]
       }
     })
   })
@@ -151,68 +271,82 @@ export function removeProduct(name) {
   persistState()
 }
 
-export function addPackagingType(name) {
-  const cleanName = normalizeName(name)
-  if (!cleanName) return false
+export function getPackagingTypesForProduct(productName) {
+  const types = state.productPackagingTypes[productName]
 
-  if (state.packagingTypes.includes(cleanName)) {
-    alert('Такий тип упаковки вже існує')
+  if (!Array.isArray(types) || types.length === 0) {
+    return [DEFAULT_PACKAGING_TYPE]
+  }
+
+  if (!types.includes(DEFAULT_PACKAGING_TYPE)) {
+    return [DEFAULT_PACKAGING_TYPE, ...types]
+  }
+
+  return types
+}
+
+export function addProductPackagingType(productName, typeName) {
+  const cleanProduct = normalizeName(productName)
+  const cleanType = normalizeName(typeName)
+
+  if (!cleanProduct || !cleanType) return false
+
+  if (!state.products.includes(cleanProduct)) {
+    alert('Спочатку додай продукт')
     return false
   }
 
-  state.packagingTypes.push(cleanName)
+  if (!state.productPackagingTypes[cleanProduct]) {
+    state.productPackagingTypes[cleanProduct] = [DEFAULT_PACKAGING_TYPE]
+  }
+
+  if (state.productPackagingTypes[cleanProduct].includes(cleanType)) {
+    alert('Такий тип упаковки вже існує для цього продукту')
+    return false
+  }
+
+  state.productPackagingTypes[cleanProduct].push(cleanType)
   persistState()
 
   return true
 }
 
-export function removePackagingType(name) {
-  state.packagingTypes = state.packagingTypes.filter(type => type !== name)
+export function removeProductPackagingType(productName, typeName) {
+  const cleanProduct = normalizeName(productName)
+  const cleanType = normalizeName(typeName)
+
+  if (!cleanProduct || !cleanType) return false
+
+  if (cleanType === DEFAULT_PACKAGING_TYPE) {
+    alert('kg є стандартною мірою і не може бути видалено')
+    return false
+  }
+
+  if (!state.productPackagingTypes[cleanProduct]) {
+    return false
+  }
+
+  state.productPackagingTypes[cleanProduct] = state.productPackagingTypes[cleanProduct]
+    .filter(type => type !== cleanType)
 
   Object.values(state.weeks).forEach(week => {
-    Object.values(week.cells).forEach(cell => {
-      if (!cell.items) return
+    if (!Array.isArray(week.rows)) return
 
-      cell.items = cell.items.filter(item => item.type !== name)
+    week.rows.forEach(row => {
+      const cell = row.cells?.[cleanProduct]
+      if (!cell || !Array.isArray(cell.items)) return
+
+      cell.items = cell.items.filter(item => item.type !== cleanType)
+
+      if (cell.items.length === 0) {
+        delete row.cells[cleanProduct]
+      }
     })
   })
 
   persistState()
-}
 
-export function updateCell(key, value) {
-  const cells = getCurrentCells()
-
-  if (!value || !value.items || value.items.length === 0) {
-    delete cells[key]
-  } else {
-    cells[key] = value
-  }
-
-  persistState()
-}
-
-export function deleteCell(key) {
-  const cells = getCurrentCells()
-  delete cells[key]
-
-  persistState()
-}
-
-export function updateCheck(customer, checkType, checked) {
-  const cells = getCurrentCells()
-  const key = `${customer}__checks`
-
-  if (!cells[key]) {
-    cells[key] = {
-      A: false,
-      B: false
-    }
-  }
-
-  cells[key][checkType] = checked
-
-  persistState()
+  return true
 }
 
 function prepareStateForSaving() {
@@ -220,7 +354,7 @@ function prepareStateForSaving() {
     currentDate: state.currentDate.toISOString(),
     customers: state.customers,
     products: state.products,
-    packagingTypes: state.packagingTypes,
+    productPackagingTypes: state.productPackagingTypes,
     weeks: state.weeks
   }
 }
@@ -238,13 +372,98 @@ function applySavedState(savedState) {
     state.products = savedState.products
   }
 
-  if (Array.isArray(savedState.packagingTypes)) {
-    state.packagingTypes = savedState.packagingTypes
+  if (
+    savedState.productPackagingTypes &&
+    typeof savedState.productPackagingTypes === 'object'
+  ) {
+    state.productPackagingTypes = savedState.productPackagingTypes
   }
+
+  state.deliveryDays = DELIVERY_DAYS
 
   if (savedState.weeks && typeof savedState.weeks === 'object') {
     state.weeks = savedState.weeks
   }
+
+  migrateAllWeeksToRows()
+  ensureProductPackagingTypes()
+}
+
+function ensureProductPackagingTypes() {
+  state.products.forEach(product => {
+    if (!Array.isArray(state.productPackagingTypes[product])) {
+      state.productPackagingTypes[product] = [DEFAULT_PACKAGING_TYPE]
+    }
+
+    if (!state.productPackagingTypes[product].includes(DEFAULT_PACKAGING_TYPE)) {
+      state.productPackagingTypes[product].unshift(DEFAULT_PACKAGING_TYPE)
+    }
+  })
+
+  Object.keys(state.productPackagingTypes).forEach(productName => {
+    if (!state.products.includes(productName)) {
+      delete state.productPackagingTypes[productName]
+    }
+  })
+}
+
+function migrateAllWeeksToRows() {
+  Object.values(state.weeks).forEach(week => {
+    if (Array.isArray(week.rows)) return
+
+    week.rows = migrateCellsToRows(week.cells || {})
+    delete week.cells
+  })
+}
+
+function migrateCellsToRows(cells) {
+  const rowsMap = new Map()
+
+  Object.entries(cells).forEach(([key, value]) => {
+    if (key.endsWith('__checks')) {
+      const customerName = key.replace('__checks', '')
+
+      if (!rowsMap.has(customerName)) {
+        rowsMap.set(customerName, createMigratedRow(customerName))
+      }
+
+      rowsMap.get(customerName).checks = {
+        A: Boolean(value.A),
+        B: Boolean(value.B)
+      }
+
+      return
+    }
+
+    const [customerName, productName] = key.split('__')
+
+    if (!customerName || !productName) return
+
+    if (!rowsMap.has(customerName)) {
+      rowsMap.set(customerName, createMigratedRow(customerName))
+    }
+
+    rowsMap.get(customerName).cells[productName] = value
+  })
+
+  return Array.from(rowsMap.values())
+}
+
+function createMigratedRow(customerName) {
+  return {
+    id: createRowId(),
+    customerName,
+    deliveryDay: '',
+    cells: {},
+    checks: {
+      A: false,
+      B: false
+    }
+  }
+}
+
+function createRowId() {
+  return `row_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
 function normalizeName(value) {

@@ -19,14 +19,14 @@ export function getAnalyticsData() {
   rows.forEach(row => {
     const customerName = row.customerName || 'Без замовника'
 
-    if (customerTotals[customerName] === undefined) {
+    if (!customerTotals[customerName]) {
       customerTotals[customerName] = 0
     }
 
     if (row.checks?.A) checkedA++
     if (row.checks?.B) checkedB++
 
-    Object.entries(row.cells || {}).forEach(([productName, cell]) => {
+    Object.entries(row.cells || {}).forEach(([product, cell]) => {
       if (!cell.items || cell.items.length === 0) return
 
       filledCells++
@@ -37,11 +37,11 @@ export function getAnalyticsData() {
         totalItems++
         totalQty += qty
 
-        if (productTotals[productName] === undefined) {
-          productTotals[productName] = 0
+        if (productTotals[product] === undefined) {
+          productTotals[product] = 0
         }
 
-        productTotals[productName] += qty
+        productTotals[product] += qty
         customerTotals[customerName] += qty
       })
     })
@@ -49,6 +49,7 @@ export function getAnalyticsData() {
 
   return {
     weekId: getCurrentWeekId(),
+    orderRows: rows.length,
     filledCells,
     totalItems,
     totalQty,

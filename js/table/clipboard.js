@@ -1,11 +1,14 @@
-import { getCurrentCells } from '../state.js'
+import {
+  getOrderCell,
+  updateOrderCell
+} from '../state.js'
+
 import { renderTable } from './table-render.js'
 
 let copiedCellData = null
 
-export function copyCell(key) {
-  const cells = getCurrentCells()
-  const data = cells[key]
+export function copyCell(rowId, productName) {
+  const data = getOrderCell(rowId, productName)
 
   if (!data || !data.items || data.items.length === 0) {
     copiedCellData = null
@@ -22,11 +25,14 @@ export function copyCell(key) {
   safeWriteClipboard(text)
 }
 
-export function pasteCell(targetKey) {
+export function pasteCell(targetRowId, targetProductName) {
   if (!copiedCellData) return
 
-  const cells = getCurrentCells()
-  cells[targetKey] = cloneData(copiedCellData)
+  updateOrderCell(
+    targetRowId,
+    targetProductName,
+    cloneData(copiedCellData)
+  )
 
   renderTable()
 }
