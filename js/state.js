@@ -139,15 +139,16 @@ export function addOrderRow() {
   const rows = getCurrentRows()
 
   const row = {
-    id: createRowId(),
-    customerName: '',
-    deliveryDay: '',
-    cells: {},
-    checks: {
-      A: false,
-      B: false
-    }
+  id: createRowId(),
+  customerName: '',
+  deliveryDay: '',
+  merknad: '',
+  cells: {},
+  checks: {
+    A: false,
+    B: false
   }
+}
 
   rows.push(row)
 
@@ -851,6 +852,7 @@ function normalizeRows(rows) {
     id: row.id || createRowId(),
     customerName: row.customerName || '',
     deliveryDay: row.deliveryDay || '',
+    merknad: row.merknad || '',
     cells: normalizeRowCells(row.cells || {}),
     checks: {
       A: Boolean(row.checks?.A),
@@ -1181,6 +1183,7 @@ function createMigratedRow(customerName) {
     id: createRowId(),
     customerName,
     deliveryDay: '',
+    merknad: '',
     cells: {},
     checks: {
       A: false,

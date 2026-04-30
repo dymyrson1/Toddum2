@@ -33,18 +33,19 @@ export function renderTable() {
   html += `
             <th class="check-column">A</th>
             <th class="check-column">B</th>
-            <th class="row-action-column"></th>
+            <th class="merknad-column">Merknad</th>
           </tr>
         </thead>
+
         <tbody>
   `
 
   rows.forEach(row => {
-html += `
-  <tr 
-    data-row-id="${escapeHtml(row.id)}"
-    class="${getRowStatusClass(row)}"
-  >
+    html += `
+      <tr 
+        data-row-id="${escapeHtml(row.id)}"
+        class="${getRowStatusClass(row)}"
+      >
         <th class="customer-cell">
           <input
             class="customer-input"
@@ -108,14 +109,16 @@ html += `
           >
         </td>
 
-        <td class="row-action-cell">
-          <button 
-            class="delete-row-btn" 
-            data-delete-row="${escapeHtml(row.id)}"
-            title="Slett rad"
-          >
-            ×
-          </button>
+        <td 
+          class="merknad-cell"
+          data-merknad-row-id="${escapeHtml(row.id)}"
+          title="Klikk for å redigere merknad"
+        >
+          ${
+            row.merknad
+              ? escapeHtml(row.merknad)
+              : '<span class="cell-empty">—</span>'
+          }
         </td>
       </tr>
     `
@@ -134,6 +137,7 @@ html += `
   container.innerHTML = html
   attachTableEvents()
 }
+
 function getRowStatusClass(row) {
   const aChecked = Boolean(row.checks?.A)
   const bChecked = Boolean(row.checks?.B)
