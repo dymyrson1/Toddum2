@@ -31,10 +31,7 @@ import {
   updateCustomerAction
 } from './customers/customer-actions.js'
 
-import { formatCellForLog } from './products/packaging-utils.js'
-
 import { normalizeProductPackagingTypesForProducts } from './products/packaging-state-utils.js'
-
 import { normalizeProducts } from './products/product-utils.js'
 
 import {
@@ -49,21 +46,22 @@ import {
 
 import { createLogEntry } from './logs/log-utils.js'
 
-import { createEmptyOrderRow, normalizeOrderRows } from './orders/order-utils.js'
+import { normalizeOrderRows } from './orders/order-utils.js'
 
-import {
-  normalizeOrderCells,
-  normalizeOrderCellItems
-} from './orders/order-cell-utils.js'
+import { normalizeOrderCells } from './orders/order-cell-utils.js'
 
 import { migrateCellsToOrderRows } from './orders/order-migration-utils.js'
 
 import {
-  findOrderRowById,
-  removeOrderRowById,
-  updateOrderRowCheckValue,
-  updateOrderRowFieldValue
-} from './orders/order-state-utils.js'
+  addOrderRowAction,
+  deleteOrderCellAction,
+  deleteOrderRowAction,
+  findOrderRowAction,
+  getOrderCellAction,
+  updateOrderCellAction,
+  updateOrderRowFieldAction,
+  updateRowCheckAction
+} from './orders/order-actions.js'
 
 export const state = {
   currentTab: 'orders',
@@ -179,163 +177,35 @@ export function goToNextWeek() {
 }
 
 export function addOrderRow() {
-  const rows = getCurrentRows()
-  const row = createEmptyOrderRow()
-
-  rows.push(row)
-
-  addLog('add_row', {
-    actionLabel: 'La til rad'
-  })
-
-  persistState()
-
-  return row
+  return addOrderRowAction(createActionContext())
 }
 
 export function deleteOrderRow(rowId) {
-  const result = removeOrderRowById(getCurrentRows(), rowId)
-
-  if (!result.removed) return
-
-  if (state.selectedCell?.rowId === rowId) {
-    state.selectedCell = null
-  }
-
-  addLog('delete_row', {
-    actionLabel: 'Slettet rad',
-    customerName: result.row.customerName || '',
-    deliveryDay: result.row.deliveryDay || ''
-  })
-
-  persistState()
+  return deleteOrderRowAction(createActionContext(), rowId)
 }
 
 export function updateOrderRowField(rowId, field, value) {
-  const row = findOrderRow(rowId)
-  const result = updateOrderRowFieldValue(row, field, value)
-
-  if (!result.changed) return
-
-  if (field === 'customerName' && result.newValue) {
-    ensureCustomerExists(result.newValue)
-  }
-
-  addLog('update_row_field', {
-    actionLabel: field === 'customerName' ? 'Endret kunde' : 'Endret leveringsdag',
-    customerName: field === 'customerName' ? result.newValue : row.customerName || '',
-    deliveryDay: field === 'deliveryDay' ? result.newValue : row.deliveryDay || '',
-    oldValue: result.oldValue,
-    newValue: result.newValue
-  })
-
-  persistState()
+  return updateOrderRowFieldAction(createActionContext(), rowId, field, value)
 }
 
 export function updateOrderCell(rowId, productName, value) {
-  const row = findOrderRow(rowId)
-
-  if (!row) return
-
-  if (!row.cells) {
-    row.cells = {}
-  }
-
-  const oldItems = row.cells[productName]?.items || []
-  const oldValue = formatCellForLog(oldItems)
-
-  const cleanItems = normalizeOrderCellItems(
-    value?.items || [],
-    getPackagingOptionsForProduct(productName)
-  )
-  const newValue = formatCellForLog(cleanItems)
-
-  if (oldValue === newValue) return
-
-  if (cleanItems.length === 0) {
-    delete row.cells[productName]
-  } else {
-    row.cells[productName] = {
-      items: cleanItems
-    }
-  }
-
-  addLog('update_cell', {
-    actionLabel: oldValue ? 'Endret produktcelle' : 'La til produktcelle',
-    customerName: row.customerName || '',
-    deliveryDay: row.deliveryDay || '',
-    productName,
-    oldValue,
-    newValue
-  })
-
-  persistState()
+  return updateOrderCellAction(createActionContext(), rowId, productName, value)
 }
 
 export function deleteOrderCell(rowId, productName) {
-  const row = findOrderRow(rowId)
-
-  if (!row || !row.cells) return
-
-  const oldItems = row.cells[productName]?.items || []
-  const oldValue = formatCellForLog(oldItems)
-
-  if (!oldValue) return
-
-  delete row.cells[productName]
-
-  addLog('delete_cell', {
-    actionLabel: 'Tømte produktcelle',
-    customerName: row.customerName || '',
-    deliveryDay: row.deliveryDay || '',
-    productName,
-    oldValue,
-    newValue: ''
-  })
-
-  persistState()
+  return deleteOrderCellAction(createActionContext(), rowId, productName)
 }
 
 export function updateRowCheck(rowId, checkType, checked) {
-  const row = findOrderRow(rowId)
-  const result = updateOrderRowCheckValue(row, checkType, checked)
-
-  if (!result.changed) return
-
-  addLog('update_check', {
-    actionLabel: `Endret avkryssing ${checkType}`,
-    customerName: row.customerName || '',
-    deliveryDay: row.deliveryDay || '',
-    oldValue: result.oldValue ? 'På' : 'Av',
-    newValue: result.newValue ? 'På' : 'Av'
-  })
-
-  persistState()
+  return updateRowCheckAction(createActionContext(), rowId, checkType, checked)
 }
 
 export function findOrderRow(rowId) {
-  return findOrderRowById(getCurrentRows(), rowId)
+  return findOrderRowAction(createActionContext(), rowId)
 }
 
 export function getOrderCell(rowId, productName) {
-  const row = findOrderRow(rowId)
-
-  if (!row || !row.cells) {
-    return {
-      items: []
-    }
-  }
-
-  const cell = row.cells[productName] || {
-    items: []
-  }
-
-  return {
-    items: normalizeOrderCellItems(
-      cell.items || [],
-      getPackagingOptionsForProduct(productName)
-    )
-  }
+  return getOrderCellAction(createActionContext(), rowId, productName)
 }
 
 export function getCustomerName(customer) {
@@ -412,7 +282,10 @@ function createActionContext() {
   return {
     state,
     addLog,
-    persistState
+    persistState,
+    getCurrentRows,
+    getPackagingOptionsForProduct,
+    ensureCustomerExists
   }
 }
 
