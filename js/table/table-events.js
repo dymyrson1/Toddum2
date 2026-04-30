@@ -12,137 +12,154 @@ import { openProductModal } from '../modal/product-modal.js'
 import { closeContextMenu } from './context-menu.js'
 import { renderTable } from './table-render.js'
 
-let keyboardEventsInitialized = false
+import {
+  getCheckboxFromEvent,
+  getCheckboxIdentity,
+  getDeleteRowButtonFromEvent,
+  getDeleteRowId,
+  getMerknadCellFromEvent,
+  getMerknadRowId,
+  getProductCellFromEvent,
+  getProductCellIdentity,
+  getRowFieldFromEvent,
+  getRowFieldIdentity,
+  isAddRowButtonFromEvent
+} from './table-event-targets.js'
+
+import {
+  confirmCheckboxChange,
+  confirmDeleteRow
+} from './table-confirmation.js'
+
+import { selectProductCell } from './table-selection.js'
+import { initTableKeyboardController } from './table-keyboard.js'
+
+let tableEventsInitialized = false
 
 export function attachTableEvents() {
-  attachCellEvents()
-  attachRowFieldEvents()
-  attachCheckboxEvents()
-  attachDeleteRowEvents()
-  attachAddRowEvent()
-  attachMerknadEvents()
+  initTableEvents()
 }
 
 export function initTableKeyboardEvents() {
-  if (keyboardEventsInitialized) return
-
-  document.addEventListener('keydown', handleTableKeydown)
-
-  keyboardEventsInitialized = true
+  initTableKeyboardController({
+    state,
+    deleteOrderCell,
+    closeContextMenu,
+    renderTable
+  })
 }
 
-function handleTableKeydown(event) {
-  const target = event.target
+function initTableEvents() {
+  if (tableEventsInitialized) return
 
-  if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) {
-    return
-  }
+  document.addEventListener('click', handleTableClick)
+  document.addEventListener('change', handleTableChange)
 
-  if (!state.selectedCell) return
-  if (event.key !== 'Delete' && event.key !== 'Backspace') return
+  tableEventsInitialized = true
+}
 
-  event.preventDefault()
+function handleTableClick(event) {
+  if (handleAddRowClick(event)) return
+  if (handleDeleteRowClick(event)) return
+  if (handleMerknadClick(event)) return
+  if (handleProductCellClick(event)) return
+}
 
-  const confirmed = confirm('Vil du tømme denne cellen?')
+function handleTableChange(event) {
+  if (handleRowFieldChange(event)) return
+  if (handleCheckboxChange(event)) return
+}
 
-  if (!confirmed) return
+function handleProductCellClick(event) {
+  const cell = getProductCellFromEvent(event)
+  const identity = getProductCellIdentity(cell)
 
-  deleteOrderCell(state.selectedCell.rowId, state.selectedCell.productName)
+  if (!identity) return false
+
+  closeContextMenu()
+  selectProductCell(state, identity.rowId, identity.productName)
+  openProductModal(identity.rowId, identity.productName)
+
+  return true
+}
+
+function handleRowFieldChange(event) {
+  const field = getRowFieldFromEvent(event)
+  const identity = getRowFieldIdentity(field)
+
+  if (!identity) return false
+
+  closeContextMenu()
+
+  updateOrderRowField(identity.rowId, identity.rowField, identity.value)
 
   renderTable()
+
+  return true
 }
 
-function attachCellEvents() {
-  document.querySelectorAll('.editable-cell').forEach(cell => {
-    cell.onclick = () => {
-      closeContextMenu()
+function handleCheckboxChange(event) {
+  const checkbox = getCheckboxFromEvent(event)
+  const identity = getCheckboxIdentity(checkbox)
 
-      const rowId = cell.dataset.rowId
-      const productName = cell.dataset.product || cell.dataset.productName
+  if (!identity) return false
 
-      if (!rowId || !productName) return
+  closeContextMenu()
 
-      state.selectedCell = {
-        rowId,
-        productName
-      }
+  const confirmed = confirmCheckboxChange()
 
-      openProductModal(rowId, productName)
-    }
-  })
-}
-
-function attachRowFieldEvents() {
-  document.querySelectorAll('[data-row-field]').forEach(field => {
-    field.onchange = () => {
-      closeContextMenu()
-
-      updateOrderRowField(field.dataset.rowId, field.dataset.rowField, field.value)
-
-      renderTable()
-    }
-  })
-}
-
-function attachCheckboxEvents() {
-  document.querySelectorAll('input[data-row-check]').forEach(checkbox => {
-    checkbox.onchange = () => {
-      closeContextMenu()
-
-      const confirmed = confirm('Vil du endre avkryssingen?')
-
-      if (!confirmed) {
-        checkbox.checked = !checkbox.checked
-        return
-      }
-
-      updateRowCheck(
-        checkbox.dataset.rowId,
-        checkbox.dataset.rowCheck,
-        checkbox.checked
-      )
-
-      renderTable()
-    }
-  })
-}
-
-function attachDeleteRowEvents() {
-  document.querySelectorAll('[data-delete-row]').forEach(button => {
-    button.onclick = () => {
-      closeContextMenu()
-
-      const confirmed = confirm('Vil du slette hele raden?')
-
-      if (!confirmed) return
-
-      deleteOrderRow(button.dataset.deleteRow)
-      renderTable()
-    }
-  })
-}
-
-function attachAddRowEvent() {
-  const button = document.getElementById('addOrderRowBtn')
-
-  if (!button) return
-
-  button.onclick = () => {
-    closeContextMenu()
-
-    const row = addOrderRow()
-
-    if (row) {
-      renderTable()
-    }
+  if (!confirmed) {
+    checkbox.checked = !checkbox.checked
+    return true
   }
+
+  updateRowCheck(identity.rowId, identity.rowCheck, identity.checked)
+
+  renderTable()
+
+  return true
 }
 
-function attachMerknadEvents() {
-  document.querySelectorAll('[data-merknad-row-id]').forEach(cell => {
-    cell.onclick = () => {
-      closeContextMenu()
-      openMerknadModal(cell.dataset.merknadRowId)
-    }
-  })
+function handleDeleteRowClick(event) {
+  const button = getDeleteRowButtonFromEvent(event)
+  const rowId = getDeleteRowId(button)
+
+  if (!rowId) return false
+
+  closeContextMenu()
+
+  const confirmed = confirmDeleteRow()
+
+  if (!confirmed) return true
+
+  deleteOrderRow(rowId)
+  renderTable()
+
+  return true
+}
+
+function handleAddRowClick(event) {
+  if (!isAddRowButtonFromEvent(event)) return false
+
+  closeContextMenu()
+
+  const row = addOrderRow()
+
+  if (row) {
+    renderTable()
+  }
+
+  return true
+}
+
+function handleMerknadClick(event) {
+  const cell = getMerknadCellFromEvent(event)
+  const rowId = getMerknadRowId(cell)
+
+  if (!rowId) return false
+
+  closeContextMenu()
+  openMerknadModal(rowId)
+
+  return true
 }
