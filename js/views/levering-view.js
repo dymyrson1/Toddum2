@@ -172,11 +172,11 @@ function renderDeliveryTable(deliveries) {
           <tr>
             <th>Nr.</th>
             <th>Kunde</th>
-            <th>Adresse</th>
-            <th>Telefon</th>
             <th>Varer</th>
             <th>Pakket</th>
             <th>Levert</th>
+            <th>Adresse</th>
+            <th>Telefon</th>
           </tr>
         </thead>
 
@@ -191,10 +191,6 @@ function renderDeliveryTable(deliveries) {
                 <strong>${escapeHtml(delivery.customerName)}</strong>
                 ${delivery.contactPerson ? `<div class="delivery-subtext">${escapeHtml(delivery.contactPerson)}</div>` : ''}
               </td>
-
-              <td>${renderAddressLink(delivery.address)}</td>
-
-              <td>${escapeHtml(delivery.phone || '—')}</td>
 
               <td class="delivery-items-cell">
                 ${renderDeliveryItems(delivery.items)}
@@ -219,6 +215,10 @@ function renderDeliveryTable(deliveries) {
                   aria-label="Levert"
                 >
               </td>
+
+              <td>${renderAddressLink(delivery.address)}</td>
+
+              <td>${escapeHtml(delivery.phone || '—')}</td>
             </tr>
           `).join('')}
         </tbody>
