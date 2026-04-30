@@ -2,11 +2,15 @@ import {
   state,
   getCurrentRows,
   getCurrentWeekLabel,
-  getCustomerByName
+  getCustomerName,
+  updateRowCheck
 } from '../state.js'
+
+let selectedDeliveryDay = 'Alle'
 
 export function renderLeveringView(container) {
   const data = getLeveringData()
+  const visibleGroups = getVisibleGroups(data.groups)
 
   container.innerHTML = `
     <section id="leveringTab" class="tab-panel levering-panel">
@@ -18,128 +22,330 @@ export function renderLeveringView(container) {
 
         <div class="levering-summary">
           <span>Leveranser</span>
-          <strong>${data.totalDeliveries}</strong>
+          <strong>${data.deliveries.length}</strong>
         </div>
       </div>
 
-      ${renderDeliveryDays(data)}
+      ${renderDayFilter(data)}
+      ${renderDeliveryGroups(visibleGroups)}
     </section>
   `
+
+  attachLeveringEvents()
 }
 
 function getLeveringData() {
   const rows = getCurrentRows()
 
-  const deliveryGroups = new Map()
-  let totalDeliveries = 0
+  const deliveries = rows
+    .filter(row => hasOrderContent(row))
+    .map(row => {
+      const customer = findCustomerForRow(row.customerName)
+      const deliveryDay = row.deliveryDay || 'Uten leveringsdag'
 
-  rows.forEach(row => {
-    if (!hasOrderContent(row)) return
-
-    const day = row.deliveryDay || 'Uten leveringsdag'
-    const customer = getCustomerByName(row.customerName)
-
-    const delivery = {
-      rowId: row.id,
-      customerName: row.customerName || 'Uten kunde',
-      deliveryOrder: customer?.deliveryOrder || 0,
-      contactPerson: customer?.contactPerson || '',
-      phone: customer?.phone || '',
-      address: customer?.address || '',
-      products: getProductsForDelivery(row)
-    }
-
-    if (!deliveryGroups.has(day)) {
-      deliveryGroups.set(day, [])
-    }
-
-    deliveryGroups.get(day).push(delivery)
-    totalDeliveries++
-  })
-
-  const days = Array.from(deliveryGroups.entries())
-    .map(([day, deliveries]) => ({
-      day,
-      deliveries: deliveries.sort(sortDeliveries)
-    }))
-    .sort(sortDeliveryDays)
+      return {
+        rowId: row.id,
+        deliveryOrder: getDeliveryOrder(customer),
+        customerName: row.customerName || 'Uten kunde',
+        address: customer?.address || '',
+        phone: customer?.phone || '',
+        contactPerson: customer?.contactPerson || '',
+        deliveryDay,
+        items: getDeliveryItems(row),
+        packed: Boolean(row.checks?.A),
+        delivered: Boolean(row.checks?.B)
+      }
+    })
+    .sort(sortDeliveriesByCustomerNumber)
 
   return {
-    totalDeliveries,
-    days
+    deliveries,
+    groups: groupDeliveriesByDay(deliveries)
   }
 }
 
-function renderDeliveryDays(data) {
-  if (data.days.length === 0) {
-    return `
-      <div class="empty-table-message">
-        Ingen leveranser for denne uken.
-      </div>
-    `
+function groupDeliveriesByDay(deliveries) {
+  const groups = new Map()
+
+  deliveries.forEach(delivery => {
+    if (!groups.has(delivery.deliveryDay)) {
+      groups.set(delivery.deliveryDay, [])
+    }
+
+    groups.get(delivery.deliveryDay).push(delivery)
+  })
+
+  return getDeliveryDayOrder()
+    .filter(day => groups.has(day))
+    .map(day => ({
+      day,
+      deliveries: groups.get(day).sort(sortDeliveriesByCustomerNumber)
+    }))
+}
+
+function getDeliveryDayOrder() {
+  return [
+    ...state.deliveryDays,
+    'Uten leveringsdag'
+  ]
+}
+
+function getVisibleGroups(groups) {
+  if (selectedDeliveryDay === 'Alle') {
+    return groups
+  }
+
+  return groups.filter(group => group.day === selectedDeliveryDay)
+}
+
+function renderDayFilter(data) {
+  const availableDays = new Set(data.groups.map(group => group.day))
+
+  const filterItems = [
+    {
+      label: 'Alle',
+      value: 'Alle',
+      count: data.deliveries.length
+    },
+    ...getDeliveryDayOrder()
+      .filter(day => availableDays.has(day))
+      .map(day => ({
+        label: day,
+        value: day,
+        count: data.groups.find(group => group.day === day)?.deliveries.length || 0
+      }))
+  ]
+
+  if (!filterItems.some(item => item.value === selectedDeliveryDay)) {
+    selectedDeliveryDay = 'Alle'
   }
 
   return `
-    <div class="levering-days">
-      ${data.days.map(group => `
-        <section class="levering-day-card">
-          <div class="levering-day-header">
-            <h3>${escapeHtml(group.day)}</h3>
-            <span>${group.deliveries.length} leveranser</span>
-          </div>
-
-          <div class="levering-list">
-            ${group.deliveries.map(delivery => renderDeliveryCard(delivery)).join('')}
-          </div>
-        </section>
+    <div class="delivery-day-filter">
+      ${filterItems.map(item => `
+        <button
+          class="${item.value === selectedDeliveryDay ? 'active' : ''}"
+          data-delivery-day-filter="${escapeHtml(item.value)}"
+        >
+          <span>${escapeHtml(item.label)}</span>
+          <strong>${item.count}</strong>
+        </button>
       `).join('')}
     </div>
   `
 }
 
-function renderDeliveryCard(delivery) {
-  return `
-    <article class="levering-card">
-      <div class="levering-card-main">
-        <div class="levering-order-number">
-          ${delivery.deliveryOrder || '—'}
-        </div>
-
-        <div class="levering-customer">
-          <h4>${escapeHtml(delivery.customerName)}</h4>
-
-          <div class="levering-meta">
-            ${delivery.address ? `<span>${escapeHtml(delivery.address)}</span>` : ''}
-            ${delivery.contactPerson ? `<span>${escapeHtml(delivery.contactPerson)}</span>` : ''}
-            ${delivery.phone ? `<span>${escapeHtml(delivery.phone)}</span>` : ''}
-          </div>
-        </div>
+function renderDeliveryGroups(groups) {
+  if (groups.length === 0) {
+    return `
+      <div class="empty-table-message">
+        Ingen leveranser for valgt dag.
       </div>
+    `
+  }
 
-      <div class="levering-products">
-        ${delivery.products.map(product => `
-          <div class="levering-product-row">
-            <strong>${escapeHtml(product.productName)}</strong>
-            <span>${escapeHtml(product.itemsText)}</span>
-          </div>
+  if (selectedDeliveryDay === 'Alle') {
+    return `
+      <div class="delivery-groups">
+        ${groups.map(group => `
+          <section class="delivery-group">
+            <div class="delivery-group-header">
+              <h3>${escapeHtml(group.day)}</h3>
+              <span>${group.deliveries.length} leveranser</span>
+            </div>
+
+            ${renderDeliveryTable(group.deliveries)}
+          </section>
         `).join('')}
       </div>
-    </article>
+    `
+  }
+
+  return renderDeliveryTable(groups[0].deliveries)
+}
+
+function renderDeliveryTable(deliveries) {
+  return `
+    <div class="delivery-table-wrap">
+      <table class="delivery-table">
+        <thead>
+          <tr>
+            <th>Nr.</th>
+            <th>Kunde</th>
+            <th>Adresse</th>
+            <th>Telefon</th>
+            <th>Varer</th>
+            <th>Pakket</th>
+            <th>Levert</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${deliveries.map(delivery => `
+            <tr class="${getDeliveryRowClass(delivery)}">
+              <td class="delivery-number">
+                ${delivery.deliveryOrder === null ? '—' : escapeHtml(delivery.deliveryOrder)}
+              </td>
+
+              <td>
+                <strong>${escapeHtml(delivery.customerName)}</strong>
+                ${delivery.contactPerson ? `<div class="delivery-subtext">${escapeHtml(delivery.contactPerson)}</div>` : ''}
+              </td>
+
+              <td>${renderAddressLink(delivery.address)}</td>
+
+              <td>${escapeHtml(delivery.phone || '—')}</td>
+
+              <td class="delivery-items-cell">
+                ${renderDeliveryItems(delivery.items)}
+              </td>
+
+              <td class="delivery-check-cell">
+                <input
+                  type="checkbox"
+                  data-delivery-row-id="${escapeHtml(delivery.rowId)}"
+                  data-delivery-check="A"
+                  ${delivery.packed ? 'checked' : ''}
+                  aria-label="Pakket"
+                >
+              </td>
+
+              <td class="delivery-check-cell">
+                <input
+                  type="checkbox"
+                  data-delivery-row-id="${escapeHtml(delivery.rowId)}"
+                  data-delivery-check="B"
+                  ${delivery.delivered ? 'checked' : ''}
+                  aria-label="Levert"
+                >
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
   `
 }
 
-function getProductsForDelivery(row) {
+function getDeliveryRowClass(delivery) {
+  if (delivery.packed && delivery.delivered) {
+    return 'delivery-row-done'
+  }
+
+  if (delivery.packed) {
+    return 'delivery-row-packed'
+  }
+
+  if (delivery.delivered) {
+    return 'delivery-row-done'
+  }
+
+  return ''
+}
+
+function attachLeveringEvents() {
+  const container = document.getElementById('tabContent')
+
+  document.querySelectorAll('[data-delivery-day-filter]').forEach(button => {
+    button.onclick = () => {
+      selectedDeliveryDay = button.dataset.deliveryDayFilter
+      renderLeveringView(container)
+    }
+  })
+
+  document.querySelectorAll('[data-delivery-row-id][data-delivery-check]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      updateRowCheck(
+        checkbox.dataset.deliveryRowId,
+        checkbox.dataset.deliveryCheck,
+        checkbox.checked
+      )
+
+      renderLeveringView(container)
+    })
+  })
+}
+
+function findCustomerForRow(customerName) {
+  const cleanRowName = normalizeText(customerName)
+
+  if (!cleanRowName) return null
+
+  return state.customers.find(customer => {
+    return normalizeText(getCustomerName(customer)) === cleanRowName
+  }) || null
+}
+
+function getDeliveryOrder(customer) {
+  const order = Number(customer?.deliveryOrder)
+
+  if (!Number.isFinite(order) || order <= 0) {
+    return null
+  }
+
+  return order
+}
+
+function sortDeliveriesByCustomerNumber(a, b) {
+  const orderA = a.deliveryOrder
+  const orderB = b.deliveryOrder
+
+  if (orderA !== null && orderB !== null && orderA !== orderB) {
+    return orderA - orderB
+  }
+
+  if (orderA !== null && orderB === null) {
+    return -1
+  }
+
+  if (orderA === null && orderB !== null) {
+    return 1
+  }
+
+  return a.customerName.localeCompare(b.customerName)
+}
+
+function hasOrderContent(row) {
+  return Object.values(row.cells || {}).some(cell => {
+    return Array.isArray(cell.items) && cell.items.length > 0
+  })
+}
+
+function getDeliveryItems(row) {
   return Object.entries(row.cells || {})
     .map(([productName, cell]) => {
       const items = Array.isArray(cell.items) ? cell.items : []
 
+      const itemText = items
+        .map(formatDeliveryItem)
+        .filter(Boolean)
+        .join(', ')
+
+      if (!itemText) return null
+
       return {
         productName,
-        itemsText: items.map(formatDeliveryItem).join(', ')
+        itemText
       }
     })
-    .filter(product => product.itemsText)
-    .sort((a, b) => a.productName.localeCompare(b.productName))
+    .filter(Boolean)
+}
+
+function renderDeliveryItems(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return '—'
+  }
+
+  return `
+    <div class="delivery-items-list">
+      ${items.map(item => `
+        <div class="delivery-item-line">
+          <strong>${escapeHtml(item.productName)}:</strong>
+          <span>${escapeHtml(item.itemText)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `
 }
 
 function formatDeliveryItem(item) {
@@ -147,6 +353,8 @@ function formatDeliveryItem(item) {
   const label = item.label || item.packageName || item.type || '—'
   const packageName = String(item.packageName || '').toLowerCase()
   const labelLower = String(label).toLowerCase()
+
+  if (!qty) return ''
 
   if (packageName === 'kg' || labelLower === 'kg') {
     return `${formatNumber(qty)}kg`
@@ -159,34 +367,32 @@ function formatDeliveryItem(item) {
   return `${formatNumber(qty)}x${label}`
 }
 
-function hasOrderContent(row) {
-  return Object.values(row.cells || {}).some(cell => {
-    return Array.isArray(cell.items) && cell.items.length > 0
-  })
-}
+function renderAddressLink(address) {
+  const cleanAddress = String(address || '').trim()
 
-function sortDeliveries(a, b) {
-  const orderA = Number(a.deliveryOrder) || 0
-  const orderB = Number(b.deliveryOrder) || 0
-
-  if (orderA !== orderB) {
-    if (orderA === 0) return 1
-    if (orderB === 0) return -1
-    return orderA - orderB
+  if (!cleanAddress) {
+    return '—'
   }
 
-  return a.customerName.localeCompare(b.customerName)
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanAddress)}`
+
+  return `
+    <a
+      href="${mapsUrl}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="delivery-address-link"
+    >
+      ${escapeHtml(cleanAddress)}
+    </a>
+  `
 }
 
-function sortDeliveryDays(a, b) {
-  const indexA = state.deliveryDays.indexOf(a.day)
-  const indexB = state.deliveryDays.indexOf(b.day)
-
-  if (indexA === -1 && indexB === -1) return a.day.localeCompare(b.day)
-  if (indexA === -1) return 1
-  if (indexB === -1) return -1
-
-  return indexA - indexB
+function normalizeText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
 }
 
 function formatNumber(value) {

@@ -6,11 +6,11 @@
 
   <title>Bestillingstabell</title>
 
-  <link rel="stylesheet" href="css/main.css?v=1.0.4" />
-  <link rel="stylesheet" href="css/table.css?v=1.0.4" />
-  <link rel="stylesheet" href="css/modal.css?v=1.0.4" />
-  <link rel="stylesheet" href="css/animations.css?v=1.0.4" />
-  <link rel="stylesheet" href="css/mobile.css?v=1.0.0" />
+  <link rel="stylesheet" href="css/main.css?v=1.0.7" />
+  <link rel="stylesheet" href="css/table.css?v=1.0.7" />
+  <link rel="stylesheet" href="css/modal.css?v=1.0.7" />
+  <link rel="stylesheet" href="css/animations.css?v=1.0.7" />
+  <link rel="stylesheet" href="css/mobile.css?v=1.0.7" />
 </head>
 
 <body>
@@ -26,6 +26,20 @@
           🌙
         </button>
       </header>
+
+      <div class="top-bar global-week-nav">
+        <button id="prevWeek" class="week-btn" title="Forrige uke">
+          Forrige
+        </button>
+
+        <div id="weekLabel" class="week-label">
+          Uke
+        </div>
+
+        <button id="nextWeek" class="week-btn" title="Neste uke">
+          Neste
+        </button>
+      </div>
 
       <nav class="tabs">
         <button data-tab="orders" class="tab active">Orders</button>
@@ -50,6 +64,6 @@
     <button data-action="paste">Lim inn</button>
   </div>
 
-  <script type="module" src="js/app.js?v=1.0.4"></script>
+  <script type="module" src="js/app.js?v=1.0.7"></script>
 </body>
 </html>

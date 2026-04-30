@@ -66,6 +66,7 @@ export async function initState() {
 
   ensureProductPackagingTypes()
   normalizeAllWeekData()
+  ensureCustomersFromOrderRows()
   updateCurrentYearWeek()
   ensureCurrentWeek()
 
@@ -192,6 +193,10 @@ export function updateOrderRowField(rowId, field, value) {
 
   row[field] = newValue
 
+  if (field === 'customerName' && newValue) {
+    ensureCustomerExists(newValue)
+  }
+
   addLog('update_row_field', {
     actionLabel: field === 'customerName' ? 'Endret kunde' : 'Endret leveringsdag',
     customerName: field === 'customerName' ? newValue : row.customerName || '',
@@ -201,6 +206,18 @@ export function updateOrderRowField(rowId, field, value) {
   })
 
   persistState()
+}
+
+function ensureCustomersFromOrderRows() {
+  Object.values(state.weeks).forEach(week => {
+    if (!Array.isArray(week.rows)) return
+
+    week.rows.forEach(row => {
+      if (row.customerName) {
+        ensureCustomerExists(row.customerName)
+      }
+    })
+  })
 }
 
 export function updateOrderCell(rowId, productName, value) {
@@ -321,6 +338,42 @@ export function getCustomerByName(name) {
   return state.customers.find(customer => {
     return normalizeName(getCustomerName(customer)).toLowerCase() === cleanName
   }) || null
+}
+
+export function ensureCustomerExists(name) {
+  const cleanName = normalizeName(name)
+
+  if (!cleanName) return null
+
+  const existingCustomer = getCustomerByName(cleanName)
+
+  if (existingCustomer) {
+    return existingCustomer
+  }
+
+  const maxOrder = state.customers.reduce((max, customer) => {
+    return Math.max(max, Number(customer.deliveryOrder) || 0)
+  }, 0)
+
+  const customer = {
+    id: createCustomerId(cleanName),
+    name: cleanName,
+    contactPerson: '',
+    phone: '',
+    address: '',
+    deliveryOrder: maxOrder + 1
+  }
+
+  state.customers.push(customer)
+  state.customers = normalizeCustomers(state.customers)
+
+  addLog('add_customer', {
+    actionLabel: 'La til kunde automatisk',
+    customerName: customer.name,
+    newValue: customer.name
+  })
+
+  return customer
 }
 
 export function addCustomer(customerData) {

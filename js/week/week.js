@@ -1,12 +1,12 @@
 import {
   state,
-  getCurrentWeekId,
   goToPreviousWeek,
   goToNextWeek
 } from '../state.js'
 
-import { renderOrdersTab } from '../table/table-render.js'
-import { animateWeekChange } from './week-anim.js'
+import { renderTab } from '../tabs/tabs-render.js'
+
+let isAnimating = false
 
 export function initWeekControls() {
   const prevBtn = document.getElementById('prevWeek')
@@ -15,39 +15,73 @@ export function initWeekControls() {
   if (!prevBtn || !nextBtn) return
 
   prevBtn.onclick = () => {
-    disableWeekButtons(true)
-
-    animateWeekChange('prev', () => {
-      goToPreviousWeek()
-      updateLabel()
-      renderOrdersTab()
-      disableWeekButtons(false)
-    })
+    changeWeekWithAnimation('prev')
   }
 
   nextBtn.onclick = () => {
-    disableWeekButtons(true)
-
-    animateWeekChange('next', () => {
-      goToNextWeek()
-      updateLabel()
-      renderOrdersTab()
-      disableWeekButtons(false)
-    })
+    changeWeekWithAnimation('next')
   }
 
-  updateLabel()
+  updateWeekLabel()
 }
 
-function updateLabel() {
+async function changeWeekWithAnimation(direction) {
+  if (isAnimating) return
+
+  const content = document.getElementById('tabContent')
+
+  if (!content) {
+    changeWeek(direction)
+    updateWeekLabel()
+    renderTab()
+    return
+  }
+
+  isAnimating = true
+  disableWeekButtons(true)
+
+  const outClass = direction === 'next'
+    ? 'week-slide-out-left'
+    : 'week-slide-out-right'
+
+  const inClass = direction === 'next'
+    ? 'week-slide-in-right'
+    : 'week-slide-in-left'
+
+  resetAnimationClasses(content)
+  content.classList.add(outClass)
+
+  await wait(180)
+
+  changeWeek(direction)
+  updateWeekLabel()
+  renderTab()
+
+  const newContent = document.getElementById('tabContent')
+  resetAnimationClasses(newContent)
+  newContent.classList.add(inClass)
+
+  await wait(220)
+
+  resetAnimationClasses(newContent)
+  disableWeekButtons(false)
+  isAnimating = false
+}
+
+function changeWeek(direction) {
+  if (direction === 'next') {
+    goToNextWeek()
+    return
+  }
+
+  goToPreviousWeek()
+}
+
+export function updateWeekLabel() {
   const label = document.getElementById('weekLabel')
   if (!label) return
 
-  label.innerText = formatWeekLabel()
-}
-
-function formatWeekLabel() {
-  return `Uke ${state.currentWeek}`
+  label.innerText = `Uke ${state.currentWeek}`
 }
 
 function disableWeekButtons(disabled) {
@@ -56,4 +90,19 @@ function disableWeekButtons(disabled) {
 
   if (prevBtn) prevBtn.disabled = disabled
   if (nextBtn) nextBtn.disabled = disabled
+}
+
+function resetAnimationClasses(element) {
+  if (!element) return
+
+  element.classList.remove(
+    'week-slide-out-left',
+    'week-slide-out-right',
+    'week-slide-in-right',
+    'week-slide-in-left'
+  )
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

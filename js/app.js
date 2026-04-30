@@ -1,6 +1,7 @@
 import { initState } from './state.js'
 import { initTabs } from './tabs/tabs.js'
 import { renderTab } from './tabs/tabs-render.js'
+import { initWeekControls } from './week/week.js'
 import { initContextMenu } from './table/context-menu.js'
 import { initTableKeyboardEvents } from './table/table-events.js'
 
@@ -12,6 +13,7 @@ async function startApp() {
   await initState()
 
   initTabs()
+  initWeekControls()
   initContextMenu()
   initTableKeyboardEvents()
   initTheme()

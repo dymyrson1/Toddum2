@@ -1,10 +1,17 @@
 import { state, clearLogs } from '../state.js'
 import { renderTab } from '../tabs/tabs-render.js'
 
+const LOGS_PER_PAGE = 10
+
+let currentPage = 1
+
 export function renderLoggDetaljertView(container) {
-  const logs = [...(state.logs || [])].sort((a, b) => {
-    return new Date(b.createdAt) - new Date(a.createdAt)
-  })
+  const logs = getSortedLogs()
+  const totalPages = getTotalPages(logs.length)
+
+  currentPage = clampPage(currentPage, totalPages)
+
+  const pageLogs = getPageLogs(logs, currentPage)
 
   container.innerHTML = `
     <section id="loggDetaljertTab" class="tab-panel">
@@ -19,11 +26,33 @@ export function renderLoggDetaljertView(container) {
         </button>
       </div>
 
-      ${renderLogTable(logs)}
+      ${renderLogTable(pageLogs)}
+      ${renderPagination(logs.length, totalPages)}
     </section>
   `
 
   attachEvents()
+}
+
+function getSortedLogs() {
+  return [...(state.logs || [])].sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt)
+  })
+}
+
+function getTotalPages(totalItems) {
+  return Math.max(1, Math.ceil(totalItems / LOGS_PER_PAGE))
+}
+
+function clampPage(page, totalPages) {
+  return Math.min(Math.max(page, 1), totalPages)
+}
+
+function getPageLogs(logs, page) {
+  const start = (page - 1) * LOGS_PER_PAGE
+  const end = start + LOGS_PER_PAGE
+
+  return logs.slice(start, end)
 }
 
 function renderLogTable(logs) {
@@ -66,6 +95,50 @@ function renderLogTable(logs) {
           `).join('')}
         </tbody>
       </table>
+    </div>
+  `
+}
+
+function renderPagination(totalItems, totalPages) {
+  if (totalItems <= LOGS_PER_PAGE) {
+    return ''
+  }
+
+  const from = (currentPage - 1) * LOGS_PER_PAGE + 1
+  const to = Math.min(currentPage * LOGS_PER_PAGE, totalItems)
+
+  return `
+    <div class="log-pagination">
+      <div class="log-pagination-info">
+        Viser ${from}–${to} av ${totalItems}
+      </div>
+
+      <div class="log-pagination-nav">
+        <button
+          class="log-page-btn"
+          data-detailed-log-page="prev"
+          aria-label="Forrige side"
+          title="Forrige side"
+          ${currentPage === 1 ? 'disabled' : ''}
+        >
+          <span>‹</span>
+        </button>
+
+        <div class="log-page-indicator">
+          <strong>${currentPage}</strong>
+          <span>/ ${totalPages}</span>
+        </div>
+
+        <button
+          class="log-page-btn"
+          data-detailed-log-page="next"
+          aria-label="Neste side"
+          title="Neste side"
+          ${currentPage === totalPages ? 'disabled' : ''}
+        >
+          <span>›</span>
+        </button>
+      </div>
     </div>
   `
 }
@@ -113,7 +186,7 @@ function getActionType(action = '') {
     }
   }
 
-  if (action.includes('update')) {
+  if (action.includes('update') || action.includes('move')) {
     return {
       label: 'Endret',
       className: 'is-update'
@@ -128,15 +201,33 @@ function getActionType(action = '') {
 
 function attachEvents() {
   const clearButton = document.getElementById('clearDetailedLogsBtn')
-  if (!clearButton) return
 
-  clearButton.onclick = () => {
-    const confirmed = confirm('Vil du tømme hele endringsloggen?')
-    if (!confirmed) return
+  if (clearButton) {
+    clearButton.onclick = () => {
+      const confirmed = confirm('Vil du tømme hele endringsloggen?')
+      if (!confirmed) return
 
-    clearLogs()
-    renderTab()
+      currentPage = 1
+      clearLogs()
+      renderTab()
+    }
   }
+
+  document.querySelectorAll('[data-detailed-log-page]').forEach(button => {
+    button.onclick = () => {
+      const action = button.dataset.detailedLogPage
+
+      if (action === 'prev') {
+        currentPage--
+      }
+
+      if (action === 'next') {
+        currentPage++
+      }
+
+      renderTab()
+    }
+  })
 }
 
 function formatDateTime(value) {

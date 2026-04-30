@@ -2010,3 +2010,526 @@ html[data-theme="dark"] .packaging-form-pro input {
   opacity: 0.35;
   cursor: not-allowed;
 }
+/* ===== LOG PAGINATION ===== */
+
+.log-pagination {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.log-pagination-info {
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.log-pagination-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.log-page-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.log-page-btn span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.log-page-btn:hover:not(:disabled) {
+  background: var(--header);
+  transform: translateY(-1px);
+}
+
+.log-page-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.log-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.log-page-indicator {
+  min-width: 86px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.log-page-indicator strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.log-page-indicator span {
+  font-size: 13px;
+}
+
+html[data-theme="dark"] .log-page-btn,
+html[data-theme="dark"] .log-page-indicator {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+@media (max-width: 760px) {
+  .log-pagination {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .log-pagination-info {
+    position: static;
+  }
+
+  .log-pagination-nav {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===== WEEK NAVIGATION BUTTONS ===== */
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.week-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.week-btn:hover:not(:disabled) {
+  background: var(--header);
+  transform: translateY(-1px);
+}
+
+.week-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.week-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.week-label {
+  min-width: 86px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+#prevWeek::before {
+  content: "‹";
+  font-size: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+#nextWeek::before {
+  content: "›";
+  font-size: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .week-btn,
+html[data-theme="dark"] .week-label {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+@media (max-width: 760px) {
+  .top-bar {
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .week-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .week-label {
+    min-width: 78px;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  #prevWeek::before,
+  #nextWeek::before {
+    font-size: 24px;
+  }
+}
+
+/* ===== LEVERING TABLE VIEW ===== */
+
+#leveringTab .delivery-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+#leveringTab .delivery-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  background: var(--card);
+}
+
+#leveringTab .delivery-table th,
+#leveringTab .delivery-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 11px 12px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+#leveringTab .delivery-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--header);
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#leveringTab .delivery-table tr:last-child td {
+  border-bottom: none;
+}
+
+#leveringTab .delivery-table tbody tr:hover {
+  background: var(--accent-soft);
+}
+
+#leveringTab .delivery-number {
+  width: 64px;
+  white-space: nowrap;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+#leveringTab .delivery-subtext {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#leveringTab .delivery-items-cell {
+  min-width: 320px;
+  max-width: 520px;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+#leveringTab .delivery-check-cell {
+  width: 86px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#leveringTab .delivery-check-cell input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+#leveringTab .delivery-row-done td {
+  background: rgba(22, 163, 74, 0.14);
+}
+
+#leveringTab .delivery-row-done:hover td {
+  background: rgba(22, 163, 74, 0.20);
+}
+
+html[data-theme="dark"] #leveringTab .delivery-row-done td {
+  background: rgba(34, 197, 94, 0.16);
+}
+
+html[data-theme="dark"] #leveringTab .delivery-row-done:hover td {
+  background: rgba(34, 197, 94, 0.23);
+}
+
+@media (max-width: 760px) {
+  #leveringTab .delivery-table {
+    min-width: 760px;
+  }
+
+  #leveringTab .delivery-table th,
+  #leveringTab .delivery-table td {
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+
+  #leveringTab .delivery-items-cell {
+    min-width: 260px;
+  }
+
+  #leveringTab .delivery-check-cell input {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ===== LEVERING DAY FILTER ===== */
+
+#leveringTab .delivery-day-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#leveringTab .delivery-day-filter button {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 10px 7px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+#leveringTab .delivery-day-filter button:hover {
+  background: var(--header);
+}
+
+#leveringTab .delivery-day-filter button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+#leveringTab .delivery-day-filter button strong {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--header);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+#leveringTab .delivery-day-filter button.active strong {
+  background: rgba(255, 255, 255, 0.22);
+  color: white;
+}
+
+#leveringTab .delivery-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+#leveringTab .delivery-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#leveringTab .delivery-group-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#leveringTab .delivery-group-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+#leveringTab .delivery-group-header span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  #leveringTab .delivery-day-filter {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  #leveringTab .delivery-day-filter button {
+    flex: 0 0 auto;
+  }
+}
+/* ===== LEVERING PACKED / DELIVERED STATES ===== */
+
+#leveringTab .delivery-row-packed td {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+#leveringTab .delivery-row-packed:hover td {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+#leveringTab .delivery-row-done td {
+  background: rgba(22, 163, 74, 0.16);
+}
+
+#leveringTab .delivery-row-done:hover td {
+  background: rgba(22, 163, 74, 0.22);
+}
+
+html[data-theme="dark"] #leveringTab .delivery-row-packed td {
+  background: rgba(59, 130, 246, 0.16);
+}
+
+html[data-theme="dark"] #leveringTab .delivery-row-packed:hover td {
+  background: rgba(59, 130, 246, 0.22);
+}
+
+html[data-theme="dark"] #leveringTab .delivery-row-done td {
+  background: rgba(34, 197, 94, 0.18);
+}
+
+html[data-theme="dark"] #leveringTab .delivery-row-done:hover td {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+
+
+/* ===== DELIVERY ADDRESS LINK ===== */
+
+#leveringTab .delivery-address-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+#leveringTab .delivery-address-link:hover {
+  text-decoration: underline;
+}
+
+#leveringTab .delivery-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#leveringTab .delivery-item-line {
+  display: flex;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+#leveringTab .delivery-item-line strong {
+  flex: 0 0 auto;
+}
+
+#leveringTab .delivery-item-line span {
+  overflow-wrap: anywhere;
+}
+#leveringTab .levering-week-nav {
+  margin-bottom: 0;
+}
+
+#leveringTab .delivery-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#leveringTab .delivery-item-line {
+  display: flex;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+#leveringTab .delivery-item-line strong {
+  flex: 0 0 auto;
+}
+
+#leveringTab .delivery-item-line span {
+  overflow-wrap: anywhere;
+}
+
+/* ===== LEVERING WEEK NAV ARROWS ===== */
+
+#leveringPrevWeek::before {
+  content: "‹";
+  font-size: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+#leveringNextWeek::before {
+  content: "›";
+  font-size: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  #leveringPrevWeek::before,
+  #leveringNextWeek::before {
+    font-size: 24px;
+  }
+}
