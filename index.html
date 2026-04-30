@@ -6,27 +6,34 @@
 
   <title>Bestillingstabell</title>
 
-  <link rel="stylesheet" href="css/main.css?v=1.0.7" />
-  <link rel="stylesheet" href="css/table.css?v=1.0.7" />
-  <link rel="stylesheet" href="css/modal.css?v=1.0.7" />
-  <link rel="stylesheet" href="css/animations.css?v=1.0.7" />
-  <link rel="stylesheet" href="css/mobile.css?v=1.0.7" />
+  <link rel="stylesheet" href="css/main.css?v=1.0.9" />
+  <link rel="stylesheet" href="css/table.css?v=1.0.9" />
+  <link rel="stylesheet" href="css/modal.css?v=1.0.9" />
+  <link rel="stylesheet" href="css/animations.css?v=1.0.9" />
+  <link rel="stylesheet" href="css/mobile.css?v=1.0.9" />
 </head>
 
 <body>
   <div class="app">
     <div class="app-top">
-      <header class="app-header">
-        <div>
-          <h1>Bestillingstabell</h1>
-          <div id="firebaseStatus" class="sync-status idle">Firebase: idle</div>
-        </div>
+      <div class="tabs-row">
+        <nav class="tabs">
+          <button data-tab="orders" class="tab active">Orders</button>
+          <button data-tab="rapport" class="tab">Rapport</button>
+          <button data-tab="levering" class="tab">Levering</button>
+          <button data-tab="analytics" class="tab">Analytics</button>
+          <button data-tab="logg" class="tab">Logg</button>
+          <button data-tab="loggDetaljert" class="tab">Detaljert logg</button>
+          <button data-tab="settings" class="tab">Settings</button>
+        </nav>
 
-        <button id="themeToggle" class="theme-toggle">
+        <button id="themeToggle" class="theme-toggle tabs-theme-toggle" type="button">
           🌙
         </button>
-      </header>
+      </div>
+    </div>
 
+    <div class="week-status-row">
       <div class="top-bar global-week-nav">
         <button id="prevWeek" class="week-btn" title="Forrige uke">
           Forrige
@@ -41,15 +48,7 @@
         </button>
       </div>
 
-      <nav class="tabs">
-        <button data-tab="orders" class="tab active">Orders</button>
-        <button data-tab="rapport" class="tab">Rapport</button>
-        <button data-tab="levering" class="tab">Levering</button>
-        <button data-tab="analytics" class="tab">Analytics</button>
-        <button data-tab="logg" class="tab">Logg</button>
-        <button data-tab="loggDetaljert" class="tab">Detaljert logg</button>
-        <button data-tab="settings" class="tab">Settings</button>
-      </nav>
+      <div id="firebaseStatus" class="sync-status idle">Firebase: idle</div>
     </div>
 
     <main id="tabContent"></main>
@@ -64,6 +63,6 @@
     <button data-action="paste">Lim inn</button>
   </div>
 
-  <script type="module" src="js/app.js?v=1.0.7"></script>
+  <script type="module" src="js/app.js?v=1.0.9"></script>
 </body>
 </html>

@@ -2533,3 +2533,114 @@ html[data-theme="dark"] #leveringTab .delivery-row-done:hover td {
     font-size: 24px;
   }
 }
+
+/* ===== ACTIVE TAB HIGHLIGHT ===== */
+
+.tabs .tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+  transform: translateY(-1px);
+}
+
+.tabs .tab.active::after {
+  content: "";
+  display: block;
+  height: 3px;
+  margin: 7px auto -4px;
+  width: 70%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.tabs .tab {
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tabs .tab:hover {
+  transform: translateY(-1px);
+}
+
+/* ===== TABS ROW WITH THEME BUTTON ===== */
+
+.tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tabs-row .tabs {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.tabs-theme-toggle {
+  flex: 0 0 auto;
+  margin-left: auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* week buttons under tabs */
+.global-week-nav {
+  margin-top: 12px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 760px) {
+  .tabs-row {
+    align-items: center;
+  }
+
+  .tabs-row .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .tabs-theme-toggle {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ===== WEEK NAV + FIREBASE STATUS ROW ===== */
+
+.week-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  margin-bottom: 18px;
+}
+
+.week-status-row .global-week-nav {
+  margin: 0;
+}
+
+.week-status-row .sync-status {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .week-status-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .week-status-row .sync-status {
+    align-self: flex-end;
+  }
+}
