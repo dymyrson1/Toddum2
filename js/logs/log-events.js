@@ -1,21 +1,6 @@
 import { renderTab } from '../tabs/tabs-render.js'
 import { clearLogsFromState } from './log-state.js'
 
-export function attachLoggEvents(container) {
-  container.onclick = (event) => {
-    const clearButton = event.target.closest('#clearLogsBtn')
-
-    if (!clearButton) return
-
-    const confirmed = confirm('Vil du tømme hele endringsloggen?')
-
-    if (!confirmed) return
-
-    clearLogsFromState()
-    renderTab()
-  }
-}
-
 export function attachDetailedLoggEvents({ container, onPageChange, onClearLogs }) {
   container.onclick = (event) => {
     const clearButton = event.target.closest('#clearDetailedLogsBtn')

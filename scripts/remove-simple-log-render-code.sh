@@ -1,6 +1,59 @@
+#!/usr/bin/env bash
+set -e
+
+WRITE_MODE=false
+
+if [[ "$1" == "--write" ]]; then
+  WRITE_MODE=true
+fi
+
+TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S")
+
+echo ""
+echo "Remove simple Logg render/event code while keeping Detaljert logg"
+echo ""
+
+FILES=(
+  "js/views/logg-view.js"
+  "js/logs/log-render.js"
+  "js/logs/log-events.js"
+)
+
+echo "Planned changes:"
+echo "- delete if exists: js/views/logg-view.js"
+echo "- update: js/logs/log-render.js"
+echo "- update: js/logs/log-events.js"
+echo "- keep: js/views/logg-detaljert-view.js"
+echo "- keep: js/logs/log-data.js"
+echo "- keep: js/logs/log-state.js"
+echo "- keep: state.logs / addLog / clearLogs"
+echo "- keep: css/logg.css"
+
+if [[ "$WRITE_MODE" == false ]]; then
+  echo ""
+  echo "Dry run only. Apply with:"
+  echo ""
+  echo "  bash scripts/remove-simple-log-render-code.sh --write"
+  echo ""
+  exit 0
+fi
+
+for file in "${FILES[@]}"; do
+  if [[ -f "$file" ]]; then
+    cp "$file" "$file.$TIMESTAMP.bak"
+  fi
+done
+
+rm -f js/views/logg-view.js
+
+cat > js/logs/log-render.js <<'JS'
 import { escapeHtml } from '../utils/html.js'
 
-import { formatLogObject, getActionType, getPaginationRange } from './log-data.js'
+import {
+  formatLogObject,
+  getActionType,
+  getPaginationRange
+} from './log-data.js'
 
 export function renderDetailedLoggLayout({
   logs,
@@ -138,3 +191,41 @@ function formatDetailedDateTime(value) {
     minute: '2-digit'
   })
 }
+JS
+
+cat > js/logs/log-events.js <<'JS'
+import { renderTab } from '../tabs/tabs-render.js'
+import { clearLogsFromState } from './log-state.js'
+
+export function attachDetailedLoggEvents({
+  container,
+  onPageChange,
+  onClearLogs
+}) {
+  container.onclick = event => {
+    const clearButton = event.target.closest('#clearDetailedLogsBtn')
+
+    if (clearButton) {
+      const confirmed = confirm('Vil du tømme hele endringsloggen?')
+
+      if (!confirmed) return
+
+      onClearLogs()
+      clearLogsFromState()
+      renderTab()
+      return
+    }
+
+    const pageButton = event.target.closest('[data-detailed-log-page]')
+
+    if (!pageButton) return
+
+    onPageChange(pageButton.dataset.detailedLogPage)
+    renderTab()
+  }
+}
+JS
+
+echo ""
+echo "Done."
+echo "Backups created with suffix: .$TIMESTAMP.bak"
