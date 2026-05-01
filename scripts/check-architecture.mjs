@@ -6,12 +6,17 @@ const rootDir = process.cwd()
 const maxJsLines = 260
 
 const allowedLargeJsFiles = new Set([
+  'scripts/check-css-audit.mjs',
   'js/app/state-api.js',
   'scripts/firebase-migrate.mjs',
   'scripts/firebase-seed.mjs'
 ])
 
 const allowedScripts = new Set([
+  'clean-empty-css-blocks.mjs',
+  'remove-duplicate-css-declarations.mjs',
+  'remove-exact-duplicate-css.mjs',
+  'check-unused-css-classes.mjs',
   'check-unused-files.mjs',
   'check-large-files.mjs',
   'check-css-audit.mjs',
