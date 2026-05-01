@@ -13,54 +13,55 @@ const keepFiles = new Set([
   'check-architecture.mjs',
   'firebase-migrate.mjs',
   'firebase-seed.mjs',
-  'cleanup-one-off-scripts.mjs'
+  'cleanup-refactor-scripts.mjs'
 ])
 
-const removablePatterns = [
+const removePatterns = [
   /^split-/,
   /^fix-/,
   /^analyze-/,
   /^move-/,
-  /^restore-/,
   /^remove-/,
+  /^restore-/,
   /^find-/,
   /^extract-/,
   /^create-project-docs\.mjs$/,
-  /^cleanup-one-off-refactor-scripts\.mjs$/
+  /^create-refactor-report\.mjs$/,
+  /^cleanup-one-off/
 ]
 
 if (!fs.existsSync(scriptsDir)) {
-  console.log('scripts/ directory not found.')
+  console.log('scripts/ folder not found.')
   process.exit(0)
 }
 
-const filesToDelete = fs
+const filesToRemove = fs
   .readdirSync(scriptsDir)
   .filter(file => {
     if (keepFiles.has(file)) return false
 
-    return removablePatterns.some(pattern => pattern.test(file))
+    return removePatterns.some(pattern => pattern.test(file))
   })
   .sort()
 
-console.log('\nCleanup one-off scripts:\n')
+console.log('\nCleanup temporary refactor scripts:\n')
 
-if (filesToDelete.length === 0) {
-  console.log('No one-off scripts found.')
+if (filesToRemove.length === 0) {
+  console.log('No temporary refactor scripts found.')
   process.exit(0)
 }
 
-filesToDelete.forEach(file => {
+filesToRemove.forEach(file => {
   console.log(`- scripts/${file}`)
 })
 
 if (!isWriteMode) {
   console.log('\nDry run only. Apply with:')
-  console.log('\n  node scripts/cleanup-one-off-scripts.mjs --write\n')
+  console.log('\n  node scripts/cleanup-refactor-scripts.mjs --write\n')
   process.exit(0)
 }
 
-filesToDelete.forEach(file => {
+filesToRemove.forEach(file => {
   fs.rmSync(path.join(scriptsDir, file), {
     force: true
   })
