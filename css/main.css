@@ -113,18 +113,14 @@ body {
   padding: 9px 10px;
   font-size: 14px;
 }
-
-.settings-form button,
-.settings-item button {
+.settings-form button {
   border: 1px solid var(--border);
   background: white;
   border-radius: 9px;
   padding: 8px 11px;
   cursor: pointer;
 }
-
-.settings-form button:hover,
-.settings-item button:hover {
+.settings-form button:hover {
   background: var(--header);
 }
 
@@ -205,11 +201,8 @@ html[data-theme='dark'] {
 html[data-theme='dark'] body {
   background: var(--bg);
   color: var(--text);
-}
-
-/* картки */
+} /* картки */
 html[data-theme='dark'] .tab-panel,
-html[data-theme='dark'] .settings-card,
 html[data-theme='dark'] .analytics-card,
 html[data-theme='dark'] .analytics-section {
   background: var(--card);
@@ -284,27 +277,19 @@ html[data-theme='dark'] input {
 .theme-toggle:hover {
   background: var(--header);
 }
-
-/* ===== DARK THEME FIXES ===== */
-html[data-theme='dark'] .settings-item,
-html[data-theme='dark'] .analytics-row,
 html[data-theme='dark'] .table-scroll {
   background: #111827;
   border-color: var(--border);
   color: var(--text);
 }
-
 html[data-theme='dark'] .settings-form button,
-html[data-theme='dark'] .settings-item button,
 html[data-theme='dark'] .week-btn,
 html[data-theme='dark'] .theme-toggle {
   background: #0f172a;
   border-color: var(--border);
   color: var(--text);
 }
-
 html[data-theme='dark'] .settings-form button:hover,
-html[data-theme='dark'] .settings-item button:hover,
 html[data-theme='dark'] .week-btn:hover,
 html[data-theme='dark'] .theme-toggle:hover {
   background: #1e293b;
@@ -478,9 +463,7 @@ html[data-theme='dark'] .settings-form select {
   background: var(--header);
   font-weight: 700;
 }
-
 html[data-theme='dark'] .rapport-card,
-html[data-theme='dark'] .rapport-section,
 html[data-theme='dark'] .rapport-package-row {
   background: var(--card);
 }
