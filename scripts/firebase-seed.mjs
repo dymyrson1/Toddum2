@@ -1,4 +1,4 @@
-import { saveFirebaseState, loadFirebaseState } from './firebase.js'
+import { saveFirebaseState, loadFirebaseState } from '../js/firebase.js'
 
 const EMPTY_PROJECT_STATE = {
   currentDate: new Date().toISOString(),

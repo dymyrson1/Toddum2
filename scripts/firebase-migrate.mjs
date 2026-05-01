@@ -1,4 +1,4 @@
-import { loadFirebaseState, saveFirebaseState } from './firebase.js'
+import { loadFirebaseState, saveFirebaseState } from '../js/firebase.js'
 
 const DEFAULT_PACKAGING_TYPE = 'kg'
 
