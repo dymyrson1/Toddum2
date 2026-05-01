@@ -152,117 +152,6 @@ body {
   }
 }
 
-/* ===== DARK THEME ===== */
-html[data-theme='dark'] {
-  --bg: #0f172a;
-  --card: #111827;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --border: #1f2937;
-  --header: #1e293b;
-  --accent: #3b82f6;
-  --accent-soft: #1e3a8a33;
-  --danger: #ef4444;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* фон */
-html[data-theme='dark'] body {
-  background: var(--bg);
-  color: var(--text);
-} /* картки */
-html[data-theme='dark'] .tab-panel,
-html[data-theme='dark'] .analytics-card,
-html[data-theme='dark'] .analytics-section {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-/* таби */
-html[data-theme='dark'] .tab {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-html[data-theme='dark'] .tab:hover {
-  background: #1e293b;
-}
-
-/* таблиця */
-html[data-theme='dark'] .main-table {
-  background: var(--card);
-}
-
-html[data-theme='dark'] .main-table th,
-html[data-theme='dark'] .main-table td {
-  border-color: var(--border);
-}
-
-html[data-theme='dark'] .main-table thead th {
-  background: var(--header);
-}
-
-html[data-theme='dark'] .customer-cell {
-  background: #0f172a;
-}
-
-/* hover */
-html[data-theme='dark'] .editable-cell:hover {
-  background: #1e293b;
-}
-
-/* modal */
-html[data-theme='dark'] .modal-content {
-  background: var(--card);
-}
-
-/* context menu */
-html[data-theme='dark'] .context-menu {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-html[data-theme='dark'] .context-menu button:hover {
-  background: #1e293b;
-}
-
-/* inputs */
-html[data-theme='dark'] input {
-  background: #0f172a;
-  color: var(--text);
-  border-color: var(--border);
-}
-
-/* toggle button */
-.theme-toggle {
-  margin-left: auto;
-  border: 1px solid var(--border);
-  background: var(--card);
-  border-radius: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.theme-toggle:hover {
-  background: var(--header);
-}
-html[data-theme='dark'] .table-scroll {
-  background: #111827;
-  border-color: var(--border);
-  color: var(--text);
-}
-
-html[data-theme='dark'] .remove-row-btn,
-html[data-theme='dark'] .secondary-btn {
-  background: #1e293b;
-  color: var(--text);
-}
-
-html[data-theme='dark'] .primary-btn {
-  background: var(--accent);
-  color: white;
-}
-
 .sync-status {
   margin-top: 6px;
   font-size: 13px;
@@ -315,12 +204,6 @@ html[data-theme='dark'] .primary-btn {
 .fixed-label {
   color: var(--muted);
   font-size: 13px;
-}
-
-html[data-theme='dark'] .settings-form select {
-  background: #0f172a;
-  color: var(--text);
-  border-color: var(--border);
 }
 
 .packaging-add-form {
@@ -420,14 +303,6 @@ html[data-theme='dark'] .settings-form select {
   background: var(--header);
   font-weight: 700;
 }
-html[data-theme='dark'] .rapport-card,
-html[data-theme='dark'] .rapport-package-row {
-  background: var(--card);
-}
-
-html[data-theme='dark'] .rapport-detail-table th {
-  background: var(--header);
-}
 
 @media (max-width: 900px) {
 }
@@ -458,10 +333,6 @@ html[data-theme='dark'] .rapport-detail-table th {
 
 .tabs {
   margin-bottom: 0;
-}
-
-html[data-theme='dark'] .app-top {
-  background: var(--bg);
 }
 
 .logg-header */ .danger-btn {
@@ -524,10 +395,6 @@ html[data-theme='dark'] .app-top {
   cursor: not-allowed;
 }
 
-html[data-theme='dark'] .minimal-danger-btn {
-  color: var(--danger);
-}
-
 @media (max-width: 760px) {
 }
 
@@ -549,26 +416,6 @@ html[data-theme='dark'] .minimal-danger-btn {
 .pro-log-badge.is-neutral {
   background: #f3f4f6;
   color: #4b5563;
-}
-
-html[data-theme='dark'] .pro-log-badge.is-add {
-  background: rgba(22, 101, 52, 0.25);
-  color: #86efac;
-}
-
-html[data-theme='dark'] .pro-log-badge.is-update {
-  background: rgba(29, 78, 216, 0.25);
-  color: #93c5fd;
-}
-
-html[data-theme='dark'] .pro-log-badge.is-delete {
-  background: rgba(185, 28, 28, 0.25);
-  color: #fca5a5;
-}
-
-html[data-theme='dark'] .pro-log-badge.is-neutral {
-  background: #1f2937;
-  color: #d1d5db;
 }
 
 @media (max-width: 760px) {
@@ -747,27 +594,6 @@ html[data-theme='dark'] .pro-log-badge.is-neutral {
 .rapport-summary-row span {
   color: var(--muted);
   font-size: 13px;
-}
-
-html[data-theme='dark'] .rapport-hero {
-  background: linear-gradient(180deg, var(--card) 0%, #0f172a 100%);
-}
-
-html[data-theme='dark'] .rapport-total-weight,
-html[data-theme='dark'] .rapport-kpi,
-html[data-theme='dark'] .rapport-section.clean,
-html[data-theme='dark'] .rapport-table-wrap,
-html[data-theme='dark'] .rapport-production-table,
-html[data-theme='dark'] .rapport-summary-list {
-  background: var(--card);
-}
-
-html[data-theme='dark'] .rapport-production-table th {
-  background: var(--header);
-}
-
-html[data-theme='dark'] .rapport-production-table tbody tr:hover {
-  background: #1e293b;
 }
 
 @media (max-width: 900px) {
@@ -1020,26 +846,6 @@ html[data-theme='dark'] .rapport-production-table tbody tr:hover {
   background: white;
   color: var(--text);
   font-size: 13px;
-}
-
-html[data-theme='dark'] .settings-header {
-  background: linear-gradient(180deg, var(--card) 0%, #0f172a 100%);
-}
-
-html[data-theme='dark'] .settings-section,
-html[data-theme='dark'] .settings-compact-list,
-html[data-theme='dark'] .settings-empty,
-html[data-theme='dark'] .packaging-options-table,
-html[data-theme='dark'] .settings-day-list span {
-  background: var(--card);
-}
-
-html[data-theme='dark'] .settings-inline-form input,
-html[data-theme='dark'] .packaging-control-bar select,
-html[data-theme='dark'] .packaging-form-pro input {
-  background: #0f172a;
-  color: var(--text);
-  border-color: var(--border);
 }
 
 @media (max-width: 900px) {
@@ -1482,14 +1288,6 @@ html[data-theme='dark'] .packaging-form-pro input {
   background: rgba(22, 163, 74, 0.2);
 }
 
-html[data-theme='dark'] #leveringTab .delivery-row-done td {
-  background: rgba(34, 197, 94, 0.16);
-}
-
-html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
-  background: rgba(34, 197, 94, 0.23);
-}
-
 @media (max-width: 760px) {
   #leveringTab .delivery-table {
     min-width: 760px;
@@ -1616,22 +1414,6 @@ html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
 
 #leveringTab .delivery-row-done:hover td {
   background: rgba(22, 163, 74, 0.22);
-}
-
-html[data-theme='dark'] #leveringTab .delivery-row-packed td {
-  background: rgba(59, 130, 246, 0.16);
-}
-
-html[data-theme='dark'] #leveringTab .delivery-row-packed:hover td {
-  background: rgba(59, 130, 246, 0.22);
-}
-
-html[data-theme='dark'] #leveringTab .delivery-row-done td {
-  background: rgba(34, 197, 94, 0.18);
-}
-
-html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
-  background: rgba(34, 197, 94, 0.25);
 }
 
 /* ===== DELIVERY ADDRESS LINK ===== */
@@ -2400,11 +2182,6 @@ html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
   padding: 18px;
   color: var(--muted);
   text-align: center;
-}
-
-html[data-theme='dark'] .analytics-rank-row,
-html[data-theme='dark'] .analytics-problem-row {
-  background: #0f172a;
 }
 
 @media (max-width: 1100px) {
