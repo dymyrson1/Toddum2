@@ -2444,26 +2444,6 @@ html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
   margin-bottom: 0;
 }
 
-#leveringTab .delivery-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-#leveringTab .delivery-item-line {
-  display: flex;
-  gap: 6px;
-  line-height: 1.4;
-}
-
-#leveringTab .delivery-item-line strong {
-  flex: 0 0 auto;
-}
-
-#leveringTab .delivery-item-line span {
-  overflow-wrap: anywhere;
-}
-
 /* ===== LEVERING WEEK NAV ARROWS ===== */
 
 #leveringPrevWeek::before {
@@ -2750,13 +2730,6 @@ html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
   border-radius: 16px;
   padding: 16px 18px;
   background: var(--card);
-}
-
-.rapport-kpi span {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 8px;
 }
 
 .rapport-kpi strong {
@@ -3191,13 +3164,6 @@ html[data-theme='dark']
   gap: 18px;
 }
 
-.rr-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 16px;
-}
-
 .rr-title-card,
 .rr-total-card,
 .rr-kpi,
@@ -3258,33 +3224,13 @@ html[data-theme='dark']
   font-size: 26px;
 }
 
-.rr-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.9fr;
-  gap: 16px;
-}
-
 .rr-card {
   padding: 16px;
-}
-
-.rr-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 14px;
 }
 
 .rr-card-head h3 {
   margin: 0;
   font-size: 21px;
-}
-
-.rr-production-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 .rr-production-item {
@@ -3294,41 +3240,8 @@ html[data-theme='dark']
   background: #fbfcfd;
 }
 
-.rr-production-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
 .rr-production-top span {
   font-weight: 700;
-}
-
-.rr-production-body {
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.rr-table-wrap {
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.rr-table {
-  width: 100%;
-  min-width: 700px;
-  border-collapse: collapse;
-  background: var(--card);
-}
-
-.rr-table th,
-.rr-table td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  vertical-align: middle;
 }
 
 .rr-table th {
@@ -3350,25 +3263,8 @@ html[data-theme='dark']
   font-weight: 700;
 }
 
-.rr-subtotal-row td {
-  background: rgba(34, 197, 94, 0.1);
-  font-weight: 700;
-}
-
-.rr-table tbody tr:hover:not(.rr-group-row):not(.rr-subtotal-row) {
-  background: var(--accent-soft);
-}
-
 html[data-theme='dark'] .rr-production-item {
   background: #0f172a;
-}
-
-html[data-theme='dark'] .rr-group-row td {
-  background: rgba(59, 130, 246, 0.16);
-}
-
-html[data-theme='dark'] .rr-subtotal-row td {
-  background: rgba(34, 197, 94, 0.16);
 }
 
 @media (max-width: 980px) {
@@ -3445,10 +3341,6 @@ html[data-theme='dark'] .rr-subtotal-row td {
 
 .rr-subtotal-row td:first-child {
   color: var(--text);
-}
-
-html[data-theme='dark'] .rr-subtotal-row td {
-  background: rgba(34, 197, 94, 0.16);
 }
 
 /* ===== LEVERING TABLE COLUMN WIDTHS ===== */
