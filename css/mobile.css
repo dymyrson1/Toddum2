@@ -17,7 +17,6 @@
   .app-header {
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
   }
 
   .app-header h1 {
@@ -47,7 +46,6 @@
     flex: 0 0 auto;
     padding: 7px 11px;
     font-size: 13px;
-    border-radius: 8px;
     white-space: nowrap;
   }
 
@@ -59,12 +57,10 @@
 
   .top-bar {
     gap: 8px;
-    margin-bottom: 10px;
   }
 
   .week-btn {
     padding: 7px 10px;
-    border-radius: 8px;
   }
 
   .week-label {
@@ -103,14 +99,12 @@
   .analytics-grid,
   .analytics-sections {
     grid-template-columns: 1fr;
-    gap: 10px;
   }
 
   .rapport-section.clean,
   .settings-section,
   .levering-day-card {
     padding: 12px;
-    border-radius: 12px;
   }
 
   .rapport-section-header,
@@ -147,8 +141,6 @@
 
   .levering-card {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 12px;
   }
 
   .levering-product-row {
@@ -159,8 +151,6 @@
   .pro-log-header,
   .logg-header.compact {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
   }
 
   .danger-btn,
@@ -171,7 +161,6 @@
   .table-scroll {
     border-radius: 12px;
     max-width: 100%;
-    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -182,7 +171,6 @@
   .main-table th,
   .main-table td {
     padding: 7px 8px;
-    font-size: 12px;
   }
 
   .corner-cell,
@@ -193,7 +181,6 @@
 
   .customer-input {
     padding: 5px 6px;
-    font-size: 12px;
   }
 
   .delivery-day-column,
@@ -203,14 +190,12 @@
 
   .delivery-day-cell select {
     padding: 5px 6px;
-    font-size: 12px;
   }
 
   .editable-cell {
     min-width: 105px;
     max-width: 130px;
     height: 38px;
-    font-size: 12px;
     line-height: 1.25;
   }
 
@@ -267,19 +252,16 @@
 
   .modal-cell-key {
     font-size: 13px;
-    margin-bottom: 10px;
   }
 
   #miniTable th,
   #miniTable td {
     padding: 5px;
-    font-size: 12px;
   }
 
   #miniTable input,
   #miniTable select {
     padding: 7px;
-    font-size: 13px;
   }
 
   .modal-actions {
@@ -300,9 +282,7 @@
   .context-menu button {
     padding: 10px 12px;
   }
-}
-
-/* ===== MOBILE TABS SCROLL FIX ===== */
+} /* ===== MOBILE TABS SCROLL FIX ===== */
 
 @media (max-width: 760px) {
   html,
@@ -313,7 +293,6 @@
 
   .app {
     max-width: 100%;
-    overflow-x: hidden;
   }
 
   .app-top {
@@ -350,7 +329,6 @@
 
   #tabContent {
     max-width: 100%;
-    overflow-x: hidden;
   }
 
   .table-scroll,
@@ -359,8 +337,5 @@
   .logg-table-wrap,
   .customer-admin-table-wrap {
     max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
   }
 }
