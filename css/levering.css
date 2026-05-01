@@ -1,0 +1,203 @@
+/* Levering styles extracted from main.css */
+
+.levering-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--card) 0%, var(--surface) 100%);
+  padding: 20px;
+}
+
+.levering-hero h2 {
+  margin: 0 0 6px;
+  font-size: 26px;
+}
+
+.levering-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ===== LEVERING TABLE VIEW ===== */
+
+#leveringTab .delivery-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+#leveringTab .delivery-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  background: var(--card);
+}
+
+#leveringTab .delivery-table th,
+#leveringTab .delivery-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 11px 12px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+#leveringTab .delivery-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--header);
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#leveringTab .delivery-table tr:last-child td {
+  border-bottom: none;
+}
+
+#leveringTab .delivery-table tbody tr:hover {
+  background: var(--accent-soft);
+}
+
+#leveringTab .delivery-items-cell {
+  min-width: 320px;
+  max-width: 520px;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+#leveringTab .delivery-row-done td {
+  background: rgba(22, 163, 74, 0.14);
+}
+
+#leveringTab .delivery-row-done:hover td {
+  background: rgba(22, 163, 74, 0.2);
+}
+
+/* ===== LEVERING DAY FILTER ===== */
+
+#leveringTab .delivery-day-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#leveringTab .delivery-day-filter button {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 10px 7px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+#leveringTab .delivery-day-filter button:hover {
+  background: var(--header);
+}
+
+#leveringTab .delivery-day-filter button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+#leveringTab .delivery-day-filter button strong {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--header);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+#leveringTab .delivery-day-filter button.active strong {
+  background: rgba(255, 255, 255, 0.22);
+  color: white;
+}
+
+#leveringTab .delivery-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ===== LEVERING PACKED / DELIVERED STATES ===== */
+
+#leveringTab .delivery-row-packed td {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+#leveringTab .delivery-row-packed:hover td {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+#leveringTab .delivery-row-done td {
+  background: rgba(22, 163, 74, 0.16);
+}
+
+#leveringTab .delivery-row-done:hover td {
+  background: rgba(22, 163, 74, 0.22);
+}
+
+#leveringTab .delivery-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===== LEVERING TABLE COLUMN WIDTHS ===== */
+
+#leveringTab .delivery-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#leveringTab .delivery-table th:nth-child(1),
+#leveringTab .delivery-table td:nth-child(1) {
+  width: 52px;
+}
+
+#leveringTab .delivery-table th:nth-child(2),
+#leveringTab .delivery-table td:nth-child(2) {
+  width: 220px;
+}
+
+#leveringTab .delivery-table th:nth-child(3),
+#leveringTab .delivery-table td:nth-child(3) {
+  width: 420px;
+}
+
+#leveringTab .delivery-table th:nth-child(4),
+#leveringTab .delivery-table td:nth-child(4),
+#leveringTab .delivery-table th:nth-child(5),
+#leveringTab .delivery-table td:nth-child(5) {
+  width: 78px;
+  text-align: center;
+}
+
+#leveringTab .delivery-table th:nth-child(6),
+#leveringTab .delivery-table td:nth-child(6) {
+  width: 220px;
+}
+
+#leveringTab .delivery-table th:nth-child(7),
+#leveringTab .delivery-table td:nth-child(7) {
+  width: 160px;
+}
+
+#leveringTab .delivery-items-cell {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
