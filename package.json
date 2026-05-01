@@ -21,7 +21,8 @@
     "css:extract:rapport": "node scripts/extract-css-groups.mjs --group=rapport",
     "css:extract:rapport:write": "node scripts/extract-css-groups.mjs --group=rapport --write",
     "check": "npm run format:check && npm test && npm run lint && npm run check:unused && npm run check:sizes && npm run check:css && npm run check:css:groups && npm run check:architecture",
-    "check:architecture": "node scripts/check-architecture.mjs"
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "check:css:unused": "node scripts/check-unused-css-classes.mjs"
   },
   "devDependencies": {
     "@eslint/js": "latest",
