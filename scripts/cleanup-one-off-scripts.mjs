@@ -10,20 +10,23 @@ const keepFiles = new Set([
   'check-large-files.mjs',
   'check-css-audit.mjs',
   'check-css-groups.mjs',
+  'check-architecture.mjs',
   'firebase-migrate.mjs',
   'firebase-seed.mjs',
-  'cleanup-one-off-refactor-scripts.mjs'
+  'cleanup-one-off-scripts.mjs'
 ])
 
-const oneOffPatterns = [
-  /^split-.*\.(sh|mjs)$/,
-  /^fix-.*\.(sh|mjs)$/,
-  /^move-.*\.(sh|mjs)$/,
-  /^remove-.*\.(sh|mjs)$/,
-  /^restore-.*\.(sh|mjs)$/,
-  /^find-.*\.(sh|mjs)$/,
-  /^extract-css-groups\.mjs$/,
-  /^cleanup-.*\.sh$/
+const removablePatterns = [
+  /^split-/,
+  /^fix-/,
+  /^analyze-/,
+  /^move-/,
+  /^restore-/,
+  /^remove-/,
+  /^find-/,
+  /^extract-/,
+  /^create-project-docs\.mjs$/,
+  /^cleanup-one-off-refactor-scripts\.mjs$/
 ]
 
 if (!fs.existsSync(scriptsDir)) {
@@ -36,18 +39,16 @@ const filesToDelete = fs
   .filter(file => {
     if (keepFiles.has(file)) return false
 
-    return oneOffPatterns.some(pattern => pattern.test(file))
+    return removablePatterns.some(pattern => pattern.test(file))
   })
   .sort()
 
-console.log('\nCleanup one-off refactor scripts:\n')
+console.log('\nCleanup one-off scripts:\n')
 
 if (filesToDelete.length === 0) {
   console.log('No one-off scripts found.')
   process.exit(0)
 }
-
-console.log('Files to delete:\n')
 
 filesToDelete.forEach(file => {
   console.log(`- scripts/${file}`)
@@ -55,7 +56,7 @@ filesToDelete.forEach(file => {
 
 if (!isWriteMode) {
   console.log('\nDry run only. Apply with:')
-  console.log('\n  node scripts/cleanup-one-off-refactor-scripts.mjs --write\n')
+  console.log('\n  node scripts/cleanup-one-off-scripts.mjs --write\n')
   process.exit(0)
 }
 
