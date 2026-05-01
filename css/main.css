@@ -129,10 +129,6 @@ body {
     padding: 14px;
   }
 
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-
   .settings-form {
     flex-direction: column;
   }
@@ -169,10 +165,6 @@ body {
 }
 
 @media (max-width: 900px) {
-  .analytics-grid {
-    grid-template-columns: repeat(2, minmax(130px, 1fr));
-  }
-
   .analytics-sections {
     grid-template-columns: 1fr;
   }
@@ -473,10 +465,6 @@ html[data-theme='dark'] .rapport-detail-table th {
 }
 
 @media (max-width: 900px) {
-  .rapport-summary-grid,
-  .rapport-products {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ===== FIXED APP HEADER ===== */
@@ -548,24 +536,9 @@ html[data-theme='dark'] .app-top {
 }
 
 @media (max-width: 900px) {
-  .detail-log-list {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 760px) {
-  .detail-log-header {
-    flex-direction: column;
-  }
-
-  .detail-log-change {
-    grid-template-columns: 1fr;
-  }
-
-  .detail-log-arrow {
-    justify-content: center;
-    transform: rotate(90deg);
-  }
 }
 
 .minimal-danger-btn {
@@ -591,22 +564,6 @@ html[data-theme='dark'] .minimal-danger-btn {
 }
 
 @media (max-width: 760px) {
-  .minimal-log-header {
-    align-items: flex-start;
-  }
-
-  .minimal-log-top {
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .minimal-log-top span {
-    white-space: normal;
-  }
-
-  .minimal-log-change {
-    flex-wrap: wrap;
-  }
 }
 
 .pro-log-badge.is-add {
@@ -650,9 +607,6 @@ html[data-theme='dark'] .pro-log-badge.is-neutral {
 }
 
 @media (max-width: 760px) {
-  .pro-log-header {
-    flex-direction: column;
-  }
 }
 
 /* ===== PROFESSIONAL RAPPORT ===== */
@@ -1366,11 +1320,6 @@ html[data-theme='dark'] .packaging-form-pro input {
 @media (max-width: 900px) {
   .levering-hero {
     flex-direction: column;
-  }
-
-  .levering-summary {
-    width: 100%;
-    text-align: left;
   }
 
   .levering-card {
@@ -2252,58 +2201,9 @@ html[data-theme='dark'] #leveringTab .delivery-row-done:hover td {
 
 /* MOBILE */
 @media (max-width: 980px) {
-  .rr-top {
-    flex-direction: column;
-  }
-
-  .rr-total-card {
-    align-items: flex-start;
-  }
-
-  .rr-kpis {
-    grid-template-columns: 1fr;
-  }
-
-  .rr-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .rr-title-card h2 {
-    font-size: 28px;
-  }
-
-  .rr-total-card strong {
-    font-size: 32px;
-  }
-
-  .rr-card-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }
 
 @media (max-width: 980px) {
-  .rr-top,
-  .rr-grid {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
-
-  .rr-kpis {
-    grid-template-columns: 1fr;
-  }
-
-  .rr-total-card {
-    align-items: flex-start;
-  }
-
-  .rr-title-card h2 {
-    font-size: 28px;
-  }
-
-  .rr-total-card strong {
-    font-size: 32px;
-  }
 }
 
 /* ===== LEVERING TABLE COLUMN WIDTHS ===== */
