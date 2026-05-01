@@ -134,7 +134,10 @@ export function addProductPackagingOptionAction(
     return false
   }
 
-  if (!state.productPackagingTypes[cleanProduct]) {
+  if (
+    !Array.isArray(state.productPackagingTypes[cleanProduct]) ||
+    state.productPackagingTypes[cleanProduct].length === 0
+  ) {
     state.productPackagingTypes[cleanProduct] = [createDefaultPackagingOption()]
   }
 
