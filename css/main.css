@@ -668,31 +668,8 @@ html[data-theme='dark'] .rapport-detail-table th {
 html[data-theme='dark'] .app-top {
   background: var(--bg);
 }
-/* moved to css/logg.css: /* ===== LOGG ===== */
-.logg-header */
 
-/* moved to css/logg.css: .logg-header h2 */
-
-/* moved to css/logg.css: .logg-list */
-
-/* moved to css/logg.css: .logg-item */
-
-/* moved to css/logg.css: .logg-item-main */
-
-/* moved to css/logg.css: .logg-action */
-
-/* moved to css/logg.css: .logg-meta */
-
-/* moved to css/logg.css: .logg-details */
-
-/* moved to css/logg.css: .logg-details div */
-
-/* moved to css/logg.css: .logg-details dt */
-
-/* moved to css/logg.css: .logg-details dd */
-
-
-.danger-btn {
+.logg-header */ .danger-btn {
   border: 1px solid var(--danger);
   background: var(--danger-soft);
   color: var(--danger);
@@ -709,9 +686,6 @@ html[data-theme='dark'] .app-top {
   opacity: 0.5;
   cursor: not-allowed;
 }
-/* moved to css/logg.css: html[data-theme='dark'] .logg-item */
-
-/* moved to css/logg.css: html[data-theme='dark'] .logg-details div */
 
 @media (max-width: 760px) {
   .logg-header {
