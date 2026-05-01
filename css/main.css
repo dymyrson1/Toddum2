@@ -246,24 +246,6 @@ body {
   margin: 0 0 6px;
 }
 
-.rapport-card {
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #fbfcfd;
-  padding: 14px;
-}
-
-.rapport-card span {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.rapport-card strong {
-  font-size: 24px;
-}
-
 .rapport-package-list {
   display: flex;
   flex-direction: column;
@@ -419,28 +401,6 @@ body {
   gap: 18px;
 }
 
-.rapport-hero {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
-  padding: 20px;
-}
-
-.rapport-hero h2 {
-  margin: 0 0 6px;
-  font-size: 26px;
-}
-
-.rapport-hero p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
 .rapport-total-weight {
   min-width: 180px;
   border: 1px solid var(--border);
@@ -459,30 +419,6 @@ body {
 
 .rapport-total-weight strong {
   font-size: 26px;
-}
-
-.rapport-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(160px, 1fr));
-  gap: 12px;
-}
-
-.rapport-kpi {
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #fbfcfd;
-  padding: 14px;
-}
-
-.rapport-kpi span {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.rapport-kpi strong {
-  font-size: 22px;
 }
 
 .rapport-section.clean {
@@ -509,50 +445,6 @@ body {
 .rapport-section-header span {
   color: var(--muted);
   font-size: 13px;
-}
-
-.rapport-table-wrap {
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: white;
-}
-
-.rapport-production-table {
-  width: 100%;
-  min-width: 720px;
-  border-collapse: collapse;
-  background: white;
-}
-
-.rapport-production-table th,
-.rapport-production-table td {
-  border-bottom: 1px solid var(--border);
-  padding: 10px 12px;
-  text-align: left;
-  vertical-align: middle;
-  font-size: 14px;
-}
-
-.rapport-production-table th {
-  background: var(--header);
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-}
-
-.rapport-production-table tr:last-child td {
-  border-bottom: none;
-}
-
-.rapport-production-table tbody tr:hover {
-  background: var(--accent-soft);
-}
-
-.rapport-production-table td:nth-child(3),
-.rapport-production-table td:nth-child(4),
-.rapport-production-table td:nth-child(5) {
-  white-space: nowrap;
 }
 
 .rapport-summary-list {
@@ -1657,12 +1549,6 @@ body {
   }
 }
 
-.rapport-view {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
 .rapport-top {
   display: flex;
   justify-content: space-between;
@@ -1717,56 +1603,10 @@ body {
   line-height: 1;
 }
 
-.rapport-kpis {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.rapport-kpi {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 18px;
-  background: var(--card);
-}
-
-.rapport-kpi strong {
-  font-size: 28px;
-}
-
 .rapport-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.9fr;
   gap: 16px;
-}
-
-.rapport-card {
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--card);
-  padding: 16px;
-}
-
-.rapport-card-full {
-  width: 100%;
-}
-
-.rapport-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.rapport-card-header h3 {
-  margin: 0;
-  font-size: 22px;
-}
-
-.rapport-card-header span {
-  color: var(--muted);
-  font-size: 13px;
 }
 
 .production-list {
