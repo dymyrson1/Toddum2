@@ -61,7 +61,7 @@ export function renderOrdersTable(rows) {
     </div>
 
     <div class="table-scroll">
-      <table class="main-table">
+      <table>
         ${renderTableHead()}
         <tbody>
           ${visibleRows.map((row) => renderTableRow(row)).join('')}

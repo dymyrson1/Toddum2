@@ -1075,6 +1075,65 @@ html[data-theme="light"] .customer-search-clear {
 }
 
 
+/* ===== STRONG ROW STATUS HIGHLIGHT FIX ===== */
+
+/* A checked / packed */
+.table-scroll tbody tr.row-status-a > th,
+.table-scroll tbody tr.row-status-a > td {
+  background: rgba(37, 99, 235, 0.18) !important;
+}
+
+.table-scroll tbody tr.row-status-a:hover > th,
+.table-scroll tbody tr.row-status-a:hover > td {
+  background: rgba(37, 99, 235, 0.26) !important;
+}
+
+/* B checked / delivered */
+.table-scroll tbody tr.row-status-b > th,
+.table-scroll tbody tr.row-status-b > td {
+  background: rgba(22, 163, 74, 0.18) !important;
+}
+
+.table-scroll tbody tr.row-status-b:hover > th,
+.table-scroll tbody tr.row-status-b:hover > td {
+  background: rgba(22, 163, 74, 0.26) !important;
+}
+
+/* A + B checked */
+.table-scroll tbody tr.row-status-both > th,
+.table-scroll tbody tr.row-status-both > td {
+  background: rgba(22, 163, 74, 0.24) !important;
+}
+
+.table-scroll tbody tr.row-status-both:hover > th,
+.table-scroll tbody tr.row-status-both:hover > td {
+  background: rgba(22, 163, 74, 0.32) !important;
+}
+
+/* Keep customer input transparent so row color is visible */
+.table-scroll tbody tr.row-status-a .customer-input,
+.table-scroll tbody tr.row-status-b .customer-input,
+.table-scroll tbody tr.row-status-both .customer-input {
+  background: transparent !important;
+}
+
+/* Dark theme stronger contrast */
+html[data-theme="dark"] .table-scroll tbody tr.row-status-a > th,
+html[data-theme="dark"] .table-scroll tbody tr.row-status-a > td {
+  background: rgba(37, 99, 235, 0.22) !important;
+}
+
+html[data-theme="dark"] .table-scroll tbody tr.row-status-b > th,
+html[data-theme="dark"] .table-scroll tbody tr.row-status-b > td {
+  background: rgba(22, 163, 74, 0.22) !important;
+}
+
+html[data-theme="dark"] .table-scroll tbody tr.row-status-both > th,
+html[data-theme="dark"] .table-scroll tbody tr.row-status-both > td {
+  background: rgba(22, 163, 74, 0.30) !important;
+}
+
+
 /* ===== STATUS COLUMN PILLS ===== */
 .status-cell {
   text-align: center;

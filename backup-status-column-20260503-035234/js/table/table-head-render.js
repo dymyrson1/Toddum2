@@ -7,7 +7,6 @@ export function renderTableHead() {
     <thead>
       <tr>
         ${renderSortableHeader('customer', 'Customer')}
-        <th>Status</th>
 
         ${state.products.map((product) => renderProductHeader(product)).join('')}
 

@@ -4,36 +4,18 @@ import { escapeHtml, renderCellItems } from './table-formatters.js'
 
 export function renderCustomerCell(row) {
   return `
-    <td class="customer-cell">
+    <th class="customer-cell">
       <input
         class="customer-input"
-        value="${escapeHtml(row.customerName || '')}"
-        data-row-id="${row.id}"
-        data-customer-input
+        type="text"
         list="customerList"
+        value="${escapeHtml(row.customerName || '')}"
+        data-row-id="${escapeHtml(row.id)}"
+        data-row-field="customerName"
         placeholder="Kunde"
-      />
-    </td>
+      >
+    </th>
   `
-}
-
-export function renderStatusCell(row) {
-  const packed = Boolean(row.checks?.A)
-  const delivered = Boolean(row.checks?.B)
-
-  if (packed && delivered) {
-    return `<td class="status-cell"><span class="status-pill status-pill-done">Ferdig</span></td>`
-  }
-
-  if (packed) {
-    return `<td class="status-cell"><span class="status-pill status-pill-packed">Pakket</span></td>`
-  }
-
-  if (delivered) {
-    return `<td class="status-cell"><span class="status-pill status-pill-delivered">Levert</span></td>`
-  }
-
-  return `<td class="status-cell"><span class="status-pill status-pill-new">Ny</span></td>`
 }
 
 export function renderProductCell(row, product) {
