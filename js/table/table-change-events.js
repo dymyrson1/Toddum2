@@ -10,7 +10,6 @@ import {
   getRowFieldIdentity
 } from './table-event-targets.js'
 
-import { confirmCheckboxChange } from './table-confirmation.js'
 
 export function handleTableChange(event) {
   if (handleRowFieldChange(event)) return
@@ -39,13 +38,6 @@ export function handleCheckboxChange(event) {
   if (!identity) return false
 
   closeContextMenu()
-
-  const confirmed = confirmCheckboxChange()
-
-  if (!confirmed) {
-    checkbox.checked = !checkbox.checked
-    return true
-  }
 
   updateRowCheck(identity.rowId, identity.rowCheck, identity.checked)
 
