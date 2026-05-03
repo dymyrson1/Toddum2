@@ -3,8 +3,8 @@ import { escapeHtml } from '../utils/html.js'
 export function renderDeliveryGroups(groups, selectedDeliveryDay) {
   if (groups.length === 0) {
     return `
-      <section class="delivery-card">
-        <div class="delivery-empty">
+      <section class="delivery-card app-table-card">
+        <div class="delivery-empty settings-empty">
           Ingen leveranser for valgt dag.
         </div>
       </section>
@@ -24,8 +24,8 @@ export function renderDeliveryGroups(groups, selectedDeliveryDay) {
 
 function renderDeliveryGroup(group) {
   return `
-    <section class="delivery-card">
-      <div class="delivery-card-header">
+    <section class="delivery-card app-table-card">
+      <div class="delivery-card-header app-table-section-header">
         <h3>${escapeHtml(group.day)}</h3>
         <span>${group.deliveries.length} leveranser</span>
       </div>
@@ -37,8 +37,8 @@ function renderDeliveryGroup(group) {
 
 function renderDeliveryTable(deliveries) {
   return `
-    <div class="delivery-table-wrap">
-      <table class="delivery-table">
+    <div class="delivery-table-wrap app-table-wrap">
+      <table class="delivery-table app-table app-table-compact">
         <thead>
           <tr>
             <th>Nr.</th>
@@ -75,7 +75,7 @@ function renderDeliveryRow(delivery) {
 
       <td>${renderDeliveryItems(delivery.items)}</td>
 
-      <td>
+      <td class="check-cell">
         <input
           type="checkbox"
           data-delivery-row-id="${escapeHtml(delivery.rowId)}"
@@ -84,7 +84,7 @@ function renderDeliveryRow(delivery) {
         >
       </td>
 
-      <td>
+      <td class="check-cell">
         <input
           type="checkbox"
           data-delivery-row-id="${escapeHtml(delivery.rowId)}"
