@@ -1,8 +1,10 @@
 import { addOrderRow, deleteOrderRow, state } from '../state.js'
+
 import { openMerknadModal } from '../modal/merknad-modal.js'
 import { openProductModal } from '../modal/product-modal.js'
 import { closeContextMenu } from './context-menu.js'
 import { renderTable } from './table-render.js'
+
 import {
   getDeleteRowButtonFromEvent,
   getDeleteRowId,
@@ -12,28 +14,15 @@ import {
   getProductCellIdentity,
   isAddRowButtonFromEvent
 } from './table-event-targets.js'
+
 import { confirmDeleteRow } from './table-confirmation.js'
 import { selectProductCell } from './table-selection.js'
-import { toggleTableSort } from './table-sort.js'
 
 export function handleTableClick(event) {
-  if (handleTableSortClick(event)) return
   if (handleAddRowClick(event)) return
   if (handleDeleteRowClick(event)) return
   if (handleMerknadClick(event)) return
   if (handleProductCellClick(event)) return
-}
-
-export function handleTableSortClick(event) {
-  const button = event.target.closest('[data-sort-key]')
-
-  if (!button) return false
-
-  closeContextMenu()
-  toggleTableSort(button.dataset.sortKey)
-  renderTable()
-
-  return true
 }
 
 export function handleProductCellClick(event) {
@@ -58,6 +47,7 @@ export function handleDeleteRowClick(event) {
   closeContextMenu()
 
   const confirmed = confirmDeleteRow()
+
   if (!confirmed) return true
 
   deleteOrderRow(rowId)
