@@ -37,39 +37,9 @@ export function renderStatusCell(row) {
 
   return `
     <td class="status-cell">
-      <div class="status-cell-stack">
-        <span class="status-pill ${statusClass}">${statusLabel}</span>
-        <span class="status-time-meta">
-          ${escapeHtml(formatRowTimeMeta(row))}
-        </span>
-      </div>
+      <span class="status-pill ${statusClass}">${statusLabel}</span>
     </td>
   `
-}
-
-function formatRowTimeMeta(row) {
-  const updated = formatShortDateTime(row.updatedAt)
-  const created = formatShortDateTime(row.createdAt)
-
-  if (updated) return `Endret ${updated}`
-  if (created) return `Lagt til ${created}`
-
-  return 'Ingen tid'
-}
-
-function formatShortDateTime(value) {
-  if (!value) return ''
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) return ''
-
-  return new Intl.DateTimeFormat('no-NO', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
 }
 
 export function renderProductCell(row, product) {
