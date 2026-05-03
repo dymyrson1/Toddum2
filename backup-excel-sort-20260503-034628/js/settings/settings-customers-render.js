@@ -1,7 +1,7 @@
 import { getCustomerName, state } from '../state.js'
 import { escapeHtml } from '../utils/html.js'
 import {
-  getSettingsCustomerSortArrow,
+  getSettingsCustomerSortLabel,
   sortSettingsCustomers
 } from './settings-customer-sort.js'
 
@@ -19,16 +19,38 @@ export function renderCustomersList() {
   const customers = sortSettingsCustomers(state.customers)
 
   container.innerHTML = `
+    <div class="settings-sort-toolbar">
+      <button class="settings-sort-btn" type="button" data-settings-customer-sort="name">
+        ${getSettingsCustomerSortLabel('name', 'Navn')}
+      </button>
+
+      <button class="settings-sort-btn" type="button" data-settings-customer-sort="contactPerson">
+        ${getSettingsCustomerSortLabel('contactPerson', 'Kontaktperson')}
+      </button>
+
+      <button class="settings-sort-btn" type="button" data-settings-customer-sort="phone">
+        ${getSettingsCustomerSortLabel('phone', 'Telefon')}
+      </button>
+
+      <button class="settings-sort-btn" type="button" data-settings-customer-sort="address">
+        ${getSettingsCustomerSortLabel('address', 'Adresse')}
+      </button>
+
+      <button class="settings-sort-btn" type="button" data-settings-customer-sort="deliveryOrder">
+        ${getSettingsCustomerSortLabel('deliveryOrder', 'Rekkefølge')}
+      </button>
+    </div>
+
     <div class="customer-admin-table-wrap">
       <table class="customer-admin-table">
         <thead>
           <tr>
             <th>Nr.</th>
-            ${renderSortableCustomerHeader('name', 'Navn')}
-            ${renderSortableCustomerHeader('contactPerson', 'Kontaktperson')}
-            ${renderSortableCustomerHeader('phone', 'Telefon')}
-            ${renderSortableCustomerHeader('address', 'Adresse')}
-            ${renderSortableCustomerHeader('deliveryOrder', 'Rekkefølge')}
+            <th>Navn</th>
+            <th>Kontaktperson</th>
+            <th>Telefon</th>
+            <th>Adresse</th>
+            <th>Rekkefølge</th>
             <th></th>
           </tr>
         </thead>
@@ -44,21 +66,6 @@ export function renderCustomersList() {
 export function getCustomerNameForConfirmation(customerId) {
   const customer = state.customers.find((item) => item.id === customerId)
   return getCustomerName(customer)
-}
-
-function renderSortableCustomerHeader(sortKey, label) {
-  return `
-    <th>
-      <button
-        class="settings-head-sort-btn"
-        type="button"
-        data-settings-customer-sort="${escapeHtml(sortKey)}"
-      >
-        <span>${escapeHtml(label)}</span>
-        <span class="sort-arrow">${getSettingsCustomerSortArrow(sortKey)}</span>
-      </button>
-    </th>
-  `
 }
 
 function renderCustomerRow(customer, index, customerCount) {

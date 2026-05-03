@@ -15,17 +15,6 @@ export function clearCustomerSearch(scope) {
   customerSearch[scope] = ''
 }
 
-export function filterRowsByCustomerSearch(rows, scope) {
-  if (!Array.isArray(rows)) return []
-
-  const query = normalizeSearchValue(getCustomerSearch(scope))
-  if (!query) return rows
-
-  return rows.filter((row) => {
-    return normalizeSearchValue(row.customerName).includes(query)
-  })
-}
-
 export function normalizeSearchValue(value) {
   return String(value || '')
     .trim()

@@ -1,44 +1,36 @@
 import { state } from '../state.js'
 import { escapeHtml } from './table-formatters.js'
-import { getSortLabel } from './table-sort.js'
+import { getSortArrow } from './table-sort.js'
 
 export function renderTableHead() {
   return `
     <thead>
       <tr>
-        <th>
-          <button class="table-head-sort-btn" type="button" data-sort-key="customer">
-            ${getSortLabel('customer', 'Customer')}
-          </button>
-        </th>
+        ${renderSortableHeader('customer', 'Customer')}
 
         ${state.products.map((product) => renderProductHeader(product)).join('')}
 
-        <th>
-          <button class="table-head-sort-btn table-head-sort-btn-small" type="button" data-sort-key="packed">
-            ${getSortLabel('packed', 'A')}
-          </button>
-        </th>
-
-        <th>
-          <button class="table-head-sort-btn table-head-sort-btn-small" type="button" data-sort-key="delivered">
-            ${getSortLabel('delivered', 'B')}
-          </button>
-        </th>
-
-        <th>
-          <button class="table-head-sort-btn" type="button" data-sort-key="deliveryDay">
-            ${getSortLabel('deliveryDay', 'Delivery day')}
-          </button>
-        </th>
-
-        <th>Merknad</th>
-        <th></th>
+        ${renderSortableHeader('packed', 'A', 'check-column')}
+        ${renderSortableHeader('delivered', 'B', 'check-column')}
+        ${renderSortableHeader('deliveryDay', 'Delivery day')}
+        ${renderSortableHeader('merknad', 'Merknad')}
+        <th class="delete-column"></th>
       </tr>
     </thead>
   `
 }
 
 export function renderProductHeader(product) {
-  return `<th>${escapeHtml(product)}</th>`
+  return renderSortableHeader(`product:${product}`, product)
+}
+
+function renderSortableHeader(sortKey, label, extraClass = '') {
+  return `
+    <th class="${extraClass}">
+      <button class="table-head-sort-btn" type="button" data-sort-key="${escapeHtml(sortKey)}">
+        <span>${escapeHtml(label)}</span>
+        <span class="sort-arrow">${getSortArrow(sortKey)}</span>
+      </button>
+    </th>
+  `
 }

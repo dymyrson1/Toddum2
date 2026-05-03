@@ -6,8 +6,6 @@ let settingsCustomerSort = {
 const SORT_CYCLE = ['default', 'asc', 'desc']
 
 export function toggleSettingsCustomerSort(key) {
-  if (!key) return
-
   if (settingsCustomerSort.key !== key) {
     settingsCustomerSort = { key, direction: 'asc' }
     return
@@ -74,13 +72,15 @@ function compareNumber(a, b) {
   return safeA - safeB
 }
 
-export function getSettingsCustomerSortArrow(key) {
+export function getSettingsCustomerSortLabel(key, label) {
   if (
     settingsCustomerSort.key !== key ||
     settingsCustomerSort.direction === 'default'
   ) {
-    return '↕'
+    return `${label} ↕`
   }
 
-  return settingsCustomerSort.direction === 'asc' ? '↑' : '↓'
+  return settingsCustomerSort.direction === 'asc'
+    ? `${label} ↑`
+    : `${label} ↓`
 }
