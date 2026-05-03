@@ -88,9 +88,9 @@ export function renderOrdersTable(rows) {
       </div>
 
       <div class="table-time-filter">
-        <button class="time-filter-btn active" data-time-filter="all">Alle</button>
-        <button class="time-filter-btn" data-time-filter="new">Ny</button>
-        <button class="time-filter-btn" data-time-filter="updated">Endret</button>
+        ${renderTimeFilterButton('all', 'Alle')}
+        ${renderTimeFilterButton('new', 'Ny')}
+        ${renderTimeFilterButton('updated', 'Endret')}
       </div>
 
       <div class="table-search-count">
@@ -129,6 +129,18 @@ export function renderOrdersTable(rows) {
 
     <button id="addOrderRowBtn" class="add-row-main-btn" type="button">
       + Legg til rad
+    </button>
+  `
+}
+
+function renderTimeFilterButton(value, label) {
+  return `
+    <button
+      class="time-filter-btn ${rowTimeFilter === value ? 'active' : ''}"
+      type="button"
+      data-time-filter="${escapeHtml(value)}"
+    >
+      ${escapeHtml(label)}
     </button>
   `
 }
