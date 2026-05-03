@@ -1,0 +1,166 @@
+/* Week navigation styles extracted from main.css */
+
+.week-btn {
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 10px;
+  padding: 8px 13px;
+  cursor: pointer;
+}
+
+.week-btn:hover {
+  background: var(--header);
+}
+
+.week-label {
+  min-width: 110px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.week-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+html[data-theme='dark'] .settings-form button,
+html[data-theme='dark'] .week-btn,
+html[data-theme='dark'] .theme-toggle {
+  background: #0f172a;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+html[data-theme='dark'] .settings-form button:hover,
+html[data-theme='dark'] .week-btn:hover,
+html[data-theme='dark'] .theme-toggle:hover {
+  background: #1e293b;
+}
+
+.week-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 0;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.week-btn:hover:not(:disabled) {
+  background: var(--header);
+  transform: translateY(-1px);
+}
+
+.week-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.week-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.week-label {
+  min-width: 86px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+#prevWeek::before {
+  content: '‹';
+  font-size: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+#nextWeek::before {
+  content: '›';
+  font-size: 26px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+html[data-theme='dark'] .week-btn,
+html[data-theme='dark'] .week-label {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+
+
+
+
+
+
+
+
+.week-label.week-display {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 150px;
+  height: 86px;
+  padding: 0 28px 12px;
+
+  border-radius: 22px;
+  border: none;
+
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+
+  background: #3b82f6;
+
+  box-shadow:
+    0 14px 34px rgba(59, 130, 246, 0.35),
+    0 0 28px rgba(59, 130, 246, 0.22);
+}
+
+.week-label.week-display::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 17px;
+  transform: translateX(-50%);
+
+  width: 62px;
+  height: 5px;
+
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+html[data-theme="dark"] .week-label.week-display {
+  background: #3b82f6;
+  border: none;
+  color: #ffffff;
+
+  box-shadow:
+    0 14px 34px rgba(59, 130, 246, 0.38),
+    0 0 32px rgba(59, 130, 246, 0.32);
+}
+
+html[data-theme="dark"] .week-label.week-display::after {
+  background: rgba(255, 255, 255, 0.92);
+}
