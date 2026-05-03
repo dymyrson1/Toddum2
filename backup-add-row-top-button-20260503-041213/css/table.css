@@ -1180,24 +1180,3 @@ html[data-theme="light"] .main-table tbody tr.row-status-both .customer-input {
 .add-row-main-btn {
   margin-top: 10px;
 }
-
-
-/* ===== ADD ROW BUTTON CENTERED ===== */
-.add-row-main-btn {
-  align-self: center;
-  justify-self: center;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 44px;
-  padding: 0 22px;
-
-  border-radius: 999px;
-
-  font-weight: 800;
-  box-shadow:
-    0 10px 24px rgba(22, 163, 74, 0.24),
-    0 0 16px rgba(34, 197, 94, 0.16);
-}

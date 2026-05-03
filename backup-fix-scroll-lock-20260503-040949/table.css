@@ -1157,47 +1157,53 @@ html[data-theme="light"] .main-table tbody tr.row-status-both .customer-input {
     0 0 16px rgba(22, 163, 74, 0.18);
 }
 
-/* ===== TABLE INTERNAL SCROLL ===== */
-#tableContainer {
+
+/* ===== FIXED TABLE VIEWPORT ===== */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.app {
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+#tabContent {
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#tableContainer {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .table-scroll {
-  max-height: calc(100vh - 310px);
+  flex: 1;
+  min-height: 0;
+  max-height: none;
   overflow: auto;
 }
 
-/* Keep table header visible while scrolling inside table */
+/* keep table header visible while scrolling inside table */
 .table-scroll thead th {
   position: sticky;
   top: 0;
   z-index: 5;
 }
 
-/* Keep add button outside table scroll */
+/* keep add button visible below table */
 .add-row-main-btn {
+  flex: 0 0 auto;
   margin-top: 10px;
-}
-
-
-/* ===== ADD ROW BUTTON CENTERED ===== */
-.add-row-main-btn {
-  align-self: center;
-  justify-self: center;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 44px;
-  padding: 0 22px;
-
-  border-radius: 999px;
-
-  font-weight: 800;
-  box-shadow:
-    0 10px 24px rgba(22, 163, 74, 0.24),
-    0 0 16px rgba(34, 197, 94, 0.16);
 }
