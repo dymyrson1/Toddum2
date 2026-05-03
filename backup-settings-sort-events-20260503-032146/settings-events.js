@@ -9,13 +9,14 @@ import {
   removeProductPackagingOption,
   updateCustomer
 } from '../state.js'
+
 import { renderTab } from '../tabs/tabs-render.js'
+
 import {
   getCustomerNameForConfirmation,
   renderCustomersList,
   renderPackagingList
 } from './settings-render.js'
-import { toggleSettingsCustomerSort } from './settings-customer-sort.js'
 
 export function attachSettingsEvents(container) {
   container.onsubmit = (event) => {
@@ -43,7 +44,6 @@ function handleSettingsChange(event) {
 }
 
 function handleSettingsClick(event) {
-  if (handleCustomerSortClick(event)) return
   if (handleCustomerMoveClick(event)) return
   if (handleCustomerRemoveClick(event)) return
   if (handleProductMoveClick(event)) return
@@ -51,18 +51,9 @@ function handleSettingsClick(event) {
   if (handlePackagingRemoveClick(event)) return
 }
 
-function handleCustomerSortClick(event) {
-  const button = event.target.closest('[data-settings-customer-sort]')
-  if (!button) return false
-
-  toggleSettingsCustomerSort(button.dataset.settingsCustomerSort)
-  renderCustomersList()
-
-  return true
-}
-
 function handleCustomerSubmit(event) {
   const form = event.target.closest('#customerForm')
+
   if (!form) return false
 
   event.preventDefault()
@@ -84,6 +75,7 @@ function handleCustomerSubmit(event) {
 
 function handleProductSubmit(event) {
   const form = event.target.closest('#productForm')
+
   if (!form) return false
 
   event.preventDefault()
@@ -100,6 +92,7 @@ function handleProductSubmit(event) {
 
 function handlePackagingSubmit(event) {
   const form = event.target.closest('#packagingForm')
+
   if (!form) return false
 
   event.preventDefault()
@@ -127,6 +120,7 @@ function handlePackagingSubmit(event) {
 
 function handleCustomerFieldChange(event) {
   const input = event.target.closest('[data-customer-field]')
+
   if (!input) return false
 
   updateCustomer(input.dataset.customerId, {
@@ -140,6 +134,7 @@ function handleCustomerFieldChange(event) {
 
 function handlePackagingProductChange(event) {
   const select = event.target.closest('#packagingProductSelect')
+
   if (!select) return false
 
   renderPackagingList(select.value)
@@ -149,12 +144,10 @@ function handlePackagingProductChange(event) {
 
 function handleCustomerMoveClick(event) {
   const button = event.target.closest('[data-move-customer]')
+
   if (!button) return false
 
-  const moved = moveCustomer(
-    button.dataset.moveCustomer,
-    button.dataset.moveDirection
-  )
+  const moved = moveCustomer(button.dataset.moveCustomer, button.dataset.moveDirection)
 
   if (moved) {
     renderCustomersList()
@@ -165,12 +158,14 @@ function handleCustomerMoveClick(event) {
 
 function handleCustomerRemoveClick(event) {
   const button = event.target.closest('[data-remove-customer]')
+
   if (!button) return false
 
   const customerId = button.dataset.removeCustomer
   const customerName = getCustomerNameForConfirmation(customerId)
 
   const confirmed = confirm(`Vil du slette kunden "${customerName || ''}" fra listen?`)
+
   if (!confirmed) return true
 
   removeCustomer(customerId)
@@ -181,12 +176,10 @@ function handleCustomerRemoveClick(event) {
 
 function handleProductMoveClick(event) {
   const button = event.target.closest('[data-move-product]')
+
   if (!button) return false
 
-  const moved = moveProduct(
-    button.dataset.moveProduct,
-    button.dataset.moveDirection
-  )
+  const moved = moveProduct(button.dataset.moveProduct, button.dataset.moveDirection)
 
   if (moved) {
     renderTab()
@@ -197,6 +190,7 @@ function handleProductMoveClick(event) {
 
 function handleProductRemoveClick(event) {
   const button = event.target.closest('[data-remove-product]')
+
   if (!button) return false
 
   const productName = button.dataset.removeProduct
@@ -215,6 +209,7 @@ function handleProductRemoveClick(event) {
 
 function handlePackagingRemoveClick(event) {
   const button = event.target.closest('[data-remove-product-packaging]')
+
   if (!button) return false
 
   const productSelect = document.getElementById('packagingProductSelect')
