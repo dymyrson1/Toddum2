@@ -13,7 +13,7 @@ export function addOrderRowAction(context) {
   const rows = getCurrentRows()
   const row = createEmptyOrderRow()
 
-  rows.unshift(row)
+  rows.push(row)
 
   if (typeof addLog === 'function') {
     addLog('add_row', {
