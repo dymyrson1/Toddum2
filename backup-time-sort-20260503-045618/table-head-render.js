@@ -8,12 +8,7 @@ export function renderTableHead() {
       <tr>
         ${renderSortableHeader('customer', 'Customer')}
         <th>Status</th>
-        <th>
-      <button class="table-head-sort-btn" type="button" data-sort-key="updatedAt">
-        <span>Tid</span>
-        <span class="sort-arrow">${getSortArrow('updatedAt')}</span>
-      </button>
-    </th>
+        <th>Tid</th>
 
         ${state.products.map((product) => renderProductHeader(product)).join('')}
 

@@ -47,8 +47,8 @@ export function normalizeOrderRow(row, normalizeCells) {
     customerName: row?.customerName || '',
     deliveryDay: row?.deliveryDay || '',
     merknad: row?.merknad || '',
-    createdAt: row?.createdAt || createTimestamp(),
-    updatedAt: row?.updatedAt || row?.createdAt || createTimestamp(),
+    createdAt: row?.createdAt || null,
+    updatedAt: row?.updatedAt || null,
     cells,
     checks: normalizeRowChecks(row?.checks)
   }

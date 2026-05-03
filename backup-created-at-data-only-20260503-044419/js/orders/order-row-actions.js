@@ -1,4 +1,5 @@
 import { createEmptyOrderRow } from './order-utils.js'
+
 import {
   findOrderRowById,
   removeOrderRowById,
@@ -8,6 +9,7 @@ import {
 
 export function addOrderRowAction(context) {
   const { addLog, getCurrentRows, persistState } = context
+
   const rows = getCurrentRows()
   const row = createEmptyOrderRow()
 
@@ -25,7 +27,8 @@ export function addOrderRowAction(context) {
 }
 
 export function deleteOrderRowAction(context, rowId) {
-  const { addLog, state, getCurrentRows, persistState } = context
+  const { state, getCurrentRows, persistState } = context
+
   const result = removeOrderRowById(getCurrentRows(), rowId)
 
   if (!result.removed) return
@@ -34,74 +37,37 @@ export function deleteOrderRowAction(context, rowId) {
     state.selectedCell = null
   }
 
-  if (typeof addLog === 'function') {
-    addLog('delete_row', {
-      actionLabel: 'Slettet rad',
-      customerName: result.row?.customerName || ''
-    })
-  }
-
   persistState()
 }
 
 export function updateOrderRowFieldAction(context, rowId, field, value) {
-  const { addLog, ensureCustomerExists, persistState } = context
+  const { ensureCustomerExists, persistState } = context
+
   const row = findOrderRowAction(context, rowId)
   const result = updateOrderRowFieldValue(row, field, value)
 
   if (!result.changed) return
 
-  row.updatedAt = createTimestamp()
-
   if (field === 'customerName' && result.newValue) {
     ensureCustomerExists(result.newValue)
-  }
-
-  if (typeof addLog === 'function') {
-    addLog('update_row_field', {
-      actionLabel: getFieldActionLabel(field),
-      customerName: row?.customerName || '',
-      oldValue: result.oldValue,
-      newValue: result.newValue
-    })
   }
 
   persistState()
 }
 
 export function updateRowCheckAction(context, rowId, checkType, checked) {
-  const { addLog, persistState } = context
+  const { persistState } = context
+
   const row = findOrderRowAction(context, rowId)
   const result = updateOrderRowCheckValue(row, checkType, checked)
 
   if (!result.changed) return
-
-  row.updatedAt = createTimestamp()
-
-  if (typeof addLog === 'function') {
-    addLog('update_check', {
-      actionLabel: checkType === 'A' ? 'Endret pakket' : 'Endret levert',
-      customerName: row?.customerName || '',
-      oldValue: result.oldValue ? 'Ja' : 'Nei',
-      newValue: result.newValue ? 'Ja' : 'Nei'
-    })
-  }
 
   persistState()
 }
 
 export function findOrderRowAction(context, rowId) {
   const { getCurrentRows } = context
+
   return findOrderRowById(getCurrentRows(), rowId)
-}
-
-function getFieldActionLabel(field) {
-  if (field === 'customerName') return 'Endret kunde'
-  if (field === 'deliveryDay') return 'Endret leveringsdag'
-  if (field === 'merknad') return 'Endret merknad'
-  return 'Endret rad'
-}
-
-function createTimestamp() {
-  return new Date().toISOString()
 }

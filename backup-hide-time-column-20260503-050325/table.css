@@ -1589,11 +1589,3 @@ html[data-theme="light"] .main-table tbody tr.row-recently-updated .time-cell {
 .status-cell .status-time-meta {
   display: none !important;
 }
-
-
-/* ===== HIDE TIME COLUMN TEMPORARILY ===== */
-/* Current table order: Customer | Status | Tid | products... */
-.main-table th:nth-child(3),
-.main-table td:nth-child(3) {
-  display: none !important;
-}

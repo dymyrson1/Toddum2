@@ -21,55 +21,19 @@ export function renderStatusCell(row) {
   const packed = Boolean(row.checks?.A)
   const delivered = Boolean(row.checks?.B)
 
-  let statusClass = 'status-pill-new'
-  let statusLabel = 'Ny'
-
   if (packed && delivered) {
-    statusClass = 'status-pill-done'
-    statusLabel = 'Ferdig'
-  } else if (packed) {
-    statusClass = 'status-pill-packed'
-    statusLabel = 'Pakket'
-  } else if (delivered) {
-    statusClass = 'status-pill-delivered'
-    statusLabel = 'Levert'
+    return `<td class="status-cell"><span class="status-pill status-pill-done">Ferdig</span></td>`
   }
 
-  return `
-    <td class="status-cell">
-      <div class="status-cell-stack">
-        <span class="status-pill ${statusClass}">${statusLabel}</span>
-        <span class="status-time-meta">
-          ${escapeHtml(formatRowTimeMeta(row))}
-        </span>
-      </div>
-    </td>
-  `
-}
+  if (packed) {
+    return `<td class="status-cell"><span class="status-pill status-pill-packed">Pakket</span></td>`
+  }
 
-function formatRowTimeMeta(row) {
-  const updated = formatShortDateTime(row.updatedAt)
-  const created = formatShortDateTime(row.createdAt)
+  if (delivered) {
+    return `<td class="status-cell"><span class="status-pill status-pill-delivered">Levert</span></td>`
+  }
 
-  if (updated) return `Endret ${updated}`
-  if (created) return `Lagt til ${created}`
-
-  return 'Ingen tid'
-}
-
-function formatShortDateTime(value) {
-  if (!value) return ''
-
-  const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) return ''
-
-  return new Intl.DateTimeFormat('no-NO', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
+  return `<td class="status-cell"><span class="status-pill status-pill-new">Ny</span></td>`
 }
 
 export function renderProductCell(row, product) {

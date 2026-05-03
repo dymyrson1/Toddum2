@@ -2,42 +2,11 @@ import { getCustomerName, state } from '../state.js'
 import { escapeHtml } from './table-formatters.js'
 import { renderTableHead } from './table-head-render.js'
 import { renderTableRow } from './table-body-render.js'
-import { getSortLabel, isDeliveryFlowSortEnabled, sortRowsForDisplay } from './table-sort.js'
+import { isDeliveryFlowSortEnabled, sortRowsForDisplay } from './table-sort.js'
 import {
   getCustomerSearch,
   normalizeSearchValue
 } from '../shared/customer-search.js'
-
-let rowTimeFilter = 'all'
-
-export function setRowTimeFilter(value) {
-  rowTimeFilter = value || 'all'
-}
-
-export function getRowTimeFilter() {
-  return rowTimeFilter
-}
-
-function filterRowsByTime(rows) {
-  if (rowTimeFilter === 'all') return rows
-
-  return rows.filter((row) => {
-    const created = Date.parse(row.createdAt || '')
-    const updated = Date.parse(row.updatedAt || '')
-
-    if (!Number.isFinite(created) || !Number.isFinite(updated)) return false
-
-    if (rowTimeFilter === 'new') {
-      return Math.abs(updated - created) < 1000
-    }
-
-    if (rowTimeFilter === 'updated') {
-      return updated > created
-    }
-
-    return true
-  })
-}
 
 export function renderCustomerDatalist() {
   return `
@@ -60,8 +29,7 @@ export function renderOrdersTable(rows) {
 
   const searchValue = getCustomerSearch('orders')
   const filteredRows = filterRowsByCustomerSearch(rows, searchValue)
-  const timeFiltered = filterRowsByTime(filteredRows)
-  const visibleRows = sortRowsForDisplay(timeFiltered)
+  const visibleRows = sortRowsForDisplay(filteredRows)
 
   return `
     <div class="table-control-panel">
@@ -87,23 +55,9 @@ export function renderOrdersTable(rows) {
         </div>
       </div>
 
-      <div class="table-time-filter">
-        <button class="time-filter-btn active" data-time-filter="all">Alle</button>
-        <button class="time-filter-btn" data-time-filter="new">Ny</button>
-        <button class="time-filter-btn" data-time-filter="updated">Endret</button>
-      </div>
-
       <div class="table-search-count">
         Viser ${visibleRows.length} av ${rows.length} rader
       </div>
-
-      <button class="date-sort-btn" type="button" data-sort-key="createdAt">
-        ${getSortLabel('createdAt', 'Lagt til')}
-      </button>
-
-      <button class="date-sort-btn" type="button" data-sort-key="updatedAt">
-        ${getSortLabel('updatedAt', 'Endret')}
-      </button>
 
       <button
         class="delivery-flow-switch ${isDeliveryFlowSortEnabled() ? 'active' : ''}"

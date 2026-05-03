@@ -59,15 +59,3 @@ function formatShort(value) {
     minute: '2-digit'
   }).format(d)
 }
-
-
-function getRecentUpdateClass(row) {
-  const updatedAt = Date.parse(row.updatedAt || '')
-
-  if (!Number.isFinite(updatedAt)) return ''
-
-  const tenMinutes = 10 * 60 * 1000
-  const isRecent = Date.now() - updatedAt <= tenMinutes
-
-  return isRecent ? 'row-recently-updated' : ''
-}

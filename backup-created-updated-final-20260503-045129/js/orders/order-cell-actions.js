@@ -3,7 +3,8 @@ import { normalizeOrderCellItems } from './order-cell-utils.js'
 import { findOrderRowAction } from './order-row-actions.js'
 
 export function updateOrderCellAction(context, rowId, productName, value) {
-  const { addLog, getPackagingOptionsForProduct, persistState } = context
+  const { getPackagingOptionsForProduct, persistState } = context
+
   const row = findOrderRowAction(context, rowId)
 
   if (!row) return
@@ -27,26 +28,17 @@ export function updateOrderCellAction(context, rowId, productName, value) {
   if (cleanItems.length === 0) {
     delete row.cells[productName]
   } else {
-    row.cells[productName] = { items: cleanItems }
-  }
-
-  row.updatedAt = createTimestamp()
-
-  if (typeof addLog === 'function') {
-    addLog('update_cell', {
-      actionLabel: 'Endret bestilling',
-      customerName: row.customerName || '',
-      productName,
-      oldValue,
-      newValue
-    })
+    row.cells[productName] = {
+      items: cleanItems
+    }
   }
 
   persistState()
 }
 
 export function deleteOrderCellAction(context, rowId, productName) {
-  const { addLog, persistState } = context
+  const { persistState } = context
+
   const row = findOrderRowAction(context, rowId)
 
   if (!row || !row.cells) return
@@ -58,30 +50,23 @@ export function deleteOrderCellAction(context, rowId, productName) {
 
   delete row.cells[productName]
 
-  row.updatedAt = createTimestamp()
-
-  if (typeof addLog === 'function') {
-    addLog('clear_cell', {
-      actionLabel: 'Tømte celle',
-      customerName: row.customerName || '',
-      productName,
-      oldValue,
-      newValue: ''
-    })
-  }
-
   persistState()
 }
 
 export function getOrderCellAction(context, rowId, productName) {
   const { getPackagingOptionsForProduct } = context
+
   const row = findOrderRowAction(context, rowId)
 
   if (!row || !row.cells) {
-    return { items: [] }
+    return {
+      items: []
+    }
   }
 
-  const cell = row.cells[productName] || { items: [] }
+  const cell = row.cells[productName] || {
+    items: []
+  }
 
   return {
     items: normalizeOrderCellItems(
@@ -89,8 +74,4 @@ export function getOrderCellAction(context, rowId, productName) {
       getPackagingOptionsForProduct(productName)
     )
   }
-}
-
-function createTimestamp() {
-  return new Date().toISOString()
 }

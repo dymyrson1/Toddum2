@@ -1,30 +1,22 @@
 import { createRowId } from '../utils/id.js'
 
 export function createEmptyOrderRow() {
-  const timestamp = createTimestamp()
-
   return {
     id: createRowId(),
     customerName: '',
     deliveryDay: '',
     merknad: '',
-    createdAt: timestamp,
-    updatedAt: timestamp,
     cells: {},
     checks: createEmptyChecks()
   }
 }
 
 export function createMigratedOrderRow(customerName) {
-  const timestamp = createTimestamp()
-
   return {
     id: createRowId(),
     customerName,
     deliveryDay: '',
     merknad: '',
-    createdAt: timestamp,
-    updatedAt: timestamp,
     cells: {},
     checks: createEmptyChecks()
   }
@@ -47,8 +39,6 @@ export function normalizeOrderRow(row, normalizeCells) {
     customerName: row?.customerName || '',
     deliveryDay: row?.deliveryDay || '',
     merknad: row?.merknad || '',
-    createdAt: row?.createdAt || createTimestamp(),
-    updatedAt: row?.updatedAt || row?.createdAt || createTimestamp(),
     cells,
     checks: normalizeRowChecks(row?.checks)
   }
@@ -66,8 +56,4 @@ function createEmptyChecks() {
     A: false,
     B: false
   }
-}
-
-function createTimestamp() {
-  return new Date().toISOString()
 }

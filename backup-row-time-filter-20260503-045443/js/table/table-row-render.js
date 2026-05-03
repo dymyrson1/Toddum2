@@ -8,37 +8,6 @@ import {
   normalizeSearchValue
 } from '../shared/customer-search.js'
 
-let rowTimeFilter = 'all'
-
-export function setRowTimeFilter(value) {
-  rowTimeFilter = value || 'all'
-}
-
-export function getRowTimeFilter() {
-  return rowTimeFilter
-}
-
-function filterRowsByTime(rows) {
-  if (rowTimeFilter === 'all') return rows
-
-  return rows.filter((row) => {
-    const created = Date.parse(row.createdAt || '')
-    const updated = Date.parse(row.updatedAt || '')
-
-    if (!Number.isFinite(created) || !Number.isFinite(updated)) return false
-
-    if (rowTimeFilter === 'new') {
-      return Math.abs(updated - created) < 1000
-    }
-
-    if (rowTimeFilter === 'updated') {
-      return updated > created
-    }
-
-    return true
-  })
-}
-
 export function renderCustomerDatalist() {
   return `
     <datalist id="customerList">
@@ -60,8 +29,7 @@ export function renderOrdersTable(rows) {
 
   const searchValue = getCustomerSearch('orders')
   const filteredRows = filterRowsByCustomerSearch(rows, searchValue)
-  const timeFiltered = filterRowsByTime(filteredRows)
-  const visibleRows = sortRowsForDisplay(timeFiltered)
+  const visibleRows = sortRowsForDisplay(filteredRows)
 
   return `
     <div class="table-control-panel">
@@ -85,12 +53,6 @@ export function renderOrdersTable(rows) {
             Tøm
           </button>
         </div>
-      </div>
-
-      <div class="table-time-filter">
-        <button class="time-filter-btn active" data-time-filter="all">Alle</button>
-        <button class="time-filter-btn" data-time-filter="new">Ny</button>
-        <button class="time-filter-btn" data-time-filter="updated">Endret</button>
       </div>
 
       <div class="table-search-count">

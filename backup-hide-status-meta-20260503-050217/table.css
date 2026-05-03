@@ -1583,17 +1583,3 @@ html[data-theme="light"] .main-table tbody tr.row-recently-updated .time-cell {
   color: #b45309 !important;
   text-shadow: 0 0 8px rgba(245, 158, 11, 0.18);
 }
-
-
-/* ===== HIDE STATUS TIME META ===== */
-.status-cell .status-time-meta {
-  display: none !important;
-}
-
-
-/* ===== HIDE TIME COLUMN TEMPORARILY ===== */
-/* Current table order: Customer | Status | Tid | products... */
-.main-table th:nth-child(3),
-.main-table td:nth-child(3) {
-  display: none !important;
-}

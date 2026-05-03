@@ -43,9 +43,7 @@ export function sortRowsForDisplay(rows) {
     ? sortRowsByDeliveryFlow(rows)
     : rows
 
-  if (tableSort.key === 'default' || tableSort.direction === 'default') {
-    return baseRows
-  }
+  if (tableSort.key === 'default' || tableSort.direction === 'default') return baseRows
 
   return [...baseRows].sort((a, b) => {
     const result = compareRows(a, b, tableSort.key)
@@ -73,10 +71,18 @@ function getDeliveryFlowGroup(row) {
   return 1
 }
 
+export function sortRowsForDisplay_DISABLED_OLD(rows) {
+  if (!Array.isArray(rows)) return []
+  if (tableSort.key === 'default' || tableSort.direction === 'default') return rows
+
+  return [...rows].sort((a, b) => {
+    const result = compareRows(a, b, tableSort.key)
+    return tableSort.direction === 'asc' ? result : -result
+  })
+}
+
 function compareRows(a, b, key) {
   if (key === 'customer') return compareText(a.customerName, b.customerName)
-  if (key === 'createdAt') return compareDate(a.createdAt, b.createdAt)
-  if (key === 'updatedAt') return compareDate(a.updatedAt, b.updatedAt)
   if (key === 'packed') return compareBoolean(a.checks?.A, b.checks?.A)
   if (key === 'delivered') return compareBoolean(a.checks?.B, b.checks?.B)
   if (key === 'deliveryDay') return compareDeliveryDay(a.deliveryDay, b.deliveryDay)
@@ -88,16 +94,6 @@ function compareRows(a, b, key) {
   }
 
   return 0
-}
-
-function compareDate(a, b) {
-  const timeA = Date.parse(a || '')
-  const timeB = Date.parse(b || '')
-
-  const safeA = Number.isFinite(timeA) ? timeA : 0
-  const safeB = Number.isFinite(timeB) ? timeB : 0
-
-  return safeA - safeB
 }
 
 function compareProductCell(a, b) {
@@ -175,8 +171,4 @@ function normalizeDay(value) {
 export function getSortArrow(key) {
   if (tableSort.key !== key || tableSort.direction === 'default') return '↕'
   return tableSort.direction === 'asc' ? '↑' : '↓'
-}
-
-export function getSortLabel(key, label) {
-  return `${label} ${getSortArrow(key)}`
 }

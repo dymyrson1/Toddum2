@@ -3,7 +3,7 @@ import { normalizeOrderCellItems } from './order-cell-utils.js'
 import { findOrderRowAction } from './order-row-actions.js'
 
 export function updateOrderCellAction(context, rowId, productName, value) {
-  const { addLog, getPackagingOptionsForProduct, persistState } = context
+  const { getPackagingOptionsForProduct, persistState } = context
   const row = findOrderRowAction(context, rowId)
 
   if (!row) return
@@ -32,21 +32,11 @@ export function updateOrderCellAction(context, rowId, productName, value) {
 
   row.updatedAt = createTimestamp()
 
-  if (typeof addLog === 'function') {
-    addLog('update_cell', {
-      actionLabel: 'Endret bestilling',
-      customerName: row.customerName || '',
-      productName,
-      oldValue,
-      newValue
-    })
-  }
-
   persistState()
 }
 
 export function deleteOrderCellAction(context, rowId, productName) {
-  const { addLog, persistState } = context
+  const { persistState } = context
   const row = findOrderRowAction(context, rowId)
 
   if (!row || !row.cells) return
@@ -59,16 +49,6 @@ export function deleteOrderCellAction(context, rowId, productName) {
   delete row.cells[productName]
 
   row.updatedAt = createTimestamp()
-
-  if (typeof addLog === 'function') {
-    addLog('clear_cell', {
-      actionLabel: 'Tømte celle',
-      customerName: row.customerName || '',
-      productName,
-      oldValue,
-      newValue: ''
-    })
-  }
 
   persistState()
 }

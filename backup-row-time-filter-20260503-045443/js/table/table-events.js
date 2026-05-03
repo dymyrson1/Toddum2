@@ -1,7 +1,6 @@
 import { deleteOrderCell, state } from '../state.js'
 
 import { renderTable } from './table-render.js'
-import { setRowTimeFilter } from './table-row-render.js'
 import { closeContextMenu } from './context-menu.js'
 import { initTableKeyboardController } from './table-keyboard.js'
 
