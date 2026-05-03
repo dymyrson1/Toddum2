@@ -2,7 +2,7 @@ import { getCustomerName, state } from '../state.js'
 import { escapeHtml } from './table-formatters.js'
 import { renderTableHead } from './table-head-render.js'
 import { renderTableRow } from './table-body-render.js'
-import { isDeliveryFlowSortEnabled, sortRowsForDisplay } from './table-sort.js'
+import { sortRowsForDisplay } from './table-sort.js'
 import {
   getCustomerSearch,
   normalizeSearchValue
@@ -58,18 +58,6 @@ export function renderOrdersTable(rows) {
       <div class="table-search-count">
         Viser ${visibleRows.length} av ${rows.length} rader
       </div>
-
-      <button
-        class="delivery-flow-switch ${isDeliveryFlowSortEnabled() ? 'active' : ''}"
-        type="button"
-        data-delivery-flow-sort
-        aria-pressed="${isDeliveryFlowSortEnabled() ? 'true' : 'false'}"
-      >
-        <span class="delivery-flow-switch-track">
-          <span class="delivery-flow-switch-thumb"></span>
-        </span>
-        <span class="delivery-flow-switch-label">Aktive først</span>
-      </button>
     </div>
 
     <div class="table-scroll">

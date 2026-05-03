@@ -1,19 +1,9 @@
-let deliveryFlowSortEnabled = false
-
 let tableSort = {
   key: 'default',
   direction: 'default'
 }
 
 const SORT_CYCLE = ['default', 'asc', 'desc']
-
-export function isDeliveryFlowSortEnabled() {
-  return deliveryFlowSortEnabled
-}
-
-export function toggleDeliveryFlowSort() {
-  deliveryFlowSortEnabled = !deliveryFlowSortEnabled
-}
 
 export function getTableSort() {
   return tableSort
@@ -37,41 +27,6 @@ export function toggleTableSort(key) {
 }
 
 export function sortRowsForDisplay(rows) {
-  if (!Array.isArray(rows)) return []
-
-  const baseRows = deliveryFlowSortEnabled
-    ? sortRowsByDeliveryFlow(rows)
-    : rows
-
-  if (tableSort.key === 'default' || tableSort.direction === 'default') return baseRows
-
-  return [...baseRows].sort((a, b) => {
-    const result = compareRows(a, b, tableSort.key)
-    return tableSort.direction === 'asc' ? result : -result
-  })
-}
-
-function sortRowsByDeliveryFlow(rows) {
-  return [...rows].sort((a, b) => {
-    const groupA = getDeliveryFlowGroup(a)
-    const groupB = getDeliveryFlowGroup(b)
-
-    if (groupA !== groupB) return groupA - groupB
-
-    return compareText(a.customerName, b.customerName)
-  })
-}
-
-function getDeliveryFlowGroup(row) {
-  const packed = Boolean(row.checks?.A)
-  const delivered = Boolean(row.checks?.B)
-
-  if (delivered) return 3
-  if (packed) return 2
-  return 1
-}
-
-export function sortRowsForDisplay_DISABLED_OLD(rows) {
   if (!Array.isArray(rows)) return []
   if (tableSort.key === 'default' || tableSort.direction === 'default') return rows
 

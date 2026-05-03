@@ -1,6 +1,8 @@
 import { getOrderCell, getPackagingOptionsForProduct } from '../state.js'
 import { openModalContainer } from './modal-utils.js'
 import {
+  createProductModalItem,
+  getFirstAvailableOption,
   normalizeProductModalItems
 } from './product-modal-data.js'
 import { attachProductModalEvents } from './product-modal-events.js'
@@ -13,24 +15,17 @@ export function openProductModal(rowId, productName) {
   const cell = getOrderCell(rowId, productName)
   const options = getPackagingOptionsForProduct(productName)
 
-  const savedItems = normalizeProductModalItems(cell.items || [], options)
-  const items = buildAllPackageItems(options, savedItems)
+  const items = normalizeProductModalItems(cell.items || [], options)
+
+  if (items.length === 0) {
+    const defaultOption = getFirstAvailableOption(items, options)
+
+    if (defaultOption) {
+      items.push(createProductModalItem(defaultOption))
+    }
+  }
 
   renderProductModal(modal, rowId, productName, items, options)
-}
-
-function buildAllPackageItems(options, savedItems) {
-  return options.map((option) => {
-    const savedItem = savedItems.find((item) => item.packageId === option.id)
-
-    return {
-      packageId: option.id,
-      packageName: option.packageName,
-      weightKg: option.weightKg,
-      label: option.label,
-      qty: savedItem?.qty || ''
-    }
-  })
 }
 
 function renderProductModal(modal, rowId, productName, items, options) {

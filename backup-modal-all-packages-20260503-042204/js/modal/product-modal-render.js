@@ -1,6 +1,6 @@
 import { escapeHtml } from './modal-utils.js'
 
-export function renderProductModalHtml(productName, items) {
+export function renderProductModalHtml(productName, items, options) {
   return `
     <div class="modal-content product-modal-content">
       <div class="product-modal-header">
@@ -21,13 +21,18 @@ export function renderProductModalHtml(productName, items) {
               <th>Emballasje</th>
               <th>Vekt</th>
               <th>Antall</th>
+              <th></th>
             </tr>
           </thead>
 
           <tbody>
-            ${items.map((item, index) => renderMiniRow(item, index)).join('')}
+            ${items.map((item, index) => renderMiniRow(item, index, options)).join('')}
           </tbody>
         </table>
+
+        <button id="addMiniRowBtn" class="secondary-btn product-modal-add-btn" type="button">
+          + Legg til
+        </button>
       </div>
 
       <div class="product-modal-actions">
@@ -43,11 +48,13 @@ export function renderProductModalHtml(productName, items) {
   `
 }
 
-function renderMiniRow(item, index) {
+function renderMiniRow(item, index, options) {
   return `
     <tr>
-      <td class="product-modal-package-cell">
-        ${escapeHtml(item.packageName || item.label || '')}
+      <td>
+        <select data-mini-package-index="${index}">
+          ${options.map((option) => renderPackageOption(option, item.packageId)).join('')}
+        </select>
       </td>
 
       <td class="product-modal-weight-cell">
@@ -63,7 +70,27 @@ function renderMiniRow(item, index) {
           data-mini-qty-index="${index}"
         />
       </td>
+
+      <td class="product-modal-remove-cell">
+        <button
+          class="icon-btn product-modal-remove-btn"
+          type="button"
+          data-remove-mini-row="${index}"
+        >
+          ×
+        </button>
+      </td>
     </tr>
+  `
+}
+
+function renderPackageOption(option, selectedPackageId) {
+  const selected = option.id === selectedPackageId ? 'selected' : ''
+
+  return `
+    <option value="${escapeHtml(option.id)}" ${selected}>
+      ${escapeHtml(option.packageName || option.label || '')}
+    </option>
   `
 }
 
@@ -75,7 +102,7 @@ function formatWeight(item) {
   }
 
   if (weight >= 1) {
-    return `${Math.round(weight * 1000)} g`
+    return `${weight * 1000} g`
   }
 
   return `${Math.round(weight * 1000)} g`

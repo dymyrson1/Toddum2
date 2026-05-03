@@ -14,27 +14,14 @@ import {
 } from './table-event-targets.js'
 import { confirmDeleteRow } from './table-confirmation.js'
 import { selectProductCell } from './table-selection.js'
-import { toggleDeliveryFlowSort, toggleTableSort } from './table-sort.js'
+import { toggleTableSort } from './table-sort.js'
 
 export function handleTableClick(event) {
-  if (handleDeliveryFlowSortClick(event)) return
   if (handleTableSortClick(event)) return
   if (handleAddRowClick(event)) return
   if (handleDeleteRowClick(event)) return
   if (handleMerknadClick(event)) return
   if (handleProductCellClick(event)) return
-}
-
-export function handleDeliveryFlowSortClick(event) {
-  const button = event.target.closest('[data-delivery-flow-sort]')
-
-  if (!button) return false
-
-  closeContextMenu()
-  toggleDeliveryFlowSort()
-  renderTable()
-
-  return true
 }
 
 export function handleTableSortClick(event) {
