@@ -377,9 +377,3 @@ html[data-theme='dark'] #rapportTab .rapport-total-row td {
     padding: 10px 12px;
   }
 }
-
-
-/* ===== RAPPORT CUSTOMER SEARCH ===== */
-.rapport-search-panel {
-  margin: 0 0 14px;
-}
