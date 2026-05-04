@@ -1,0 +1,33 @@
+.has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.tab .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.week-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle .icon {
+  width: 18px;
+  height: 18px;
+}
