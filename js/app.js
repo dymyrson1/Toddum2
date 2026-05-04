@@ -5,6 +5,7 @@ import { initWeekControls } from './week/week.js'
 import { initContextMenu } from './table/context-menu.js'
 import { initTableKeyboardEvents } from './table/table-events.js'
 import { initTheme } from './app/theme.js'
+import { initIcons } from './icons.js'
 
 startApp()
 
@@ -18,6 +19,7 @@ async function startApp() {
   initContextMenu()
   initTableKeyboardEvents()
   initTheme()
+  initIcons()
   renderTab()
 
   console.log('✅ App ready')
