@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import Week 18</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 920px;
+      margin: 40px auto;
+      padding: 0 16px;
+      line-height: 1.5;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    button.danger {
+      background: #dc2626;
+    }
+
+    code {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    pre {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      min-height: 180px;
+    }
+
+    .ok { color: #86efac; }
+    .warn { color: #facc15; }
+    .bad { color: #fca5a5; }
+  </style>
+</head>
+
+<body>
+  <h1>Import Week 18 → Firebase</h1>
+
+  <p>
+    Цей імпорт оновить Firebase-документ:
+    <code>apps/ordersTable</code>
+  </p>
+
+  <p>
+    Буде замінено тільки:
+    <code>weeks["2026-W18"].rows</code>
+  </p>
+
+  <p>
+    Також будуть додані:
+    <code>customers</code>,
+    <code>products</code>,
+    <code>productPackagingTypes</code>
+  </p>
+
+  <p class="warn">
+    Перед імпортом буде зроблено backup поточного Firebase state у localStorage цього браузера.
+  </p>
+
+  <button id="previewBtn">Preview data</button>
+  <button id="importBtn" class="danger">IMPORT TO FIREBASE</button>
+
+  <h2>Log</h2>
+  <pre id="log">Ready.</pre>
+
+  <script type="module">
+    import { loadFirebaseState, saveFirebaseState } from '../js/firebase.js'
+
+    const WEEK_ID = '2026-W18'
+    const WEEK_LABEL = 'Uke 18'
+    const IMPORT_TIMESTAMP = '2026-05-03T05:26:44.000Z'
+
+    const PRODUCTS = [
+      { name: '125', active: true },
+      { name: '10', active: true },
+      { name: 'Burrata', active: true },
+      { name: 'Straciatella', active: true },
+      { name: 'Revet', active: true },
+      { name: 'Melk', active: true }
+    ]
+
+    const CUSTOMERS = [
+      'The Well',
+      'Tinos',
+      'Scandic Hell',
+      'Rågo',
+      'Potetbua',
+      'Lian Gård',
+      'Olio',
+      'Coop Cirkus',
+      'Blomster & Vin',
+      'Tennetunet',
+      'Clarion hotell',
+      'Coop Spillum',
+      'Klempe',
+      'Uler gård',
+      'Kirkebyklellet',
+      'Lillelunden',
+      'Elgtrå pizzeria',
+      'Nortura Steinker',
+      'Kokkeløren',
+      'Gamle Raadhus',
+      'Kombo',
+      'Grafen',
+      'Sellan raa',
+      'Nyhavna Bistrobar',
+      'Wuitt',
+      'Paul Nygård',
+      'Søstrene Karlsen',
+      'Normeland',
+      'Oda/Dyrket',
+      'Asko',
+      '(Wolt) Dyrket',
+      'Nær Engros Namsos',
+      'Meny Magneten',
+      'To rom og kjøkken',
+      'Korn...'
+    ].map((name, index) => ({
+      name,
+      contactPerson: '',
+      phone: '',
+      address: '',
+      deliveryOrder: index + 1,
+      active: true
+    }))
+
+    const PRODUCT_PACKAGING_TYPES = {
+      '125': [
+        option('125g', 0.125, true),
+        option('spann', 1, false)
+      ],
+      '10': [
+        option('100g', 0.1, true),
+        option('spann', 1, false)
+      ],
+      'Burrata': [
+        option('125g', 0.125, true),
+        option('250g', 0.25, false),
+        option('spann', 1, false),
+        option('05.06.2026', 5.062026, false)
+      ],
+      'Straciatella': [
+        option('250g', 0.25, true),
+        option('500g', 0.5, false),
+        option('kg', 1, false),
+        option('5kg', 5, false),
+        option('6x', 6, false)
+      ],
+      'Revet': [
+        option('250g', 0.25, true),
+        option('3kg', 3, false)
+      ],
+      'Melk': [
+        option('l', 1, true)
+      ]
+    }
+
+    const ROWS = [
+      row('w18_001_the_well', 'The Well', '', '', true, false, {
+        '125': [item('125g', 0.125, 30)],
+        '10': [item('100g', 0.1, 40)],
+        'Burrata': [item('125g', 0.125, 25)],
+        'Straciatella': [item('250g', 0.25, 50), item('500g', 0.5, 20)],
+        'Revet': [item('250g', 0.25, 60)]
+      }),
+
+      row('w18_002_tinos', 'Tinos', '', '', false, false, {
+        '10': [item('spann', 1, 1)],
+        'Burrata': [item('125g', 0.125, 15)],
+        'Straciatella': [item('500g', 0.5, 2)]
+      }),
+
+      row('w18_003_scandic_hell', 'Scandic Hell', '', '', false, false, {
+        '10': [item('spann', 1, 3)]
+      }),
+
+      row('w18_004_rago', 'Rågo', '', '', false, false, {
+        '125': [item('125g', 0.125, 16)],
+        '10': [item('100g', 0.1, 7)],
+        'Straciatella': [item('250g', 0.25, 8)],
+        'Revet': [item('250g', 0.25, 10)]
+      }),
+
+      row('w18_005_potetbua', 'Potetbua', '', '', false, false, {
+        '10': [item('100g', 0.1, 4)]
+      }),
+
+      row('w18_006_lian_gard', 'Lian Gård', '', '', false, false, {
+        '10': [item('100g', 0.1, 4)],
+        'Burrata': [item('125g', 0.125, 4)],
+        'Straciatella': [item('250g', 0.25, 4)],
+        'Revet': [item('250g', 0.25, 4)]
+      }),
+
+      row('w18_007_olio', 'Olio', '', '', false, false, {
+        '125': [item('spann', 1, 1)],
+        'Straciatella': [item('500g', 0.5, 2)]
+      }),
+
+      row('w18_008_coop_cirkus', 'Coop Cirkus', '', 'Ferdig pakka: oddetall', false, false, {
+        'Burrata': [item('spann', 1, 3)],
+        'Straciatella': [item('500g', 0.5, 15)]
+      }),
+
+      row('w18_009_blomster_vin', 'Blomster & Vin', '', '', false, false, {}),
+      row('w18_010_tennetunet', 'Tennetunet', '', '', false, false, {
+        'Burrata': [item('spann', 1, 3)]
+      }),
+      row('w18_011_clarion_hotell', 'Clarion hotell', '', '', false, false, {}),
+      row('w18_012_coop_spillum', 'Coop Spillum', '', '', false, false, {}),
+
+      row('w18_013_klempe', 'Klempe', '', '', false, false, {
+        'Straciatella': [item('5kg', 5, 5)]
+      }),
+
+      row('w18_014_uler_gard', 'Uler gård', '', '', false, false, {}),
+      row('w18_015_kirkebyklellet', 'Kirkebyklellet', '', '', false, false, {}),
+
+      row('w18_016_lillelunden', 'Lillelunden', '', '', false, false, {
+        '10': [item('spann', 1, 4)],
+        'Melk': [item('l', 1, 20)]
+      }),
+
+      row('w18_017_elgtra_pizzeria', 'Elgtrå pizzeria', '', '', false, false, {}),
+      row('w18_018_nortura_steinker', 'Nortura Steinker', '', '', false, false, {}),
+      row('w18_019_kokkeloren', 'Kokkeløren', '', '', false, false, {}),
+
+      row('w18_020_gamle_raadhus', 'Gamle Raadhus', 'Tirsdag', '', false, false, {}),
+      
+      row('w18_021_kombo', 'Kombo', '', '', false, false, {
+        'Straciatella': [item('5kg', 5, 3)]
+      }),
+
+      row('w18_022_grafen', 'Grafen', '', '', false, false, {}),
+
+      row('w18_023_sellan_raa', 'Sellan raa', '', '', false, false, {
+        'Straciatella': [item('500g', 0.5, 6)]
+      }),
+
+      row('w18_024_nyhavna_bistrobar', 'Nyhavna Bistrobar', '', '', false, false, {
+        'Straciatella': [item('500g', 0.5, 12)]
+      }),
+
+      row('w18_025_the_well_partial', 'The Well', 'Tirsdag', 'Partal tirsdag', false, false, {
+        'Burrata': [item('250g', 0.25, 25)],
+        'Straciatella': [item('500g', 0.5, 10)]
+      }),
+
+      row('w18_026_wuitt', 'Wuitt', 'Tirsdag', '', false, false, {}),
+      row('w18_027_paul_nygard', 'Paul Nygård', '', '', false, false, {}),
+
+      row('w18_028_sostrene_karlsen', 'Søstrene Karlsen', '', '', false, false, {
+        'Straciatella': [item('5kg', 5, 5)]
+      }),
+
+      row('w18_029_normeland', 'Normeland', '', '', false, false, {}),
+
+      row('w18_030_oda_dyrket', 'Oda/Dyrket', '', '', false, false, {
+        '10': [item('100g', 0.1, 48)],
+        'Burrata': [item('125g', 0.125, 36)],
+        'Straciatella': [item('250g', 0.25, 10), item('500g', 0.5, 12)],
+        'Revet': [item('250g', 0.25, 18)]
+      }),
+
+      row('w18_031_asko', 'Asko', '', '', false, false, {
+        '10': [item('100g', 0.1, 18), item('spann', 1, 6)],
+        'Burrata': [item('spann', 1, 4)],
+        'Straciatella': [item('500g', 0.5, 30), item('5kg', 5, 4)],
+        'Revet': [item('250g', 0.25, 24), item('3kg', 3, 2)]
+      }),
+
+      row('w18_032_wolt_dyrket', '(Wolt) Dyrket', '', '', false, false, {}),
+
+      row('w18_033_naer_engros_namsos', 'Nær Engros Namsos', '', '', false, false, {
+        '10': [item('spann', 1, 2)]
+      }),
+
+      row('w18_034_meny_magneten', 'Meny Magneten', '', '', false, false, {
+        'Burrata': [item('05.06.2026', 5.062026, 1)],
+        'Straciatella': [item('6x', 6, 1)]
+      }),
+
+      row('w18_035_to_rom_og_kjokken', 'To rom og kjøkken', '', '', false, false, {
+        'Straciatella': [item('5kg', 5, 5)]
+      }),
+
+      row('w18_036_korn', 'Korn...', '', '', false, false, {})
+    ]
+
+    function option(packageName, weightKg, isDefault = false) {
+      return {
+        id: createPackageId(packageName, weightKg),
+        packageName,
+        weightKg,
+        label: packageName,
+        isDefault
+      }
+    }
+
+    function item(packageName, weightKg, qty) {
+      return {
+        packageId: createPackageId(packageName, weightKg),
+        packageName,
+        weightKg,
+        label: packageName,
+        qty
+      }
+    }
+
+    function row(id, customerName, deliveryDay, merknad, packed, delivered, cells) {
+      const normalizedCells = {}
+
+      Object.entries(cells || {}).forEach(([productName, items]) => {
+        if (!Array.isArray(items) || items.length === 0) return
+
+        normalizedCells[productName] = {
+          items
+        }
+      })
+
+      return {
+        id,
+        customerName,
+        deliveryDay,
+        merknad,
+        createdAt: IMPORT_TIMESTAMP,
+        updatedAt: IMPORT_TIMESTAMP,
+        cells: normalizedCells,
+        checks: {
+          A: Boolean(packed),
+          B: Boolean(delivered)
+        }
+      }
+    }
+
+    function createPackageId(packageName, weightKg) {
+      const namePart = normalizePart(packageName)
+      const weightPart = normalizePart(String(weightKg || 0))
+
+      if (namePart === 'kg') return 'default_kg'
+      if (namePart === 'l') return 'default_l'
+
+      return `${namePart}__${weightPart}`
+    }
+
+    function normalizePart(value) {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(',', '.')
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9._-]/g, '')
+    }
+
+    function normalizeName(value) {
+      return String(value || '').trim().toLowerCase()
+    }
+
+    function mergeCustomers(existing = [], incoming = []) {
+      const result = Array.isArray(existing) ? [...existing] : []
+      const used = new Set(
+        result.map((customer) => normalizeName(customer?.name || customer))
+      )
+
+      incoming.forEach((customer) => {
+        if (!customer?.name) return
+        if (used.has(normalizeName(customer.name))) return
+
+        result.push(customer)
+        used.add(normalizeName(customer.name))
+      })
+
+      return result
+    }
+
+    function mergeProducts(existing = [], incoming = []) {
+      const result = Array.isArray(existing) ? [...existing] : []
+      const used = new Set(
+        result.map((product) => normalizeName(product?.name || product))
+      )
+
+      incoming.forEach((product) => {
+        if (!product?.name) return
+        if (used.has(normalizeName(product.name))) return
+
+        result.push(product)
+        used.add(normalizeName(product.name))
+      })
+
+      return result
+    }
+
+    function mergePackaging(existing = {}, incoming = {}) {
+      const result = { ...(existing || {}) }
+
+      Object.entries(incoming).forEach(([productName, options]) => {
+        const current = Array.isArray(result[productName]) ? [...result[productName]] : []
+        const used = new Set(current.map((option) => option?.id).filter(Boolean))
+
+        options.forEach((option) => {
+          if (!option?.id) return
+          if (used.has(option.id)) return
+
+          current.push(option)
+          used.add(option.id)
+        })
+
+        result[productName] = current
+      })
+
+      return result
+    }
+
+    function buildNextState(currentState) {
+      const now = new Date().toISOString()
+      const current = currentState && typeof currentState === 'object' ? currentState : {}
+
+      return {
+        ...current,
+        customers: mergeCustomers(current.customers, CUSTOMERS),
+        products: mergeProducts(current.products, PRODUCTS),
+        productPackagingTypes: mergePackaging(
+          current.productPackagingTypes,
+          PRODUCT_PACKAGING_TYPES
+        ),
+        weeks: {
+          ...(current.weeks || {}),
+          [WEEK_ID]: {
+            ...(current.weeks?.[WEEK_ID] || {}),
+            rows: ROWS
+          }
+        },
+        logs: [
+          {
+            id: `import_week18_${Date.now()}`,
+            createdAt: now,
+            weekId: WEEK_ID,
+            weekLabel: WEEK_LABEL,
+            action: 'import_week',
+            actionLabel: 'Importerte uke 18 fra Excel',
+            customerName: '',
+            deliveryDay: '',
+            productName: '',
+            oldValue: '',
+            newValue: `${ROWS.length} rader`,
+            note: 'Gjenopprettet fra combined_orders-2.xlsx'
+          },
+          ...((Array.isArray(current.logs) ? current.logs : []))
+        ],
+        updatedAt: now
+      }
+    }
+
+    function log(message, className = '') {
+      const el = document.getElementById('log')
+      const safe = String(message)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+
+      const line = className
+        ? `<span class="${className}">${safe}</span>`
+        : safe
+
+      el.innerHTML += `\n${line}`
+    }
+
+    function buildPreviewText() {
+      const rowsWithOrders = ROWS.filter((row) => Object.keys(row.cells || {}).length > 0)
+
+      return [
+        `Week: ${WEEK_ID}`,
+        `Rows total: ${ROWS.length}`,
+        `Rows with orders: ${rowsWithOrders.length}`,
+        `Customers to merge: ${CUSTOMERS.length}`,
+        `Products to merge: ${PRODUCTS.map((product) => product.name).join(', ')}`,
+        '',
+        'Customers:',
+        CUSTOMERS.map((customer, index) => `${index + 1}. ${customer.name}`).join('\n')
+      ].join('\n')
+    }
+
+    document.getElementById('previewBtn').onclick = () => {
+      document.getElementById('log').textContent = buildPreviewText()
+    }
+
+    document.getElementById('importBtn').onclick = async () => {
+      document.getElementById('log').textContent = 'Loading Firebase state...'
+
+      try {
+        const currentState = await loadFirebaseState()
+
+        const backupKey = `toddum_backup_before_week18_import_${Date.now()}`
+        localStorage.setItem(backupKey, JSON.stringify(currentState || null))
+
+        log(`Backup saved to localStorage: ${backupKey}`, 'ok')
+
+        const nextState = buildNextState(currentState)
+
+        log(`Prepared next state.`)
+        log(`Week 18 rows: ${nextState.weeks?.[WEEK_ID]?.rows?.length || 0}`)
+        log(`Customers after merge: ${nextState.customers?.length || 0}`)
+        log(`Products after merge: ${nextState.products?.length || 0}`)
+
+        await saveFirebaseState(nextState)
+
+        log('IMPORT COMPLETE. Firebase updated.', 'ok')
+        log('Open the main app and go to Uke 18.', 'ok')
+      } catch (error) {
+        console.error(error)
+        log(`ERROR: ${error?.message || error}`, 'bad')
+      }
+    }
+  </script>
+</body>
+</html>

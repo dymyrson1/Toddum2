@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fix Firebase Products Shape</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 920px;
+      margin: 40px auto;
+      padding: 0 16px;
+      line-height: 1.5;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    button.danger {
+      background: #dc2626;
+    }
+
+    code {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    pre {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      min-height: 220px;
+    }
+
+    .ok { color: #86efac; }
+    .warn { color: #facc15; }
+    .bad { color: #fca5a5; }
+  </style>
+</head>
+
+<body>
+  <h1>Fix Firebase Products Shape</h1>
+
+  <p>
+    Цей фікс виправить Firebase-документ <code>apps/ordersTable</code>.
+  </p>
+
+  <p>
+    Проблема: <code>products</code> зараз записані як об’єкти, а поточний код очікує масив рядків.
+  </p>
+
+  <p>
+    Було: <code>[{ name: "125", active: true }]</code>
+  </p>
+
+  <p>
+    Стане: <code>["125", "10", "Burrata", "Straciatella", "Revet", "Melk"]</code>
+  </p>
+
+  <p class="warn">
+    Перед фіксом буде зроблено backup поточного Firebase state у localStorage.
+  </p>
+
+  <button id="previewBtn">Preview current Firebase state</button>
+  <button id="fixBtn" class="danger">FIX FIREBASE NOW</button>
+
+  <h2>Log</h2>
+  <pre id="log">Ready.</pre>
+
+  <script type="module">
+    import { loadFirebaseState, saveFirebaseState } from '../js/firebase.js'
+
+    const PRODUCT_ORDER = ['125', '10', 'Burrata', 'Straciatella', 'Revet', 'Melk']
+    const WEEK_ID = '2026-W18'
+
+    function log(message, className = '') {
+      const el = document.getElementById('log')
+      const safe = String(message)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+
+      const line = className
+        ? `<span class="${className}">${safe}</span>`
+        : safe
+
+      el.innerHTML += `\n${line}`
+    }
+
+    function getProductName(product) {
+      if (typeof product === 'string') return product
+      if (product && typeof product === 'object') return product.name || ''
+      return ''
+    }
+
+    function normalizeProducts(products) {
+      const existingNames = Array.isArray(products)
+        ? products.map(getProductName).filter(Boolean)
+        : []
+
+      const names = []
+
+      PRODUCT_ORDER.forEach((name) => {
+        if (!names.includes(name)) names.push(name)
+      })
+
+      existingNames.forEach((name) => {
+        if (!names.includes(name)) names.push(name)
+      })
+
+      return names
+    }
+
+    function normalizePackagingKeys(productPackagingTypes) {
+      const input = productPackagingTypes && typeof productPackagingTypes === 'object'
+        ? productPackagingTypes
+        : {}
+
+      const result = { ...input }
+
+      if (!result.Straciatella && result.Stracciatella) {
+        result.Straciatella = result.Stracciatella
+      }
+
+      if (!result.Stracciatella && result.Straciatella) {
+        result.Stracciatella = result.Straciatella
+      }
+
+      return result
+    }
+
+    function normalizeWeekRows(weeks) {
+      const result = { ...(weeks || {}) }
+
+      Object.entries(result).forEach(([weekId, week]) => {
+        const rows = Array.isArray(week?.rows) ? week.rows : []
+
+        result[weekId] = {
+          ...(week || {}),
+          rows: rows.map((row) => normalizeRow(row))
+        }
+      })
+
+      return result
+    }
+
+    function normalizeRow(row) {
+      const cells = row?.cells && typeof row.cells === 'object' ? row.cells : {}
+      const normalizedCells = { ...cells }
+
+      if (!normalizedCells.Straciatella && normalizedCells.Stracciatella) {
+        normalizedCells.Straciatella = normalizedCells.Stracciatella
+      }
+
+      if (!normalizedCells.Stracciatella && normalizedCells.Straciatella) {
+        normalizedCells.Stracciatella = normalizedCells.Straciatella
+      }
+
+      return {
+        ...row,
+        cells: normalizedCells
+      }
+    }
+
+    function buildNextState(currentState) {
+      const current = currentState && typeof currentState === 'object' ? currentState : {}
+      const now = new Date().toISOString()
+
+      return {
+        ...current,
+        products: normalizeProducts(current.products),
+        productPackagingTypes: normalizePackagingKeys(current.productPackagingTypes),
+        weeks: normalizeWeekRows(current.weeks),
+        logs: [
+          {
+            id: `fix_products_shape_${Date.now()}`,
+            createdAt: now,
+            weekId: WEEK_ID,
+            weekLabel: 'Uke 18',
+            action: 'fix_data_shape',
+            actionLabel: 'Fikset products-format for frontend',
+            customerName: '',
+            deliveryDay: '',
+            productName: '',
+            oldValue: '[{ name, active }]',
+            newValue: '["125", "10", "Burrata", "Straciatella", "Revet", "Melk"]',
+            note: 'Fixed Firebase products array after Excel import'
+          },
+          ...((Array.isArray(current.logs) ? current.logs : []))
+        ],
+        updatedAt: now
+      }
+    }
+
+    function summarizeState(state) {
+      const products = Array.isArray(state?.products) ? state.products : []
+      const week18Rows = state?.weeks?.[WEEK_ID]?.rows
+
+      return [
+        `Current products type: ${products.length ? typeof products[0] : 'empty'}`,
+        `Current products value: ${JSON.stringify(products, null, 2)}`,
+        '',
+        `Week 18 rows: ${Array.isArray(week18Rows) ? week18Rows.length : 'missing'}`,
+        '',
+        'First row cells:',
+        JSON.stringify(week18Rows?.[0]?.cells || {}, null, 2)
+      ].join('\n')
+    }
+
+    document.getElementById('previewBtn').onclick = async () => {
+      document.getElementById('log').textContent = 'Loading Firebase state...'
+
+      try {
+        const currentState = await loadFirebaseState()
+        document.getElementById('log').textContent = summarizeState(currentState)
+      } catch (error) {
+        console.error(error)
+        document.getElementById('log').textContent = `ERROR: ${error?.message || error}`
+      }
+    }
+
+    document.getElementById('fixBtn').onclick = async () => {
+      document.getElementById('log').textContent = 'Loading Firebase state...'
+
+      try {
+        const currentState = await loadFirebaseState()
+
+        const backupKey = `toddum_backup_before_products_shape_fix_${Date.now()}`
+        localStorage.setItem(backupKey, JSON.stringify(currentState || null))
+
+        log(`Backup saved to localStorage: ${backupKey}`, 'ok')
+
+        const nextState = buildNextState(currentState)
+
+        log('Prepared fixed state.')
+        log(`Products after fix: ${JSON.stringify(nextState.products)}`)
+        log(`Week 18 rows after fix: ${nextState.weeks?.[WEEK_ID]?.rows?.length || 0}`)
+
+        await saveFirebaseState(nextState)
+
+        log('FIX COMPLETE. Firebase updated.', 'ok')
+        log('Now open the main app and reload Uke 18.', 'ok')
+      } catch (error) {
+        console.error(error)
+        log(`ERROR: ${error?.message || error}`, 'bad')
+      }
+    }
+  </script>
+</body>
+</html>

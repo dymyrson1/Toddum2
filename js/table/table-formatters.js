@@ -24,28 +24,41 @@ export function renderCellItems(cellData) {
 
 export function renderCellItem(item) {
   const qty = Number(item.qty) || 0
-  const label = item.label || item.packageName || item.type || '—'
-  const packageName = String(item.packageName || '').toLowerCase()
-  const labelLower = String(label).toLowerCase()
+  const packageName = getPackageDisplayName(item)
+  const packageNameLower = packageName.toLowerCase()
 
-  if (packageName === 'kg' || labelLower === 'kg') {
-    return `${escapeHtml(formatNumber(qty))}kg`
+  if (!packageName) {
+    return escapeHtml(formatNumber(qty))
   }
 
   if (
-    packageName === 'l' ||
-    packageName === 'liter' ||
-    packageName === 'literer' ||
-    labelLower === 'l' ||
-    labelLower === 'liter' ||
-    labelLower === 'literer'
+    packageNameLower === 'kg' ||
+    packageNameLower === 'l' ||
+    packageNameLower === 'liter' ||
+    packageNameLower === 'literer'
   ) {
-    return `${escapeHtml(formatNumber(qty))}l`
+    return `${escapeHtml(formatNumber(qty))}${escapeHtml(packageName)}`
   }
 
-  if (packageName.includes('spann') || labelLower.includes('spann')) {
+  if (packageNameLower.includes('spann')) {
     return `${escapeHtml(formatNumber(qty))} spann`
   }
 
-  return `${escapeHtml(formatNumber(qty))}x${escapeHtml(label)}`
+  return `${escapeHtml(formatNumber(qty))}x${escapeHtml(packageName)}`
+}
+
+function getPackageDisplayName(item) {
+  const packageName = String(item?.packageName || '').trim()
+
+  if (packageName) {
+    return packageName
+  }
+
+  const label = String(item?.label || item?.type || '').trim()
+
+  if (!label) {
+    return ''
+  }
+
+  return label.split(' - ')[0].trim()
 }
