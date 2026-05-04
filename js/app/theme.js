@@ -1,3 +1,5 @@
+import { renderIcon } from '../icons.js'
+
 export function initTheme() {
   const autoTheme = getThemeByTime()
 
@@ -29,6 +31,6 @@ function applyTheme(theme) {
 
   const btn = document.getElementById('themeToggle')
   if (btn) {
-    btn.textContent = theme === 'dark' ? '☀️' : ''
+    btn.innerHTML = theme === 'dark' ? renderIcon('sun') : renderIcon('moon')
   }
 }
