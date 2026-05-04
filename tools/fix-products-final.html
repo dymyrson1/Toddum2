@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fix Products Final</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #0f172a;
+      color: #e5e7eb;
+      line-height: 1.5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    button.danger {
+      background: #dc2626;
+    }
+
+    pre {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      min-height: 260px;
+    }
+
+    .ok { color: #86efac; }
+    .bad { color: #fca5a5; }
+  </style>
+</head>
+
+<body>
+  <h1>Fix Products Final</h1>
+
+  <p>Цей фікс виправить <b>products</b> і ключі товарів у <b>weeks</b>, щоб таблиця знову читала клітинки.</p>
+
+  <button id="previewBtn">Preview</button>
+  <button id="fixBtn" class="danger">FIX FIREBASE</button>
+
+  <h2>Log</h2>
+  <pre id="log">Ready.</pre>
+
+  <script type="module">
+    import { loadFirebaseState, saveFirebaseState } from '../js/firebase.js'
+
+    const PRODUCTS = ['125', '10', 'Burrata', 'Straciatella', 'Revet', 'Melk']
+
+    function log(message, className = '') {
+      const el = document.getElementById('log')
+      const safe = String(message)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+
+      el.innerHTML += className
+        ? `\n<span class="${className}">${safe}</span>`
+        : `\n${safe}`
+    }
+
+    function getProductName(product) {
+      if (typeof product === 'string') return product
+      if (product && typeof product === 'object') return product.name || ''
+      return ''
+    }
+
+    function normalizeProducts(products) {
+      const result = []
+
+      PRODUCTS.forEach((product) => {
+        if (!result.includes(product)) result.push(product)
+      })
+
+      if (Array.isArray(products)) {
+        products.forEach((product) => {
+          const name = getProductName(product)
+          if (name && !result.includes(name)) result.push(name)
+        })
+      }
+
+      return result
+    }
+
+    function normalizePackaging(productPackagingTypes) {
+      const source = productPackagingTypes && typeof productPackagingTypes === 'object'
+        ? productPackagingTypes
+        : {}
+
+      const result = {}
+
+      PRODUCTS.forEach((product) => {
+        if (source[product]) {
+          result[product] = source[product]
+        }
+      })
+
+      Object.entries(source).forEach(([key, value]) => {
+        if (key === 'Stracciatella' && !result.Straciatella) {
+          result.Straciatella = value
+          return
+        }
+
+        if (!result[key]) {
+          result[key] = value
+        }
+      })
+
+      return result
+    }
+
+    function normalizeCells(cells) {
+      const source = cells && typeof cells === 'object' ? cells : {}
+      const result = {}
+
+      Object.entries(source).forEach(([key, value]) => {
+        let nextKey = key
+
+        if (key === 'Stracciatella') {
+          nextKey = 'Straciatella'
+        }
+
+        if (PRODUCTS.includes(nextKey)) {
+          result[nextKey] = value
+        }
+      })
+
+      return result
+    }
+
+    function normalizeWeeks(weeks) {
+      const source = weeks && typeof weeks === 'object' ? weeks : {}
+      const result = {}
+
+      Object.entries(source).forEach(([weekId, week]) => {
+        const rows = Array.isArray(week?.rows) ? week.rows : []
+
+        result[weekId] = {
+          ...(week || {}),
+          rows: rows.map((row) => ({
+            ...row,
+            cells: normalizeCells(row?.cells)
+          }))
+        }
+      })
+
+      return result
+    }
+
+    function countRowsWithCells(weeks, weekId) {
+      const rows = weeks?.[weekId]?.rows
+      if (!Array.isArray(rows)) return 0
+
+      return rows.filter((row) => Object.keys(row?.cells || {}).length > 0).length
+    }
+
+    function summarize(state) {
+      const products = Array.isArray(state?.products) ? state.products : []
+      const weeks = state?.weeks || {}
+
+      return {
+        updatedAt: state?.updatedAt || null,
+        productsRaw: products,
+        productsType: products.length ? typeof products[0] : 'empty',
+        productsAfterFix: normalizeProducts(products),
+        customersCount: Array.isArray(state?.customers) ? state.customers.length : 0,
+        week18Rows: Array.isArray(weeks?.['2026-W18']?.rows) ? weeks['2026-W18'].rows.length : 0,
+        week18RowsWithCells: countRowsWithCells(weeks, '2026-W18'),
+        firstWeek18CellsBeforeFix: weeks?.['2026-W18']?.rows?.[0]?.cells || {},
+        firstWeek18CellsAfterFix: normalizeCells(weeks?.['2026-W18']?.rows?.[0]?.cells || {})
+      }
+    }
+
+    function buildFixedState(state) {
+      const current = state && typeof state === 'object' ? state : {}
+
+      return {
+        ...current,
+        products: normalizeProducts(current.products),
+        productPackagingTypes: normalizePackaging(current.productPackagingTypes),
+        weeks: normalizeWeeks(current.weeks),
+        updatedAt: new Date().toISOString()
+      }
+    }
+
+    document.getElementById('previewBtn').onclick = async () => {
+      document.getElementById('log').textContent = 'Loading Firebase...'
+
+      try {
+        const state = await loadFirebaseState()
+        document.getElementById('log').textContent = JSON.stringify(summarize(state), null, 2)
+      } catch (error) {
+        console.error(error)
+        document.getElementById('log').textContent = `ERROR: ${error?.message || error}`
+      }
+    }
+
+    document.getElementById('fixBtn').onclick = async () => {
+      document.getElementById('log').textContent = 'Loading Firebase...'
+
+      try {
+        const state = await loadFirebaseState()
+
+        const backupKey = `toddum_backup_before_final_products_fix_${Date.now()}`
+        localStorage.setItem(backupKey, JSON.stringify(state || null))
+
+        log(`Backup saved: ${backupKey}`, 'ok')
+
+        const fixedState = buildFixedState(state)
+
+        log(`Products after fix: ${JSON.stringify(fixedState.products)}`)
+        log(`Week 18 rows: ${fixedState.weeks?.['2026-W18']?.rows?.length || 0}`)
+        log(`Week 18 rows with cells: ${countRowsWithCells(fixedState.weeks, '2026-W18')}`)
+
+        await saveFirebaseState(fixedState)
+
+        log('FIX COMPLETE. Firebase updated.', 'ok')
+      } catch (error) {
+        console.error(error)
+        log(`ERROR: ${error?.message || error}`, 'bad')
+      }
+    }
+  </script>
+</body>
+</html>
